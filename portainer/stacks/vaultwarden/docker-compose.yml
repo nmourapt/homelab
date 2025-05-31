@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       DOMAIN: "https://warden.nmoura.pt"
-      SIGNUPS_ALLOWED: false
+      SIGNUPS_ALLOWED: true
     volumes:
       - /volume2/docker/vaultwarden/volumes/data:/data:rw # the path before the : can be changed
     ports:
