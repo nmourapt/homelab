@@ -1,0 +1,67 @@
+name: Update Portainer Stacks
+
+on:
+  push:
+    paths:
+      - 'portainer/stacks/**/docker-compose.yml'
+    branches:
+      - main
+
+jobs:
+  get-changed-files:
+    name: Get Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            portainer/stacks/**/docker-compose.yml
+          files_ignore: |
+            **/*.yaml
+          separator: ' '
+
+      - name: Set Matrix
+        id: set-matrix
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Extract stack names and create matrix
+          STACKS=$(echo "$CHANGED_FILES" | sed -n 's|portainer/stacks/\([^/]*\)/docker-compose.yml|\1|p')
+          MATRIX=$(echo "$STACKS" | jq -R -s -c 'split("\n")[:-1] | map({stack: .})')
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  update-stacks:
+    name: Trigger Stack Updates
+    needs: get-changed-files
+    if: ${{ fromJson(needs.get-changed-files.outputs.matrix) != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.get-changed-files.outputs.matrix) }}
+    steps:
+      - name: Trigger Update
+        env:
+          GH_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN }}
+          WEBHOOK_URL: ${{ secrets[format('PORTAINER_{0}_WEBHOOK', matrix.stack)] }}
+        run: |
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "Found webhook URL for stack ${{ matrix.stack }}"
+            echo "Triggering update for stack: ${{ matrix.stack }}"
+            # Trigger the webhook
+            curl -v -X POST "$WEBHOOK_URL"
+          else
+            echo "Warning: No webhook found for stack ${{ matrix.stack }}"
+          fi 

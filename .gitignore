@@ -1,0 +1,22 @@
+
+# macOS system files
+.DS_Store
+
+# Synology bootstrap setup (handled outside Git)
+synology/bootstrap/
+
+# Private encryption key
+age.key
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Terraform state and cache
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+crash.log
+
+# Secrets
+secrets/secrets.yml

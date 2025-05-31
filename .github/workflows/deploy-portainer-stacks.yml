@@ -1,0 +1,118 @@
+name: Deploy Portainer Stacks
+
+on:
+  push:
+    paths:
+      - 'portainer/**'
+    branches:
+      - main
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portainer/terraform
+    outputs:
+      webhook_urls: ${{ steps.terraform-output.outputs.webhook_urls }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Configure R2 Credentials
+        run: |
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << EOL
+          [default]
+          aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+          aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+          EOL
+          
+          cat > ~/.aws/config << EOL
+          [default]
+          region = auto
+          s3 =
+            endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+            use_path_style_endpoint = true
+          EOL
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+        env:
+          TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+      - name: Get Terraform Outputs
+        id: terraform-output
+        run: |
+          # Get all outputs and format them as JSON
+          WEBHOOK_URLS=$(terraform output -json)
+          
+          # Create a summary of webhook URLs (without exposing the full URLs)
+          echo "## Webhook URLs Updated" >> $GITHUB_STEP_SUMMARY
+          echo "The following stack webhooks have been updated:" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract webhook URLs and store them (properly escaped for GitHub Actions)
+          WEBHOOK_JSON=$(echo "$WEBHOOK_URLS" | jq 'to_entries | map({key: .key, value: .value.value}) | from_entries')
+          
+          # Properly format the JSON for GitHub Actions output (escape newlines and quotes)
+          echo "webhook_urls<<EOF" >> $GITHUB_OUTPUT
+          echo "$WEBHOOK_JSON" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # List the stacks that were updated
+          echo "$WEBHOOK_JSON" | jq -r 'keys[]' | while read stack; do
+            echo "- $stack" >> $GITHUB_STEP_SUMMARY
+          done
+    
+      - name: Update Webhook Secrets
+        env:
+          GH_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN }}
+        run: |
+          # Get webhook URLs from previous step output
+          WEBHOOK_JSON='${{ steps.terraform-output.outputs.webhook_urls }}'
+          
+          # Debug: Print the webhook JSON
+          echo "Webhook JSON:"
+          echo "$WEBHOOK_JSON" | jq '.'
+          
+          # Update each webhook URL as a GitHub secret
+          echo "$WEBHOOK_JSON" | jq -r 'to_entries[] | select(.key | endswith("_webhook")) | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
+            # Convert key to secret name format (e.g., vaultwarden_webhook -> PORTAINER_VAULTWARDEN_WEBHOOK)
+            secret_name="PORTAINER_$(echo ${key%_webhook} | tr '[:lower:]' '[:upper:]')_WEBHOOK"
+            echo "Setting secret: $secret_name with value: $value"
+            gh secret set "$secret_name" -b "$value" || true
+          done
+  
+  webhook:
+    name: Verify Webhook Secrets
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+  
+      - name: List Webhook Secrets
+        env:
+          GH_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN }}
+        run: |
+          # List all Portainer webhook secrets (without showing their values)
+          gh secret list | grep PORTAINER_.*_WEBHOOK || true

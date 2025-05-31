@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: "secrets.enc.yml"
+    encrypted_regex: '^(admin_token)$'
+    age: age1fqnen6a98xh5hwa58pnauddelyewa8rfkdd94w27q9lf948rgucsk52mea
