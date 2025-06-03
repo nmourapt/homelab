@@ -127,83 +127,83 @@ jobs:
     - name: Create Python substitution script
       run: |
         cat > /tmp/substitute.py << 'EOF'
-import re
-import sys
+        import re
+        import sys
 
-def parse_env_file(env_file_path):
-    """Parse environment file and return key-value pairs."""
-    env_vars = {}
-    with open(env_file_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            # Skip empty lines and comments
-            if not line or line.startswith('#'):
-                continue
+        def parse_env_file(env_file_path):
+            """Parse environment file and return key-value pairs."""
+            env_vars = {}
+            with open(env_file_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    # Split on first = only
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
+                        
+                        # Remove surrounding quotes if present, but remember if they were there
+                        needs_quotes = False
+                        if (value.startswith('"') and value.endswith('"')) or \
+                           (value.startswith("'") and value.endswith("'")):
+                            needs_quotes = True
+                            value = value[1:-1]
+                        
+                        # Check if value needs quotes (contains special chars, spaces, or starts with special chars)
+                        if not needs_quotes and (
+                            ' ' in value or 
+                            value.startswith('$') or 
+                            any(char in value for char in [':', '@', '#', '!', '&', '*', '?', '|', '>', '<', ';'])
+                        ):
+                            needs_quotes = True
+                        
+                        env_vars[key] = {'value': value, 'needs_quotes': needs_quotes}
+            return env_vars
+
+        def substitute_vars(compose_content, env_vars):
+            """Substitute environment variables in compose content."""
+            for key, var_info in env_vars.items():
+                value = var_info['value']
+                needs_quotes = var_info['needs_quotes']
+                
+                # Escape dollar signs for Terraform by doubling them
+                escaped_value = value.replace('$', '$$')
+                
+                # Add quotes if needed
+                if needs_quotes:
+                    final_value = f'"{escaped_value}"'
+                else:
+                    final_value = escaped_value
+                
+                # Replace ${KEY} with the actual value
+                pattern = r'\$\{' + re.escape(key) + r'\}'
+                compose_content = re.sub(pattern, final_value, compose_content)
+            return compose_content
+
+        if __name__ == "__main__":
+            env_file = sys.argv[1]
+            compose_file = sys.argv[2]
             
-            # Split on first = only
-            if '=' in line:
-                key, value = line.split('=', 1)
-                key = key.strip()
-                value = value.strip()
-                
-                # Remove surrounding quotes if present, but remember if they were there
-                needs_quotes = False
-                if (value.startswith('"') and value.endswith('"')) or \
-                   (value.startswith("'") and value.endswith("'")):
-                    needs_quotes = True
-                    value = value[1:-1]
-                
-                # Check if value needs quotes (contains special chars, spaces, or starts with special chars)
-                if not needs_quotes and (
-                    ' ' in value or 
-                    value.startswith('$') or 
-                    any(char in value for char in [':', '@', '#', '!', '&', '*', '?', '|', '>', '<', ';'])
-                ):
-                    needs_quotes = True
-                
-                env_vars[key] = {'value': value, 'needs_quotes': needs_quotes}
-    return env_vars
-
-def substitute_vars(compose_content, env_vars):
-    """Substitute environment variables in compose content."""
-    for key, var_info in env_vars.items():
-        value = var_info['value']
-        needs_quotes = var_info['needs_quotes']
-        
-        # Escape dollar signs for Terraform by doubling them
-        escaped_value = value.replace('$', '$$')
-        
-        # Add quotes if needed
-        if needs_quotes:
-            final_value = f'"{escaped_value}"'
-        else:
-            final_value = escaped_value
-        
-        # Replace ${KEY} with the actual value
-        pattern = r'\$\{' + re.escape(key) + r'\}'
-        compose_content = re.sub(pattern, final_value, compose_content)
-    return compose_content
-
-if __name__ == "__main__":
-    env_file = sys.argv[1]
-    compose_file = sys.argv[2]
-    
-    # Parse environment variables
-    env_vars = parse_env_file(env_file)
-    
-    # Read compose file
-    with open(compose_file, 'r') as f:
-        compose_content = f.read()
-    
-    # Substitute variables
-    updated_content = substitute_vars(compose_content, env_vars)
-    
-    # Write back to compose file
-    with open(compose_file, 'w') as f:
-        f.write(updated_content)
-    
-    print("Environment variable substitution completed successfully")
-EOF
+            # Parse environment variables
+            env_vars = parse_env_file(env_file)
+            
+            # Read compose file
+            with open(compose_file, 'r') as f:
+                compose_content = f.read()
+            
+            # Substitute variables
+            updated_content = substitute_vars(compose_content, env_vars)
+            
+            # Write back to compose file
+            with open(compose_file, 'w') as f:
+                f.write(updated_content)
+            
+            print("Environment variable substitution completed successfully")
+        EOF
 
     - name: Process compose file with environment variables
       if: steps.check-files.outputs.compose-exists == 'true'
