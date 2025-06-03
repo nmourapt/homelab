@@ -23,9 +23,9 @@ services:
     ports:
       - 10001:80
     networks:
-      - prod_net
+      - prod_network
 
 networks:
-  prod_net:
+  prod_network:
     external: true
       

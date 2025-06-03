@@ -1,0 +1,57 @@
+name: Deploy Portainer Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'portainer/terraform/network.tf'
+      - 'portainer/terraform/backend.tf'
+      - 'portainer/terraform/provider.tf'
+      - 'portainer/terraform/vars.tf'
+  workflow_dispatch:
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }} 

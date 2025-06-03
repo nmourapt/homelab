@@ -8,8 +8,8 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}
     command: tunnel run
     networks:
-      - prod_net
+      - prod_network
 
 networks:
-  prod_net:
+  prod_network:
     external: true
