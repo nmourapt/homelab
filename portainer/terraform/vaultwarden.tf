@@ -5,5 +5,4 @@ resource "portainer_stack" "vaultwarden_stack" {
   method            = "file"
   endpoint_id       = 1
   stack_file_path   = "./compose/vaultwarden.yml"
-
 }

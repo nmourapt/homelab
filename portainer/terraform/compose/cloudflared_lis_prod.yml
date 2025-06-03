@@ -1,0 +1,10 @@
+
+services:
+  cloudflared_lis_prod:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_lis_prod
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    command: tunnel run
+
