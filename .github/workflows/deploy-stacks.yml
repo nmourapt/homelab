@@ -163,20 +163,166 @@ jobs:
                         key = key.strip()
                         value = value.strip()
                         
-                        # Remove surrounding quotes if present
+                        # Remove surrounding quotes if present, but remember if they were there
+                        needs_quotes = False
                         if (value.startswith('"') and value.endswith('"')) or \
                            (value.startswith("'") and value.endswith("'")):
+                            needs_quotes = True
                             value = value[1:-1]
                         
-                        env_vars[key] = value
+                        # Check if value needs quotes (contains special chars, spaces, or starts with special chars)
+                        if not needs_quotes and (
+                            ' ' in value or 
+                            value.startswith('
+          
+          # Run the Python script
+          python3 "/tmp/substitute.py" "/tmp/${SERVICE}.env" "/tmp/compose/${SERVICE}.yml"
+          
+          # Debug: Show the processed file (remove in production)
+          echo "=== Processed compose file ==="
+          cat "/tmp/compose/${SERVICE}.yml"
+          echo "=========================="
+        fi
+        
+        # Update the terraform file to point to the processed compose file
+        if [ -f "portainer/terraform/${SERVICE}.tf" ]; then
+          sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
+        fi
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Terraform Init
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: terraform init
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Plan
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Terraform Apply
+      if: steps.check-files.outputs.terraform-exists == 'true' && github.ref == 'refs/heads/main'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform apply -auto-approve "tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        SERVICE="${{ matrix.service }}"
+        rm -f "/tmp/${SERVICE}.env"
+        rm -f "/tmp/compose/${SERVICE}.yml"
+        rm -f ~/.config/sops/age/keys.txt) or 
+                            any(char in value for char in [':', '@', '#', '!', '&', '*', '?', '|', '>', '<', ';'])
+                        ):
+                            needs_quotes = True
+                        
+                        env_vars[key] = {'value': value, 'needs_quotes': needs_quotes}
             return env_vars
         
         def substitute_vars(compose_content, env_vars):
             """Substitute environment variables in compose content."""
-            for key, value in env_vars.items():
+            for key, var_info in env_vars.items():
+                value = var_info['value']
+                needs_quotes = var_info['needs_quotes']
+                
+                # Escape dollar signs for Terraform by doubling them
+                escaped_value = value.replace('
+          
+          # Run the Python script
+          python3 "/tmp/substitute.py" "/tmp/${SERVICE}.env" "/tmp/compose/${SERVICE}.yml"
+          
+          # Debug: Show the processed file (remove in production)
+          echo "=== Processed compose file ==="
+          cat "/tmp/compose/${SERVICE}.yml"
+          echo "=========================="
+        fi
+        
+        # Update the terraform file to point to the processed compose file
+        if [ -f "portainer/terraform/${SERVICE}.tf" ]; then
+          sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
+        fi
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Terraform Init
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: terraform init
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Plan
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Terraform Apply
+      if: steps.check-files.outputs.terraform-exists == 'true' && github.ref == 'refs/heads/main'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform apply -auto-approve "tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        SERVICE="${{ matrix.service }}"
+        rm -f "/tmp/${SERVICE}.env"
+        rm -f "/tmp/compose/${SERVICE}.yml"
+        rm -f ~/.config/sops/age/keys.txt, '$')
+                
+                # Add quotes if needed
+                if needs_quotes:
+                    final_value = f'"{escaped_value}"'
+                else:
+                    final_value = escaped_value
+                
                 # Replace ${KEY} with the actual value
                 pattern = r'\$\{' + re.escape(key) + r'\}'
-                compose_content = re.sub(pattern, value, compose_content)
+                compose_content = re.sub(pattern, final_value, compose_content)
             return compose_content
         
         if __name__ == "__main__":
