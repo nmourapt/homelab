@@ -48,7 +48,7 @@ jobs:
         
         # Extract unique service names from changed files
         SERVICES=$(echo "$CHANGED_FILES" | grep -E '\.(tf|yml|env)$' | while read file; do
-          if [[ "$file" =~ portainer/terraform/([^/]+)\.tf$ ]] && [[ "${BASH_REMATCH[1]}" != "main" ]] && [[ "${BASH_REMATCH[1]}" != "backend" ]] && [[ "${BASH_REMATCH[1]}" != "vars" ]] && [[ "${BASH_REMATCH[1]}" != "provider" ]]; then
+          if [[ "$file" =~ portainer/terraform/([^/]+)\.tf$ ]] && [[ "${BASH_REMATCH[1]}" != "main" ]] && [[ "${BASH_REMATCH[1]}" != "backend" ]] && [[ "${BASH_REMATCH[1]}" != "vars" ]] && [[ "${BASH_REMATCH[1]}" != "provider" ]] && [[ "${BASH_REMATCH[1]}" != "network" ]]; then
             echo "${BASH_REMATCH[1]}"
           elif [[ "$file" =~ portainer/terraform/compose/([^/]+)\.(yml|env)$ ]]; then
             echo "${BASH_REMATCH[1]}"
