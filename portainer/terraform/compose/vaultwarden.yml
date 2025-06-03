@@ -7,7 +7,7 @@ services:
     environment:
       ADMIN_TOKEN: ${ADMIN_TOKEN}
       DOMAIN: ${DOMAIN}
-      SIGNUPS_ALLOWED: "false"
+      SIGNUPS_ALLOWED: "true"
     volumes:
       - /volume2/docker/vaultwarden/volumes/data:/data:rw
     ports:
