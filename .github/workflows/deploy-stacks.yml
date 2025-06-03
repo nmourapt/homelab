@@ -1,0 +1,216 @@
+name: Deploy Portainer Stacks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'portainer/terraform/*.tf'
+      - 'portainer/terraform/compose/*.yml'
+      - 'portainer/terraform/compose/*.env'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Specific service to deploy (optional)'
+        required: false
+        type: string
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.detect.outputs.services }}
+      all-services: ${{ steps.detect.outputs.all-services }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Detect changed services
+      id: detect
+      run: |
+        # If manual dispatch with specific service
+        if [ "${{ github.event.inputs.service }}" != "" ]; then
+          echo "services=[\"${{ github.event.inputs.service }}\"]" >> $GITHUB_OUTPUT
+          echo "all-services=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Get changed files - handle case where there's no previous commit
+        if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+        else
+          # First commit - check all files
+          CHANGED_FILES=$(git ls-files)
+        fi
+        
+        echo "Changed files: $CHANGED_FILES"
+        
+        # Extract unique service names from changed files
+        SERVICES=$(echo "$CHANGED_FILES" | grep -E '\.(tf|yml|env)$' | while read file; do
+          if [[ "$file" =~ portainer/terraform/([^/]+)\.tf$ ]] && [[ "${BASH_REMATCH[1]}" != "main" ]] && [[ "${BASH_REMATCH[1]}" != "backend" ]] && [[ "${BASH_REMATCH[1]}" != "vars" ]] && [[ "${BASH_REMATCH[1]}" != "provider" ]]; then
+            echo "${BASH_REMATCH[1]}"
+          elif [[ "$file" =~ portainer/terraform/compose/([^/]+)\.(yml|env)$ ]]; then
+            echo "${BASH_REMATCH[1]}"
+          fi
+        done | sort -u | jq -R -s -c 'split("\n")[:-1]')
+        
+        echo "Detected services: $SERVICES"
+        echo "services=$SERVICES" >> $GITHUB_OUTPUT
+        echo "all-services=false" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: ${{ fromJson(needs.detect-changes.outputs.services)[0] != null }}
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+      fail-fast: false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+
+    - name: Install SOPS and Age
+      run: |
+        # Install SOPS
+        wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
+        sudo mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
+        sudo chmod +x /usr/local/bin/sops
+        
+        # Install Age
+        wget https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz
+        tar xzf age-v1.1.1-linux-amd64.tar.gz
+        sudo mv age/age /usr/local/bin/
+        sudo mv age/age-keygen /usr/local/bin/
+
+    - name: Setup Age private key
+      env:
+        SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      run: |
+        mkdir -p ~/.config/sops/age
+        echo "$SOPS_AGE_KEY" > ~/.config/sops/age/keys.txt
+        chmod 600 ~/.config/sops/age/keys.txt
+
+    - name: Check service files exist
+      id: check-files
+      run: |
+        SERVICE="${{ matrix.service }}"
+        
+        # Check if terraform file exists
+        if [ -f "portainer/terraform/${SERVICE}.tf" ]; then
+          echo "terraform-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "terraform-exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+        # Check if env file exists
+        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
+          echo "env-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "env-exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+        # Check if compose file exists
+        if [ -f "portainer/terraform/compose/${SERVICE}.yml" ]; then
+          echo "compose-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "compose-exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Decrypt and load environment variables
+      if: steps.check-files.outputs.env-exists == 'true'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        
+        # Decrypt the service-specific env file
+        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
+          echo "Decrypting portainer/terraform/compose/${SERVICE}.env..."
+          sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
+          
+          # Convert env vars to Terraform variables format
+          while IFS='=' read -r key value; do
+            # Skip empty lines and comments
+            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+            
+            # Export as TF_VAR_servicename_variablename
+            var_name="TF_VAR_${SERVICE}_$(echo $key | tr '[:upper:]' '[:lower:]')"
+            echo "$var_name=$value" >> $GITHUB_ENV
+            echo "Set $var_name"
+          done < "/tmp/${SERVICE}.env"
+        fi
+
+    - name: Process compose file
+      if: steps.check-files.outputs.compose-exists == 'true'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        
+        # Create a temporary directory for the processed compose file
+        mkdir -p /tmp/compose
+        
+        # Process the compose file with environment variables
+        if [ -f "/tmp/${SERVICE}.env" ]; then
+          # Load environment variables
+          set -a
+          source "/tmp/${SERVICE}.env"
+          set +a
+          
+          # Process the compose file with envsubst
+          envsubst < "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml"
+          
+          # Update the stack_file_path in the Terraform configuration
+          sed -i "s|stack_file_path.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
+        fi
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Terraform Init
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: terraform init
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Plan
+      if: steps.check-files.outputs.terraform-exists == 'true'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Terraform Apply
+      if: steps.check-files.outputs.terraform-exists == 'true' && github.ref == 'refs/heads/main'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        terraform apply -auto-approve "tfplan-${SERVICE}"
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        SERVICE="${{ matrix.service }}"
+        rm -f "/tmp/${SERVICE}.env"
+        rm -f ~/.config/sops/age/keys.txt
