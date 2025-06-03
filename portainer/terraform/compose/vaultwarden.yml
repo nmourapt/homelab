@@ -22,4 +22,10 @@ services:
       - /volume2/docker/vaultwarden/volumes/data:/data:rw
     ports:
       - 10001:80
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true
       

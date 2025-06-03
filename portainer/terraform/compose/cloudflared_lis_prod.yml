@@ -7,4 +7,9 @@ services:
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}
     command: tunnel run
+    networks:
+      - prod_net
 
+networks:
+  prod_net:
+    external: true
