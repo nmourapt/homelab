@@ -172,18 +172,13 @@ jobs:
             # Get the actual value from the environment
             actual_value="${!key}"
             
-            # If the value contains $, we need to escape it properly
-            if [[ "$actual_value" == *"$"* ]]; then
-              # Replace $ with $$ in the value
-              actual_value="${actual_value//$/$$}"
-            fi
-            
             # If the value contains spaces or special characters, wrap it in quotes
             if [[ "$actual_value" =~ [\ \"\'] ]]; then
               actual_value="\"$actual_value\""
             fi
             
-            # Replace the variable in the compose file
+            # Replace the variable in the compose file using Docker Compose syntax
+            # This will use the value directly, letting Docker Compose handle the $ escaping
             sed -i "s|\${$key}|$actual_value|g" "/tmp/compose/${SERVICE}.yml.tmp"
           done < "/tmp/${SERVICE}.env"
           
