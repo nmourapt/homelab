@@ -161,18 +161,37 @@ jobs:
           source "/tmp/${SERVICE}.env"
           set +a
           
-          # Process the compose file with envsubst, but escape $ characters
-          # First, create a temporary file with escaped $ characters
-          sed 's/\$/\\\$/g' "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml.tmp"
+          # Create a temporary file with the compose content
+          cp "portainer/terraform/compose/${SERVICE}.yml" "/tmp/compose/${SERVICE}.yml.tmp"
           
-          # Then do the substitution
-          envsubst < "/tmp/compose/${SERVICE}.yml.tmp" > "/tmp/compose/${SERVICE}.yml"
+          # For each environment variable, replace it in the compose file
+          while IFS='=' read -r key value; do
+            # Skip empty lines and comments
+            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+            
+            # Get the actual value from the environment
+            actual_value="${!key}"
+            
+            # If the value contains $, we need to escape it properly
+            if [[ "$actual_value" == *"$"* ]]; then
+              # Replace $ with $$ in the value
+              actual_value="${actual_value//$/$$}"
+            fi
+            
+            # If the value contains spaces or special characters, wrap it in quotes
+            if [[ "$actual_value" =~ [\ \"\'] ]]; then
+              actual_value="\"$actual_value\""
+            fi
+            
+            # Replace the variable in the compose file
+            sed -i "s|\${$key}|$actual_value|g" "/tmp/compose/${SERVICE}.yml.tmp"
+          done < "/tmp/${SERVICE}.env"
+          
+          # Move the processed file to the final location
+          mv "/tmp/compose/${SERVICE}.yml.tmp" "/tmp/compose/${SERVICE}.yml"
           
           # Update the stack_file_path in the Terraform configuration
           sed -i "s|stack_file_path.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
-          
-          # Clean up temporary file
-          rm "/tmp/compose/${SERVICE}.yml.tmp"
         fi
 
     - name: Configure R2 Credentials
