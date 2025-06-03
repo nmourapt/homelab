@@ -161,11 +161,18 @@ jobs:
           source "/tmp/${SERVICE}.env"
           set +a
           
-          # Process the compose file with envsubst
-          envsubst < "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml"
+          # Process the compose file with envsubst, but escape $ characters
+          # First, create a temporary file with escaped $ characters
+          sed 's/\$/\\\$/g' "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml.tmp"
+          
+          # Then do the substitution
+          envsubst < "/tmp/compose/${SERVICE}.yml.tmp" > "/tmp/compose/${SERVICE}.yml"
           
           # Update the stack_file_path in the Terraform configuration
           sed -i "s|stack_file_path.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
+          
+          # Clean up temporary file
+          rm "/tmp/compose/${SERVICE}.yml.tmp"
         fi
 
     - name: Configure R2 Credentials
