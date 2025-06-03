@@ -77,7 +77,7 @@ jobs:
       with:
         terraform_version: "1.6.6"
 
-    - name: Install SOPS and Age
+    - name: Install SOPS, Age, and envsubst
       run: |
         # Install SOPS
         wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
@@ -89,6 +89,9 @@ jobs:
         tar xzf age-v1.1.1-linux-amd64.tar.gz
         sudo mv age/age /usr/local/bin/
         sudo mv age/age-keygen /usr/local/bin/
+        
+        # Install gettext for envsubst (usually already available)
+        sudo apt-get update && sudo apt-get install -y gettext-base
 
     - name: Setup Age private key
       env:
@@ -124,69 +127,44 @@ jobs:
           echo "compose-exists=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Decrypt and load environment variables
-      if: steps.check-files.outputs.env-exists == 'true'
-      run: |
-        SERVICE="${{ matrix.service }}"
-        
-        # Decrypt the service-specific env file
-        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
-          echo "Decrypting portainer/terraform/compose/${SERVICE}.env..."
-          sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
-          
-          # Convert env vars to Terraform variables format
-          while IFS='=' read -r key value; do
-            # Skip empty lines and comments
-            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
-            
-            # Export as TF_VAR_servicename_variablename
-            var_name="TF_VAR_${SERVICE}_$(echo $key | tr '[:upper:]' '[:lower:]')"
-            echo "$var_name=$value" >> $GITHUB_ENV
-            echo "Set $var_name"
-          done < "/tmp/${SERVICE}.env"
-        fi
-
-    - name: Process compose file
+    - name: Process compose file with environment variables
       if: steps.check-files.outputs.compose-exists == 'true'
       run: |
         SERVICE="${{ matrix.service }}"
         
-        # Create a temporary directory for the processed compose file
+        # Create temporary directory
         mkdir -p /tmp/compose
         
-        # Process the compose file with environment variables
-        if [ -f "/tmp/${SERVICE}.env" ]; then
-          # Load environment variables
+        # Copy original compose file
+        cp "portainer/terraform/compose/${SERVICE}.yml" "/tmp/compose/${SERVICE}.yml"
+        
+        # If env file exists, decrypt and substitute
+        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
+          echo "Decrypting and processing environment file..."
+          
+          # Decrypt the service-specific env file
+          sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
+          
+          # Use envsubst to safely substitute variables
+          # First, export all variables from the env file
           set -a
           source "/tmp/${SERVICE}.env"
           set +a
           
-          # Create a temporary file with the compose content
-          cp "portainer/terraform/compose/${SERVICE}.yml" "/tmp/compose/${SERVICE}.yml.tmp"
+          # Use envsubst to substitute variables in the compose file
+          envsubst < "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml"
           
-          # For each environment variable, replace it in the compose file
-          while IFS='=' read -r key value; do
-            # Skip empty lines and comments
-            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
-            
-            # Get the actual value from the environment
-            actual_value="${!key}"
-            
-            # If the value contains spaces or special characters, wrap it in quotes
-            if [[ "$actual_value" =~ [\ \"\'] ]]; then
-              actual_value="\"$actual_value\""
-            fi
-            
-            # Replace the variable in the compose file using Docker Compose syntax
-            # This will use the value directly, letting Docker Compose handle the $ escaping
-            sed -i "s|\${$key}|$actual_value|g" "/tmp/compose/${SERVICE}.yml.tmp"
-          done < "/tmp/${SERVICE}.env"
+          echo "Environment variable substitution completed"
           
-          # Move the processed file to the final location
-          mv "/tmp/compose/${SERVICE}.yml.tmp" "/tmp/compose/${SERVICE}.yml"
-          
-          # Update the stack_file_path in the Terraform configuration
-          sed -i "s|stack_file_path.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
+          # Debug: Show the processed file (remove in production)
+          echo "=== Processed compose file ==="
+          cat "/tmp/compose/${SERVICE}.yml"
+          echo "=========================="
+        fi
+        
+        # Update the terraform file to point to the processed compose file
+        if [ -f "portainer/terraform/${SERVICE}.tf" ]; then
+          sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${SERVICE}.yml\"|" "portainer/terraform/${SERVICE}.tf"
         fi
 
     - name: Configure R2 Credentials
@@ -234,4 +212,5 @@ jobs:
       run: |
         SERVICE="${{ matrix.service }}"
         rm -f "/tmp/${SERVICE}.env"
+        rm -f "/tmp/compose/${SERVICE}.yml"
         rm -f ~/.config/sops/age/keys.txt
