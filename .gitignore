@@ -20,3 +20,4 @@ crash.log
 
 # Secrets
 secrets/secrets.yml
+**/*.secrets.env
