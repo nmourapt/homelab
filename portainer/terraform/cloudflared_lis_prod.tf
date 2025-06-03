@@ -5,4 +5,5 @@ resource "portainer_stack" "cloudflared_lis_prod_stack" {
   method            = "file"
   endpoint_id       = 1
   stack_file_path   = "./compose/cloudflared_lis_prod.yml"
+  depends_on        = [portainer_docker_network.prod_network]
 }
