@@ -77,7 +77,7 @@ jobs:
       with:
         terraform_version: "1.6.6"
 
-    - name: Install SOPS, Age, and envsubst
+    - name: Install SOPS and Age
       run: |
         # Install SOPS
         wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
@@ -89,9 +89,6 @@ jobs:
         tar xzf age-v1.1.1-linux-amd64.tar.gz
         sudo mv age/age /usr/local/bin/
         sudo mv age/age-keygen /usr/local/bin/
-        
-        # Install gettext for envsubst (usually already available)
-        sudo apt-get update && sudo apt-get install -y gettext-base
 
     - name: Setup Age private key
       env:
@@ -145,16 +142,66 @@ jobs:
           # Decrypt the service-specific env file
           sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
           
-          # Use envsubst to safely substitute variables
-          # First, export all variables from the env file
-          set -a
-          source "/tmp/${SERVICE}.env"
-          set +a
+          # Use Python for safe string replacement
+          cat > "/tmp/substitute.py" << 'EOF'
+        import re
+        import sys
+        
+        def parse_env_file(env_file_path):
+            """Parse environment file and return key-value pairs."""
+            env_vars = {}
+            with open(env_file_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    # Split on first = only
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
+                        
+                        # Remove surrounding quotes if present
+                        if (value.startswith('"') and value.endswith('"')) or \
+                           (value.startswith("'") and value.endswith("'")):
+                            value = value[1:-1]
+                        
+                        env_vars[key] = value
+            return env_vars
+        
+        def substitute_vars(compose_content, env_vars):
+            """Substitute environment variables in compose content."""
+            for key, value in env_vars.items():
+                # Replace ${KEY} with the actual value
+                pattern = r'\$\{' + re.escape(key) + r'\}'
+                compose_content = re.sub(pattern, value, compose_content)
+            return compose_content
+        
+        if __name__ == "__main__":
+            env_file = sys.argv[1]
+            compose_file = sys.argv[2]
+            
+            # Parse environment variables
+            env_vars = parse_env_file(env_file)
+            
+            # Read compose file
+            with open(compose_file, 'r') as f:
+                compose_content = f.read()
+            
+            # Substitute variables
+            updated_content = substitute_vars(compose_content, env_vars)
+            
+            # Write back to compose file
+            with open(compose_file, 'w') as f:
+                f.write(updated_content)
+            
+            print("Environment variable substitution completed successfully")
+        EOF
           
-          # Use envsubst to substitute variables in the compose file
-          envsubst < "portainer/terraform/compose/${SERVICE}.yml" > "/tmp/compose/${SERVICE}.yml"
-          
-          echo "Environment variable substitution completed"
+          # Run the Python script
+          python3 "/tmp/substitute.py" "/tmp/${SERVICE}.env" "/tmp/compose/${SERVICE}.yml"
           
           # Debug: Show the processed file (remove in production)
           echo "=== Processed compose file ==="
