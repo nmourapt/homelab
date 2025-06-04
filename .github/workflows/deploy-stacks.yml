@@ -79,8 +79,59 @@ jobs:
         echo "services=$SERVICES" >> $GITHUB_OUTPUT
         echo "all-services=false" >> $GITHUB_OUTPUT
 
-  deploy:
+  deploy-infrastructure:
     needs: detect-changes
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect-changes.outputs.has_infra_changes == 'true' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" portainer/terraform/backend.tf
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan-infra
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan-infra
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+  deploy-services:
+    needs: [detect-changes, deploy-infrastructure]
     runs-on: ubuntu-latest
     if: ${{ fromJson(needs.detect-changes.outputs.services)[0] != null && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
     strategy:
@@ -287,11 +338,7 @@ jobs:
       if: steps.check-files.outputs.terraform-exists == 'true'
       run: |
         SERVICE="${{ matrix.service }}"
-        if [ "${{ needs.detect-changes.outputs.has_infra_changes }}" = "true" ]; then
-          terraform plan -out="tfplan-${SERVICE}"
-        else
-          terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
-        fi
+        terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
