@@ -24,12 +24,12 @@ resource "portainer_docker_network" "vlan1" {
   config_from = "vlan1config"
 }
 
-resource "portainer_docker_network" "vlan20config" {
+resource "portainer_docker_network" "vlan11config" {
   endpoint_id = 1
-  name        = "vlan20config"
+  name        = "vlan11config"
   driver      = "macvlan"
   config_only = true
   options = {
-    parent = "eth0.20"
+    parent = "eth0.11"
   }
 }
