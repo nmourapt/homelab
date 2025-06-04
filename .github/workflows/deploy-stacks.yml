@@ -180,7 +180,11 @@ jobs:
                         replacement = f'"{value}"'
                     else:
                         # If the original was unquoted, keep it unquoted
-                        replacement = value
+                        # For YAML, we need to ensure the value is properly formatted
+                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
+                            replacement = f'"{value}"'
+                        else:
+                            replacement = value
                     
                     # Replace the variable
                     compose_content = compose_content.replace(full_match, replacement)
@@ -415,7 +419,11 @@ jobs:
                         replacement = f'"{value}"'
                     else:
                         # If the original was unquoted, keep it unquoted
-                        replacement = value
+                        # For YAML, we need to ensure the value is properly formatted
+                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
+                            replacement = f'"{value}"'
+                        else:
+                            replacement = value
                     
                     # Replace the variable
                     compose_content = compose_content.replace(full_match, replacement)
