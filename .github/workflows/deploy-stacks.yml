@@ -26,6 +26,7 @@ jobs:
     outputs:
       services: ${{ steps.detect.outputs.services }}
       all-services: ${{ steps.detect.outputs.all-services }}
+      has_infra_changes: ${{ steps.detect.outputs.has_infra_changes }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -39,6 +40,7 @@ jobs:
         if [ "${{ github.event.inputs.service }}" != "" ]; then
           echo "services=[\"${{ github.event.inputs.service }}\"]" >> $GITHUB_OUTPUT
           echo "all-services=false" >> $GITHUB_OUTPUT
+          echo "has_infra_changes=false" >> $GITHUB_OUTPUT
           exit 0
         fi
         
@@ -51,6 +53,18 @@ jobs:
         fi
         
         echo "Changed files: $CHANGED_FILES"
+        
+        # Check for infrastructure changes
+        if echo "$CHANGED_FILES" | grep -q "portainer/terraform/\(main\|backend\|vars\|provider\|network\)\.tf"; then
+          echo "has_infra_changes=true" >> $GITHUB_OUTPUT
+          # Get all service names from terraform files
+          SERVICES=$(find portainer/terraform -maxdepth 1 -name "*.tf" -not -name "main.tf" -not -name "backend.tf" -not -name "vars.tf" -not -name "provider.tf" -not -name "network.tf" | xargs -n1 basename | sed 's/\.tf$//' | jq -R -s -c 'split("\n")[:-1]')
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "all-services=true" >> $GITHUB_OUTPUT
+          exit 0
+        else
+          echo "has_infra_changes=false" >> $GITHUB_OUTPUT
+        fi
         
         # Extract unique service names from changed files
         SERVICES=$(echo "$CHANGED_FILES" | grep -E '\.(tf|yml|env)$' | while read file; do
@@ -273,7 +287,11 @@ jobs:
       if: steps.check-files.outputs.terraform-exists == 'true'
       run: |
         SERVICE="${{ matrix.service }}"
-        terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+        if [ "${{ needs.detect-changes.outputs.has_infra_changes }}" = "true" ]; then
+          terraform plan -out="tfplan-${SERVICE}"
+        else
+          terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+        fi
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
