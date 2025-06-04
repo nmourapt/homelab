@@ -223,49 +223,53 @@ jobs:
                         key = key.strip()
                         value = value.strip()
                         
-                        # Remove surrounding quotes if present, but remember if they were there
-                        needs_quotes = False
+                        # Remove surrounding quotes if present
                         if (value.startswith('"') and value.endswith('"')) or \
                            (value.startswith("'") and value.endswith("'")):
-                            needs_quotes = True
                             value = value[1:-1]
                         
-                        # Check if value needs quotes (contains special chars, spaces, or starts with special chars)
-                        if not needs_quotes and (
-                            ' ' in value or 
-                            value.startswith('$') or 
-                            any(char in value for char in [':', '@', '#', '!', '&', '*', '?', '|', '>', '<', ';'])
-                        ):
-                            needs_quotes = True
-                        
-                        env_vars[key] = {'value': value, 'needs_quotes': needs_quotes}
+                        env_vars[key] = value
             return env_vars
 
         def substitute_vars(compose_content, env_vars):
             """Substitute environment variables in compose content."""
-            # First, find all ${VAR} patterns in the content
+            # First, find all variable patterns in the content
             var_pattern = r'\$\{([^}]+)\}'
             matches = re.finditer(var_pattern, compose_content)
             
-            # For each match, check if it's a defined environment variable
+            # For each match, determine if it's in a quoted or unquoted context
             for match in matches:
-                var_name = match.group(1)
+                full_match = match.group(0)  # ${VAR}
+                var_name = match.group(1)    # VAR
+                
                 if var_name in env_vars:
-                    var_info = env_vars[var_name]
-                    value = var_info['value']
-                    needs_quotes = var_info['needs_quotes']
+                    value = env_vars[var_name]
                     
-                    # Escape dollar signs for Terraform by doubling them
-                    escaped_value = value.replace('$', '$$')
+                    # Find the line containing this variable
+                    line_start = compose_content.rfind('\n', 0, match.start()) + 1
+                    line_end = compose_content.find('\n', match.end())
+                    if line_end == -1:
+                        line_end = len(compose_content)
+                    line = compose_content[line_start:line_end]
                     
-                    # Add quotes if needed
-                    if needs_quotes:
-                        final_value = f'"{escaped_value}"'
+                    # Check if the line has quotes around the value
+                    has_quotes = False
+                    if ':' in line:
+                        key, val = line.split(':', 1)
+                        val = val.strip()
+                        has_quotes = (val.startswith('"') and val.endswith('"')) or \
+                                   (val.startswith("'") and val.endswith("'"))
+                    
+                    # Prepare the replacement value
+                    if has_quotes:
+                        # If the original was quoted, keep it quoted
+                        replacement = f'"{value}"'
                     else:
-                        final_value = escaped_value
+                        # If the original was unquoted, keep it unquoted
+                        replacement = value
                     
-                    # Replace only this specific variable
-                    compose_content = compose_content.replace(match.group(0), final_value)
+                    # Replace the variable
+                    compose_content = compose_content.replace(full_match, replacement)
             
             return compose_content
 
