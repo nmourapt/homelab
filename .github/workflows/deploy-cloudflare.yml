@@ -53,7 +53,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
-        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Terraform Plan
@@ -62,7 +62,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
-        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Terraform Apply
@@ -72,7 +72,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
-        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Cleanup
