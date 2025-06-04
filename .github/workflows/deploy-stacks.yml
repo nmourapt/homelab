@@ -184,6 +184,8 @@ jobs:
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
                             replacement = f'"{value}"'
                         else:
+                            # Remove any existing quotes from the value
+                            value = value.strip('"\'')
                             replacement = value
                     
                     # Replace the variable
@@ -233,13 +235,33 @@ jobs:
               # Decrypt the env file
               sops -d "$env_file" > "/tmp/${service_name}.env"
               
+              # Debug: Show the decrypted env file (with sensitive values masked)
+              echo "=== Decrypted environment file (sensitive values masked) ==="
+              sed 's/=.*/=***/' "/tmp/${service_name}.env"
+              echo "=========================="
+              
               # Run the Python script
               python3 /tmp/substitute.py "/tmp/${service_name}.env" "/tmp/compose/${service_name}.yml"
               
-              # Update the terraform file to point to the processed compose file
-              if [ -f "portainer/terraform/${service_name}.tf" ]; then
-                sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
-              fi
+              # Debug: Show the processed file
+              echo "=== Processed compose file ==="
+              cat "/tmp/compose/${service_name}.yml"
+              echo "=========================="
+              
+              # Debug: Show any remaining ${VAR} patterns
+              echo "=== Checking for unsubstituted variables ==="
+              grep -o '\${[^}]*}' "/tmp/compose/${service_name}.yml" | sort -u
+              echo "=========================="
+              
+              # Debug: Validate YAML
+              echo "=== Validating YAML ==="
+              python3 -c 'import yaml, sys; yaml.safe_load(open("/tmp/compose/${service_name}.yml", "r")) or sys.exit(1)'
+              echo "=========================="
+            fi
+            
+            # Update the terraform file to point to the processed compose file
+            if [ -f "portainer/terraform/${service_name}.tf" ]; then
+              sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
             fi
           fi
         done
@@ -423,6 +445,8 @@ jobs:
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
                             replacement = f'"{value}"'
                         else:
+                            # Remove any existing quotes from the value
+                            value = value.strip('"\'')
                             replacement = value
                     
                     # Replace the variable
