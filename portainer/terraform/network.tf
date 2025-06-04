@@ -1,4 +1,3 @@
-
 resource "portainer_docker_network" "prod_network" {
   endpoint_id = 1
   name        = "prod_network"
@@ -15,15 +14,14 @@ resource "portainer_docker_network" "vlan1config" {
   options = {
     parent = "eth0.1"
   }
-  ipam = {
-    driver = "default"
-    config = [
+  labels = {
+    "com.docker.network.ipam.config" = jsonencode([
       {
         subnet = "192.168.1.0/24"
         iprange = "192.168.1.64/27"
         gateway = "192.168.1.254"
       }
-    ]
+    ])
   }
 }
 
