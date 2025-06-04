@@ -13,6 +13,12 @@ on:
         description: 'Specific service to deploy (optional)'
         required: false
         type: string
+  workflow_run:
+    workflows: ["Push SOPS Secrets to GitHub"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   detect-changes:
@@ -62,7 +68,7 @@ jobs:
   deploy:
     needs: detect-changes
     runs-on: ubuntu-latest
-    if: ${{ fromJson(needs.detect-changes.outputs.services)[0] != null }}
+    if: ${{ fromJson(needs.detect-changes.outputs.services)[0] != null && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}

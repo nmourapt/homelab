@@ -6,10 +6,17 @@ on:
     paths:
       - 'cloudflare/terraform/*.tf'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Push SOPS Secrets to GitHub"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -46,6 +53,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Terraform Plan
@@ -54,6 +62,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Terraform Apply
@@ -63,6 +72,7 @@ jobs:
       env:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Cleanup
