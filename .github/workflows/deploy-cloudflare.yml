@@ -36,6 +36,10 @@ jobs:
           use_path_style_endpoint = true
         EOL
 
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" cloudflare/terraform/backend.tf
+
     - name: Terraform Init
       run: terraform init
       working-directory: ./cloudflare/terraform
