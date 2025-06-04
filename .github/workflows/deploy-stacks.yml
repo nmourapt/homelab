@@ -185,7 +185,7 @@ jobs:
                     else:
                         # If the original was unquoted, keep it unquoted
                         # For YAML, we need to ensure the value is properly formatted
-                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
+                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
                             replacement = value
@@ -259,11 +259,16 @@ jobs:
               echo "=== Validating YAML ==="
               python3 -c "import yaml, sys; yaml.safe_load(open('/tmp/compose/${service_name}.yml', 'r')) or sys.exit(1)"
               echo "=========================="
-            fi
-            
-            # Update the terraform file to point to the processed compose file
-            if [ -f "portainer/terraform/${service_name}.tf" ]; then
-              sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
+              
+              # Update the terraform file to point to the processed compose file
+              if [ -f "portainer/terraform/${service_name}.tf" ]; then
+                # Update both stack_file_path and stack_file_content
+                sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
+                # Add stack_file_content if it doesn't exist
+                if ! grep -q "stack_file_content" "portainer/terraform/${service_name}.tf"; then
+                  echo "  stack_file_content = file(\"/tmp/compose/${service_name}.yml\")" >> "portainer/terraform/${service_name}.tf"
+                fi
+              fi
             fi
           fi
         done
@@ -448,7 +453,7 @@ jobs:
                     else:
                         # If the original was unquoted, keep it unquoted
                         # For YAML, we need to ensure the value is properly formatted
-                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('['):
+                        if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
                             replacement = value
