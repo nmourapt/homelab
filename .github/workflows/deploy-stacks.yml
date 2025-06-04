@@ -75,6 +75,12 @@ jobs:
           fi
         done | sort -u | jq -R -s -c 'split("\n")[:-1]')
         
+        # If no services were detected from changes, check for new services
+        if [ "$SERVICES" = "[]" ]; then
+          # Get all service names from terraform files
+          SERVICES=$(find portainer/terraform -maxdepth 1 -name "*.tf" -not -name "main.tf" -not -name "backend.tf" -not -name "vars.tf" -not -name "provider.tf" -not -name "network.tf" | xargs -n1 basename | sed 's/\.tf$//' | jq -R -s -c 'split("\n")[:-1]')
+        fi
+        
         echo "Detected services: $SERVICES"
         echo "services=$SERVICES" >> $GITHUB_OUTPUT
         echo "all-services=false" >> $GITHUB_OUTPUT
@@ -294,12 +300,22 @@ jobs:
           # Decrypt the service-specific env file
           sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
           
+          # Debug: Show the decrypted env file (with sensitive values masked)
+          echo "=== Decrypted environment file (sensitive values masked) ==="
+          sed 's/=.*/=***/' "/tmp/${SERVICE}.env"
+          echo "=========================="
+          
           # Run the Python script
           python3 /tmp/substitute.py "/tmp/${SERVICE}.env" "/tmp/compose/${SERVICE}.yml"
           
-          # Debug: Show the processed file (remove in production)
+          # Debug: Show the processed file
           echo "=== Processed compose file ==="
           cat "/tmp/compose/${SERVICE}.yml"
+          echo "=========================="
+          
+          # Debug: Show any remaining ${VAR} patterns
+          echo "=== Checking for unsubstituted variables ==="
+          grep -o '\${[^}]*}' "/tmp/compose/${SERVICE}.yml" | sort -u
           echo "=========================="
         fi
         
