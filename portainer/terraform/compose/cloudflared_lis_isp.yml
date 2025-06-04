@@ -2,7 +2,7 @@
 services:
   cloudflared_lis_isp:
     image: cloudflare/cloudflared:2025.5.0
-    container_name: cloudflared_lis_isp
+    container_name: cloudflared_lis_isp1
     restart: unless-stopped
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}
