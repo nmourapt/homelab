@@ -119,6 +119,95 @@ jobs:
         echo "$SOPS_AGE_KEY" > ~/.config/sops/age/keys.txt
         chmod 600 ~/.config/sops/age/keys.txt
 
+    - name: Create Python substitution script
+      run: |
+        cat > /tmp/substitute.py << 'EOF'
+        import re
+        import sys
+
+        def parse_env_file(env_file_path):
+            """Parse environment file and return key-value pairs."""
+            env_vars = {}
+            with open(env_file_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    # Split on first = only
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
+                        
+                        # Store the value with its original quotes
+                        env_vars[key] = value
+            return env_vars
+
+        def substitute_vars(compose_content, env_vars):
+            """Substitute environment variables in compose content."""
+            # First, find all variable patterns in the content
+            var_pattern = r'\$\{([^}]+)\}'
+            matches = re.finditer(var_pattern, compose_content)
+            
+            # For each match, determine if it's in a quoted or unquoted context
+            for match in matches:
+                full_match = match.group(0)  # ${VAR}
+                var_name = match.group(1)    # VAR
+                
+                if var_name in env_vars:
+                    value = env_vars[var_name]
+                    
+                    # Find the line containing this variable
+                    line_start = compose_content.rfind('\n', 0, match.start()) + 1
+                    line_end = compose_content.find('\n', match.end())
+                    if line_end == -1:
+                        line_end = len(compose_content)
+                    line = compose_content[line_start:line_end]
+                    
+                    # Check if the line has quotes around the value
+                    has_quotes = False
+                    if ':' in line:
+                        key, val = line.split(':', 1)
+                        val = val.strip()
+                        has_quotes = (val.startswith('"') and val.endswith('"')) or \
+                                   (val.startswith("'") and val.endswith("'"))
+                    
+                    # Prepare the replacement value
+                    if has_quotes:
+                        # If the original was quoted, keep it quoted
+                        replacement = f'"{value}"'
+                    else:
+                        # If the original was unquoted, keep it unquoted
+                        replacement = value
+                    
+                    # Replace the variable
+                    compose_content = compose_content.replace(full_match, replacement)
+            
+            return compose_content
+
+        if __name__ == "__main__":
+            env_file = sys.argv[1]
+            compose_file = sys.argv[2]
+            
+            # Parse environment variables
+            env_vars = parse_env_file(env_file)
+            
+            # Read compose file
+            with open(compose_file, 'r') as f:
+                compose_content = f.read()
+            
+            # Substitute variables
+            updated_content = substitute_vars(compose_content, env_vars)
+            
+            # Write back to compose file
+            with open(compose_file, 'w') as f:
+                f.write(updated_content)
+            
+            print("Environment variable substitution completed successfully")
+        EOF
+
     - name: Process compose files with environment variables
       run: |
         # Create temporary directory
