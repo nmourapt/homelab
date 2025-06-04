@@ -1,0 +1,15 @@
+
+services:
+  cloudflared_lis_isp:
+    image: cloudflare/cloudflared:2025.5.0
+    container_name: cloudflared_lis_isp
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    command: tunnel run
+    networks:
+      - vlan1
+
+networks:
+  vlan1:
+    external: true
