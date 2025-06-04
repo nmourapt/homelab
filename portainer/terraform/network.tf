@@ -23,3 +23,13 @@ resource "portainer_docker_network" "vlan1" {
   driver      = "macvlan"
   config_from = "vlan1config"
 }
+
+resource "portainer_docker_network" "vlan20config" {
+  endpoint_id = 1
+  name        = "vlan20config"
+  driver      = "macvlan"
+  config_only = true
+  options = {
+    parent = "eth0.20"
+  }
+}
