@@ -1,0 +1,68 @@
+name: Deploy Cloudflare Configuration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/terraform/*.tf'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_CLOUDFLARE_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_CLOUDFLARE_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f /tmp/secrets.yml
+        rm -f ~/.config/sops/age/keys.txt 
