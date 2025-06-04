@@ -254,6 +254,10 @@ jobs:
           use_path_style_endpoint = true
         EOL
 
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" portainer/terraform/backend.tf
+
     - name: Terraform Init
       if: steps.check-files.outputs.terraform-exists == 'true'
       run: terraform init
