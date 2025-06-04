@@ -14,15 +14,6 @@ resource "portainer_docker_network" "vlan1config" {
   options = {
     parent = "eth0.1"
   }
-  labels = {
-    "com.docker.network.ipam.config" = jsonencode([
-      {
-        subnet = "192.168.1.0/24"
-        iprange = "192.168.1.64/27"
-        gateway = "192.168.1.254"
-      }
-    ])
-  }
 }
 
 resource "portainer_docker_network" "vlan1" {
@@ -40,5 +31,14 @@ resource "portainer_docker_network" "vlan11config" {
   config_only = true
   options = {
     parent = "eth0.11"
+  }
+  labels = {
+    "com.docker.network.ipam.config" = jsonencode([
+      {
+        subnet = "192.168.1.0/24"
+        iprange = "192.168.1.64/27"
+        gateway = "192.168.1.254"
+      }
+    ])
   }
 }
