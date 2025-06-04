@@ -24,9 +24,9 @@ resource "portainer_docker_network" "vlan1" {
 }
 
 
-resource "portainer_docker_network" "vlan11config" {
+resource "portainer_docker_network" "vlan112config" {
   endpoint_id = 1
-  name        = "vlan11config"
+  name        = "vlan112config"
   driver      = "macvlan"
   config_only = true
   options = {
