@@ -98,6 +98,59 @@ jobs:
       with:
         terraform_version: "1.6.6"
 
+    - name: Install SOPS and Age
+      run: |
+        # Install SOPS
+        wget https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
+        sudo mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
+        sudo chmod +x /usr/local/bin/sops
+        
+        # Install Age
+        wget https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz
+        tar xzf age-v1.1.1-linux-amd64.tar.gz
+        sudo mv age/age /usr/local/bin/
+        sudo mv age/age-keygen /usr/local/bin/
+
+    - name: Setup Age private key
+      env:
+        SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      run: |
+        mkdir -p ~/.config/sops/age
+        echo "$SOPS_AGE_KEY" > ~/.config/sops/age/keys.txt
+        chmod 600 ~/.config/sops/age/keys.txt
+
+    - name: Process compose files with environment variables
+      run: |
+        # Create temporary directory
+        mkdir -p /tmp/compose
+        
+        # Find all compose files
+        for compose_file in portainer/terraform/compose/*.yml; do
+          if [ -f "$compose_file" ]; then
+            service_name=$(basename "$compose_file" .yml)
+            env_file="portainer/terraform/compose/${service_name}.env"
+            
+            # Copy original compose file
+            cp "$compose_file" "/tmp/compose/${service_name}.yml"
+            
+            # If env file exists, decrypt and substitute
+            if [ -f "$env_file" ]; then
+              echo "Processing ${service_name}..."
+              
+              # Decrypt the env file
+              sops -d "$env_file" > "/tmp/${service_name}.env"
+              
+              # Run the Python script
+              python3 /tmp/substitute.py "/tmp/${service_name}.env" "/tmp/compose/${service_name}.yml"
+              
+              # Update the terraform file to point to the processed compose file
+              if [ -f "portainer/terraform/${service_name}.tf" ]; then
+                sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
+              fi
+            fi
+          fi
+        done
+
     - name: Configure R2 Credentials
       run: |
         mkdir -p ~/.aws
@@ -131,10 +184,21 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve tfplan-infra
+      run: |
+        terraform apply -auto-approve tfplan-infra
+        # Clean up plan file after successful apply
+        rm -f tfplan-infra
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f /tmp/*.env
+        rm -f /tmp/compose/*.yml
+        rm -f /tmp/substitute.py
+        rm -f ~/.config/sops/age/keys.txt
 
   deploy-services:
     needs: [detect-changes, deploy-infrastructure]
@@ -362,8 +426,9 @@ jobs:
       if: steps.check-files.outputs.terraform-exists == 'true'
       run: |
         SERVICE="${{ matrix.service }}"
-        # Refresh state before planning
-        terraform refresh
+        # Remove any existing plan file
+        rm -f "tfplan-${SERVICE}"
+        # Create new plan
         terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
       working-directory: ./portainer/terraform
       env:
@@ -373,9 +438,9 @@ jobs:
       if: steps.check-files.outputs.terraform-exists == 'true' && github.ref == 'refs/heads/main'
       run: |
         SERVICE="${{ matrix.service }}"
-        # Refresh state before applying
-        terraform refresh
         terraform apply -auto-approve "tfplan-${SERVICE}"
+        # Clean up plan file after successful apply
+        rm -f "tfplan-${SERVICE}"
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
