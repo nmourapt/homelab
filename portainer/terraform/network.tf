@@ -6,3 +6,13 @@ resource "portainer_docker_network" "prod_network" {
   internal    = false
   attachable  = true
 }
+
+resource "portainer_docker_network" "vlan2config" {
+  endpoint_id = 1
+  name        = "vlan1config"
+  driver      = "macvlan"
+  config_only = true
+  options = {
+    parent = "eth0.1"
+  }
+}
