@@ -246,7 +246,7 @@ jobs:
               # Debug: Show the processed file
               echo "=== Processed compose file ==="
               cat "/tmp/compose/${service_name}.yml"
-              echo "=========================="
+              echo -e "\n=========================="
               
               # Debug: Show any remaining ${VAR} patterns
               echo "=== Checking for unsubstituted variables ==="
@@ -255,7 +255,7 @@ jobs:
               
               # Debug: Validate YAML
               echo "=== Validating YAML ==="
-              python3 -c 'import yaml, sys; yaml.safe_load(open("/tmp/compose/${service_name}.yml", "r")) or sys.exit(1)'
+              python3 -c "import yaml, sys; yaml.safe_load(open('/tmp/compose/${service_name}.yml', 'r')) or sys.exit(1)"
               echo "=========================="
             fi
             
@@ -504,7 +504,7 @@ jobs:
           # Debug: Show the processed file
           echo "=== Processed compose file ==="
           cat "/tmp/compose/${SERVICE}.yml"
-          echo "=========================="
+          echo -e "\n=========================="
           
           # Debug: Show any remaining ${VAR} patterns
           echo "=== Checking for unsubstituted variables ==="
