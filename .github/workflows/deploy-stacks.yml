@@ -243,22 +243,30 @@ jobs:
 
         def substitute_vars(compose_content, env_vars):
             """Substitute environment variables in compose content."""
-            for key, var_info in env_vars.items():
-                value = var_info['value']
-                needs_quotes = var_info['needs_quotes']
-                
-                # Escape dollar signs for Terraform by doubling them
-                escaped_value = value.replace('$', '$$')
-                
-                # Add quotes if needed
-                if needs_quotes:
-                    final_value = f'"{escaped_value}"'
-                else:
-                    final_value = escaped_value
-                
-                # Replace ${KEY} with the actual value
-                pattern = r'\$\{' + re.escape(key) + r'\}'
-                compose_content = re.sub(pattern, final_value, compose_content)
+            # First, find all ${VAR} patterns in the content
+            var_pattern = r'\$\{([^}]+)\}'
+            matches = re.finditer(var_pattern, compose_content)
+            
+            # For each match, check if it's a defined environment variable
+            for match in matches:
+                var_name = match.group(1)
+                if var_name in env_vars:
+                    var_info = env_vars[var_name]
+                    value = var_info['value']
+                    needs_quotes = var_info['needs_quotes']
+                    
+                    # Escape dollar signs for Terraform by doubling them
+                    escaped_value = value.replace('$', '$$')
+                    
+                    # Add quotes if needed
+                    if needs_quotes:
+                        final_value = f'"{escaped_value}"'
+                    else:
+                        final_value = escaped_value
+                    
+                    # Replace only this specific variable
+                    compose_content = compose_content.replace(match.group(0), final_value)
+            
             return compose_content
 
         if __name__ == "__main__":
