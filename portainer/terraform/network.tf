@@ -23,6 +23,6 @@ resource "portainer_docker_network" "vlan1" {
   driver      = "macvlan"
   config_only = true
   config_from = {
-    network = "vlan1config"
+    "network" = "vlan1config"
   }
 }
