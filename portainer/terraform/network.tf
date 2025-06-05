@@ -8,7 +8,7 @@ resource "portainer_docker_network" "prod_network" {
 
 resource "portainer_docker_network" "vlan1config" {
   endpoint_id = 1
-  name        = "vlan1config"
+  name        = "vlan1config_unused"
   driver      = "macvlan"
   config_only = true
   options = {
