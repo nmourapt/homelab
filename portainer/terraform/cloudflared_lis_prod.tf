@@ -1,4 +1,3 @@
-
 resource "portainer_stack" "cloudflared_lis_prod_stack" {
   name              = "cloudflared_lis_prod"
   deployment_type   = "standalone"

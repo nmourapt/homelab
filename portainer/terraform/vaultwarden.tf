@@ -1,4 +1,3 @@
-
 resource "portainer_stack" "vaultwarden_stack" {
   name              = "vaultwarden"
   deployment_type   = "standalone"

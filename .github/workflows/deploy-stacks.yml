@@ -262,12 +262,8 @@ jobs:
               
               # Update the terraform file to point to the processed compose file
               if [ -f "portainer/terraform/${service_name}.tf" ]; then
-                # Update both stack_file_path and stack_file_content
+                # Update stack_file_path
                 sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service_name}.yml\"|" "portainer/terraform/${service_name}.tf"
-                # Add stack_file_content if it doesn't exist
-                if ! grep -q "stack_file_content" "portainer/terraform/${service_name}.tf"; then
-                  echo "  stack_file_content = file(\"/tmp/compose/${service_name}.yml\")" >> "portainer/terraform/${service_name}.tf"
-                fi
               fi
             fi
           fi
