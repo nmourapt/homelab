@@ -322,7 +322,7 @@ jobs:
   deploy-services:
     needs: [detect-changes, deploy-infrastructure]
     runs-on: ubuntu-latest
-    if: ${{ fromJson(needs.detect-changes.outputs.services)[0] != null && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
+    if: ${{ (needs.detect-changes.outputs.services != '[]' || github.event_name == 'workflow_dispatch') && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
