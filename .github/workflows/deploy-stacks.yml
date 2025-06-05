@@ -26,6 +26,7 @@ jobs:
     outputs:
       services: ${{ steps.detect.outputs.services }}
       all-services: ${{ steps.detect.outputs.all-services }}
+      all-services-list: ${{ steps.detect.outputs.all-services-list }}
       has_infra_changes: ${{ steps.detect.outputs.has_infra_changes }}
     steps:
     - name: Checkout code
@@ -91,12 +92,17 @@ jobs:
         echo "Detected services: $SERVICES"
         echo "services=$SERVICES" >> $GITHUB_OUTPUT
         echo "all-services=false" >> $GITHUB_OUTPUT
+        # Get ALL services for when infrastructure changes
+        ALL_SERVICES_LIST=$(find portainer/terraform -maxdepth 1 -name "*.tf" -not -name "main.tf" -not -name "backend.tf" -not -name "vars.tf" -not -name "provider.tf" -not -name "network.tf" | xargs -n1 basename | sed 's/\.tf$//' | jq -R -s -c 'split("\n")[:-1]')
+        echo "all-services-list=$ALL_SERVICES_LIST" >> $GITHUB_OUTPUT
 
     - name: Debug outputs
       run: |
         echo "Services output: ${{ steps.detect.outputs.services }}"
         echo "All services output: ${{ steps.detect.outputs.all-services }}"
         echo "Has infra changes: ${{ steps.detect.outputs.has_infra_changes }}"
+        echo "Services JSON: ${{ steps.detect.outputs.services }}"
+        echo "Services not empty: ${{ steps.detect.outputs.services != '[]' }}"
 
   deploy-infrastructure:
     needs: detect-changes
@@ -335,10 +341,22 @@ jobs:
   deploy-services:
     needs: [detect-changes, deploy-infrastructure]
     runs-on: ubuntu-latest
-    if: ${{ (needs.detect-changes.outputs.services != '[]' || github.event_name == 'workflow_dispatch') && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
+    if: >-
+      always() && 
+      needs.detect-changes.result == 'success' && 
+      (
+        (github.event_name == 'push' && needs.detect-changes.outputs.services != '[]') ||
+        github.event_name == 'workflow_dispatch' ||
+        needs.deploy-infrastructure.result == 'success'
+      )
     strategy:
       matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+        service: >-
+          ${{
+            needs.deploy-infrastructure.result == 'success'
+            && fromJson(needs.detect-changes.outputs.all-services-list)
+            || fromJson(needs.detect-changes.outputs.services)
+          }}
       fail-fast: false
     steps:
     - name: Debug job conditions
