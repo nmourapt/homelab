@@ -141,11 +141,7 @@ jobs:
                         key = key.strip()
                         value = value.strip()
                         
-                        # Remove surrounding quotes if present
-                        if (value.startswith('"') and value.endswith('"')) or \
-                           (value.startswith("'") and value.endswith("'")):
-                            value = value[1:-1]
-                        
+                        # Store the value with its original quotes
                         env_vars[key] = value
             return env_vars
 
@@ -170,21 +166,15 @@ jobs:
                         line_end = len(compose_content)
                     line = compose_content[line_start:line_end]
                     
-                    # Check if the line has quotes around the value
-                    has_quotes = False
-                    if ':' in line:
-                        key, val = line.split(':', 1)
-                        val = val.strip()
-                        has_quotes = (val.startswith('"') and val.endswith('"')) or \
-                                   (val.startswith("'") and val.endswith("'"))
+                    # Check if the value in env file was quoted
+                    is_quoted = (value.startswith('"') and value.endswith('"')) or \
+                              (value.startswith("'") and value.endswith("'"))
                     
-                    # Prepare the replacement value
-                    if has_quotes:
-                        # If the original was quoted, keep it quoted
-                        replacement = f'"{value}"'
+                    if is_quoted:
+                        # Keep the value as is (with its quotes)
+                        replacement = value
                     else:
-                        # If the original was unquoted, keep it unquoted
-                        # For YAML, we need to ensure the value is properly formatted
+                        # For unquoted values, check if they need quotes for YAML
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
@@ -405,11 +395,7 @@ jobs:
                         key = key.strip()
                         value = value.strip()
                         
-                        # Remove surrounding quotes if present
-                        if (value.startswith('"') and value.endswith('"')) or \
-                           (value.startswith("'") and value.endswith("'")):
-                            value = value[1:-1]
-                        
+                        # Store the value with its original quotes
                         env_vars[key] = value
             return env_vars
 
@@ -434,21 +420,15 @@ jobs:
                         line_end = len(compose_content)
                     line = compose_content[line_start:line_end]
                     
-                    # Check if the line has quotes around the value
-                    has_quotes = False
-                    if ':' in line:
-                        key, val = line.split(':', 1)
-                        val = val.strip()
-                        has_quotes = (val.startswith('"') and val.endswith('"')) or \
-                                   (val.startswith("'") and val.endswith("'"))
+                    # Check if the value in env file was quoted
+                    is_quoted = (value.startswith('"') and value.endswith('"')) or \
+                              (value.startswith("'") and value.endswith("'"))
                     
-                    # Prepare the replacement value
-                    if has_quotes:
-                        # If the original was quoted, keep it quoted
-                        replacement = f'"{value}"'
+                    if is_quoted:
+                        # Keep the value as is (with its quotes)
+                        replacement = value
                     else:
-                        # If the original was unquoted, keep it unquoted
-                        # For YAML, we need to ensure the value is properly formatted
+                        # For unquoted values, check if they need quotes for YAML
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
