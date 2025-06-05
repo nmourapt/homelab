@@ -33,6 +33,13 @@ jobs:
       with:
         fetch-depth: 2
 
+    - name: Debug event info
+      run: |
+        echo "Event name: ${{ github.event_name }}"
+        echo "Event type: ${{ github.event.type }}"
+        echo "Manual service input: ${{ github.event.inputs.service }}"
+        echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+
     - name: Detect changed services
       id: detect
       run: |
@@ -84,6 +91,12 @@ jobs:
         echo "Detected services: $SERVICES"
         echo "services=$SERVICES" >> $GITHUB_OUTPUT
         echo "all-services=false" >> $GITHUB_OUTPUT
+
+    - name: Debug outputs
+      run: |
+        echo "Services output: ${{ steps.detect.outputs.services }}"
+        echo "All services output: ${{ steps.detect.outputs.all-services }}"
+        echo "Has infra changes: ${{ steps.detect.outputs.has_infra_changes }}"
 
   deploy-infrastructure:
     needs: detect-changes
