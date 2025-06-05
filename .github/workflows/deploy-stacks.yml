@@ -285,7 +285,14 @@ jobs:
       working-directory: ./portainer/terraform
 
     - name: Terraform Plan
-      run: terraform plan -out=tfplan-infra
+      run: |
+        # Ensure we're using the processed compose files
+        for service in $(find portainer/terraform -maxdepth 1 -name "*.tf" -not -name "main.tf" -not -name "backend.tf" -not -name "vars.tf" -not -name "provider.tf" -not -name "network.tf" | xargs -n1 basename | sed 's/\.tf$//'); do
+          if [ -f "/tmp/compose/${service}.yml" ]; then
+            sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service}.yml\"|" "portainer/terraform/${service}.tf"
+          fi
+        done
+        terraform plan -out=tfplan-infra
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
@@ -293,9 +300,13 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
       run: |
+        # Ensure we're using the processed compose files
+        for service in $(find portainer/terraform -maxdepth 1 -name "*.tf" -not -name "main.tf" -not -name "backend.tf" -not -name "vars.tf" -not -name "provider.tf" -not -name "network.tf" | xargs -n1 basename | sed 's/\.tf$//'); do
+          if [ -f "/tmp/compose/${service}.yml" ]; then
+            sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service}.yml\"|" "portainer/terraform/${service}.tf"
+          fi
+        done
         terraform apply -auto-approve tfplan-infra
-        # Clean up plan file after successful apply
-        rm -f tfplan-infra
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
