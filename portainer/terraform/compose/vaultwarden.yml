@@ -17,7 +17,7 @@ services:
       INSTALLATION_KEY: ${INSTALLATION_KEY}
       YUBICO_CLIENT_ID: ${YUBICO_CLIENT_ID}
       YUBICO_SECRET_KEY: ${YUBICO_SECRET_KEY}
-      SIGNUPS_ALLOWED: "false"
+      SIGNUPS_ALLOWED: "true"
     volumes:
       - /volume2/docker/vaultwarden/volumes/data:/data:rw
     ports:

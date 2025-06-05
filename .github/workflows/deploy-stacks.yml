@@ -340,8 +340,16 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
       fail-fast: false
-    
     steps:
+    - name: Debug job conditions
+      run: |
+        echo "Services from detect-changes: ${{ needs.detect-changes.outputs.services }}"
+        echo "Event name: ${{ github.event_name }}"
+        echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+        echo "First condition: ${{ needs.detect-changes.outputs.services != '[]' || github.event_name == 'workflow_dispatch' }}"
+        echo "Second condition: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}"
+        echo "Combined condition: ${{ (needs.detect-changes.outputs.services != '[]' || github.event_name == 'workflow_dispatch') && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}"
+
     - name: Checkout code
       uses: actions/checkout@v4
 
