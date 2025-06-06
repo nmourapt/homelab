@@ -1,0 +1,101 @@
+
+services:
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:2025.5.3"
+    container_name: homeassistant
+    restart: unless-stopped
+    environment:
+      CONFIG_CONTENTS: |
+        homeassistant:
+          name: Home
+          latitude: 38.838032
+          longitude: -9.154820
+          elevation: 0
+          unit_system: metric
+          currency: EUR
+          country: PT
+          time_zone: "Europe/Lisbon"
+          external_url: ${EXTERNAL_URL}
+          internal_url: ${INTERNAL_URL}
+    
+        default_config:
+        
+        #add support for my integrations
+        my:
+        
+        # Text to speech
+        tts:
+          - platform: google_translate
+        
+        automation: !include automations.yaml
+        script: !include scripts.yaml
+        scene: !include scenes.yaml
+        
+        http:
+          use_x_forwarded_for: true
+          trusted_proxies:
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+    
+        # Added config
+        cover:
+          - platform: group
+            name: 'Living Room Blinds'
+            unique_id: 'group_living_room_blinds'
+            entities:
+              - cover.left_living_room_blinds
+              - cover.shelly2pmg3_e4b3232b5a0c_cover_0
+    
+        media_player:
+          - platform: universal
+            name: TV Sala
+            unique_id: lr_tv
+            children:
+              - media_player.meobox_4k_dv8985
+              - media_player.meo_box
+            browse_media_entity: media_player.meo_box
+            device_class: tv
+            commands:
+              turn_off:
+                service: media_player.turn_off
+                data:
+                  entity_id: media_player.meobox_4k_dv8985
+              turn_on:
+                service: media_player.turn_on
+                data:
+                  entity_id: media_player.meobox_4k_dv8985
+              volume_up:
+                service: media_player.volume_up
+                data:
+                  entity_id: media_player.meobox_4k_dv8985
+              volume_down:
+                service: media_player.volume_down
+                data:
+                  entity_id: media_player.meobox_4k_dv8985
+            attributes:
+              state: media_player.meo_box
+              is_volume_muted: media_player.meo_box
+              volume_level: media_player.meo_box
+              app_name: media_player.meo_box
+    
+        sensor:
+          - platform: time_date
+            display_options:
+              - 'time'
+              - 'date'
+              - 'date_time'
+              - 'date_time_utc'
+              - 'date_time_iso'
+              - 'time_date'
+              - 'time_utc'
+          
+    volumes:
+      - /volume2/docker/homeassistant/volumes/config:/config:rw
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      echo "$CONFIG_CONTENTS" > /config/configuration.yaml && \
+      exec /init
+    network_mode: host
+    privileged: true
