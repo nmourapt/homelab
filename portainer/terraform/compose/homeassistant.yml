@@ -96,6 +96,9 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: |
       echo "$CONFIG_CONTENTS" > /config/configuration.yaml && \
+      touch /config/automations.yaml && \
+      touch /config/scripts.yaml && \
+      touch /config/scenes.yaml && \
       exec /init
     network_mode: host
     privileged: true
