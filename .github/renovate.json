@@ -11,6 +11,7 @@
       "matchPaths": [
         "portainer/terraform/compose/*.yml"
       ],
+      "matchManagers": ["docker-compose"],
       "groupName": "Docker Compose Services",
       "enabled": true
     },
