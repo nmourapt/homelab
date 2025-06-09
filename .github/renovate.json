@@ -1,0 +1,26 @@
+{
+  "extends": ["config:base"],
+
+  "ignorePaths": [
+    ".github/workflows/*"
+  ],
+
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPaths": [
+        "portainer/terraform/compose/*.yml"
+      ],
+      "groupName": "Docker Compose Services",
+      "enabled": true
+    },
+    {
+      "matchPaths": [
+        "cloudflare/terraform/*.tf",
+        "portainer/terraform/*.tf"
+      ],
+      "groupName": "Terraform Providers",
+      "enabled": true
+    }
+  ]
+}
