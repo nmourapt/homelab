@@ -1,0 +1,20 @@
+
+services:
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent:release-5.1.0
+    environment:
+      - TZ=Europe/Lisbon
+    volumes:
+      - /volume2/docker/qbittorrent/volumes/data:/config:rw
+      - /volume2/docker/qbittorrent/volumes/data:/data:rw
+    ports:
+      - 10002:8080
+      - 16881:6881
+      - 16881:6881/udp
+    networks:
+      - prod_network
+
+networks:
+  prod_network:
+    external: true

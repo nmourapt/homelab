@@ -5,6 +5,7 @@ services:
     container_name: vaultwarden
     restart: unless-stopped
     environment:
+      TZ: "Europe/Lisbon"
       ADMIN_TOKEN: ${ADMIN_TOKEN}
       DOMAIN: ${DOMAIN}
       SMTP_HOST: ${SMTP_HOST}
