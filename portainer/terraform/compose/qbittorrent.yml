@@ -10,8 +10,8 @@ services:
       - /volume2/docker/qbittorrent/volumes/data:/data:rw
     ports:
       - 10002:8080
-      - 16881:6881
-      - 16881:6881/udp
+      - 10003:6881
+      - 10003:6881/udp
     networks:
       - prod_network
 
