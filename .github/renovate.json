@@ -1,9 +1,17 @@
 {
-  "extends": ["config:recommended"],
+  "extends": ["config:recommended", "schedule:nonOfficeHours"],
 
   "ignorePaths": [
     ".github/workflows/*"
   ],
 
-  "enabledManagers": ["terraform", "docker-compose"]
+  "enabledManagers": ["terraform", "docker-compose"],
+
+  "packageRules": [
+    {
+      "description": "Automatically merge minor and patch-level updates",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": true
+    }
+  ]
 }
