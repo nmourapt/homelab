@@ -1,4 +1,3 @@
-
 services:
   sonarr_pgsql:
     container_name: sonarr_pgsql1
@@ -15,7 +14,8 @@ services:
       interval: "10s"
       timeout: "5s"
       retries: "5"
-    entrypoint: [ "/bin/bash", "-c","
+    entrypoint: >
+      /bin/bash -c "
       docker-entrypoint.sh postgres &
       rm -f /initialised.txt || true &&
       until pg_isready -U postgres; do sleep 3; done &&
@@ -23,7 +23,6 @@ services:
       psql -U ${PG_USER} -d postgres -c 'CREATE DATABASE sonarr-log;' || true &&
       echo done > /initialised.txt &&
       wait"
-    ]
     networks:
       - prod_network
 
