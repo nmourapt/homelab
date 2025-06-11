@@ -1,13 +1,13 @@
 
 services:
-  pgsql-sonarr:
-    container_name: pgsql-sonarr
+  sonarr_pgsql:
+    container_name: sonarr_pgsql
     image: postgres:17
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
     volumes:
-      - /volume2/docker/pgsql-sonarr/volumes/data:/var/lib/postgresql/data
+      - /volume2/docker/sonarr_pgsql/volumes/data:/var/lib/postgresql/data
     ports:
       - "10004:5432"
     healthcheck:
