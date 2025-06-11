@@ -14,7 +14,7 @@ services:
       interval: "10s"
       timeout: "5s"
       retries: "5"
-    entrypoint: |
+    entrypoint: >
       /bin/bash -c '
       docker-entrypoint.sh postgres &
       rm -f /initialised.txt || true &&
