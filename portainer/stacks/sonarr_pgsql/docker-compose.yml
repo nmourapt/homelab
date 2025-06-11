@@ -1,7 +1,7 @@
 
 services:
   sonarr_pgsql:
-    container_name: sonarr_pgsql
+    container_name: sonarr_pgsql1
     image: postgres:17
     environment:
       POSTGRES_USER: ${PG_USER}
