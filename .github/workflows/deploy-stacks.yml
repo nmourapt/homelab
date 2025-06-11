@@ -5,8 +5,8 @@ on:
     branches: [main]
     paths:
       - 'portainer/terraform/*.tf'
-      - 'portainer/terraform/compose/*.yml'
-      - 'portainer/terraform/compose/*.env'
+      - 'portainer/stacks/**/*.yml'
+      - 'portainer/stacks/**/*.env'
   workflow_dispatch:
     inputs:
       service:
@@ -78,7 +78,7 @@ jobs:
         SERVICES=$(echo "$CHANGED_FILES" | grep -E '\.(tf|yml|env)$' | while read file; do
           if [[ "$file" =~ portainer/terraform/([^/]+)\.tf$ ]] && [[ "${BASH_REMATCH[1]}" != "main" ]] && [[ "${BASH_REMATCH[1]}" != "backend" ]] && [[ "${BASH_REMATCH[1]}" != "vars" ]] && [[ "${BASH_REMATCH[1]}" != "provider" ]] && [[ "${BASH_REMATCH[1]}" != "network" ]]; then
             echo "${BASH_REMATCH[1]}"
-          elif [[ "$file" =~ portainer/terraform/compose/([^/]+)\.(yml|env)$ ]]; then
+          elif [[ "$file" =~ portainer/stacks/([^/]+)/ ]]; then
             echo "${BASH_REMATCH[1]}"
           fi
         done | sort -u | jq -R -s -c 'split("\n")[:-1]')
@@ -231,11 +231,13 @@ jobs:
         mkdir -p /tmp/compose
         
         # Find all compose files
-        for compose_file in portainer/terraform/compose/*.yml; do
+        for service_dir in portainer/stacks/*/; do
+          service_name=$(basename "$service_dir")
+          compose_file="${service_dir}docker-compose.yml"
+          env_file="${service_dir}${service_name}.env"
+          secrets_env_file="${service_dir}${service_name}.secrets.env"
+          
           if [ -f "$compose_file" ]; then
-            service_name=$(basename "$compose_file" .yml)
-            env_file="portainer/terraform/compose/${service_name}.env"
-            
             # Copy original compose file
             cp "$compose_file" "/tmp/compose/${service_name}.yml"
             
@@ -410,14 +412,14 @@ jobs:
         fi
         
         # Check if env file exists
-        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
+        if [ -f "portainer/stacks/${SERVICE}/${SERVICE}.env" ]; then
           echo "env-exists=true" >> $GITHUB_OUTPUT
         else
           echo "env-exists=false" >> $GITHUB_OUTPUT
         fi
         
         # Check if compose file exists
-        if [ -f "portainer/terraform/compose/${SERVICE}.yml" ]; then
+        if [ -f "portainer/stacks/${SERVICE}/docker-compose.yml" ]; then
           echo "compose-exists=true" >> $GITHUB_OUTPUT
         else
           echo "compose-exists=false" >> $GITHUB_OUTPUT
@@ -519,14 +521,14 @@ jobs:
         mkdir -p /tmp/compose
         
         # Copy original compose file
-        cp "portainer/terraform/compose/${SERVICE}.yml" "/tmp/compose/${SERVICE}.yml"
+        cp "portainer/stacks/${SERVICE}/docker-compose.yml" "/tmp/compose/${SERVICE}.yml"
         
         # If env file exists, decrypt and substitute
-        if [ -f "portainer/terraform/compose/${SERVICE}.env" ]; then
+        if [ -f "portainer/stacks/${SERVICE}/${SERVICE}.env" ]; then
           echo "Decrypting and processing environment file..."
           
           # Decrypt the service-specific env file
-          sops -d "portainer/terraform/compose/${SERVICE}.env" > "/tmp/${SERVICE}.env"
+          sops -d "portainer/stacks/${SERVICE}/${SERVICE}.env" > "/tmp/${SERVICE}.env"
           
           # Debug: Show the decrypted env file (with sensitive values masked)
           echo "=== Decrypted environment file (sensitive values masked) ==="
