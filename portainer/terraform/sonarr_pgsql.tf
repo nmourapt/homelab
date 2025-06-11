@@ -3,6 +3,6 @@ resource "portainer_stack" "sonarr_pgsql_stack" {
   deployment_type   = "standalone"
   method            = "file"
   endpoint_id       = 1
-  stack_file_path   = "./compose/sonarr_pgsql.yml"
+  stack_file_path   = "../stacks/sonarr_pgsql/docker-compose.yml"
   depends_on        = [portainer_docker_network.prod_network]
 }

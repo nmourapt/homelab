@@ -3,5 +3,5 @@ resource "portainer_stack" "cloudflared_lis_isp_stack" {
   deployment_type   = "standalone"
   method            = "file"
   endpoint_id       = 1
-  stack_file_path   = "./compose/cloudflared_lis_isp.yml"
+  stack_file_path   = "../stacks/cloudflared_lis_isp/docker-compose.yml"
 }
