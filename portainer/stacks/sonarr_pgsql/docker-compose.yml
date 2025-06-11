@@ -12,9 +12,9 @@ services:
       - "10004:5432"
     healthcheck:
       test: ["CMD-SHELL", "cat /initialised.txt && pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: "10s"
+      timeout: "5s"
+      retries: "5"
     entrypoint: [ "/bin/bash", "-c","
       docker-entrypoint.sh postgres &
       rm -f /initialised.txt || true &&
