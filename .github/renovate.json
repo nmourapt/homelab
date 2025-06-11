@@ -8,6 +8,6 @@
   "enabledManagers": ["terraform", "docker-compose"],
   
   "docker-compose": {
-    "managerFilePatterns": ["portainer/terraform/compose/.*\\.ya?ml$"]
+    "managerFilePatterns": ["/portainer/terraform/compose/.*\\.ya?ml$"]
   }
 }
