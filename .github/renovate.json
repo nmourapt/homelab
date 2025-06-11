@@ -1,27 +1,13 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended", "schedule:nonOfficeHours"],
 
   "ignorePaths": [
     ".github/workflows/*"
   ],
 
-  "packageRules": [
-    {
-      "matchDatasources": ["docker"],
-      "matchPaths": [
-        "portainer/terraform/compose/*.yml"
-      ],
-      "matchManagers": ["docker-compose"],
-      "groupName": "Docker Compose Services",
-      "enabled": true
-    },
-    {
-      "matchPaths": [
-        "cloudflare/terraform/*.tf",
-        "portainer/terraform/*.tf"
-      ],
-      "groupName": "Terraform Providers",
-      "enabled": true
-    }
-  ]
+  "enabledManagers": ["terraform", "docker-compose"],
+  
+  "docker-compose": {
+    "managerFilePatterns": ["portainer/terraform/compose/.*\\.ya?ml$"]
+  }
 }
