@@ -1,4 +1,4 @@
 version: '3'
 services:
   hello:
-    image: hello-world:latest
+    image: nginx:1.27
