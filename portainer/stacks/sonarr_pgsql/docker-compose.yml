@@ -10,7 +10,7 @@ services:
     ports:
       - "10004:5432"
     healthcheck:
-      test: ["CMD-SHELL", "cat /initialised.txt && pg_isready -U test"]
+      test: "cat /initialised.txt && pg_isready -U ${PG_USER}"
       interval: "10s"
       timeout: "5s"
       retries: "5"
