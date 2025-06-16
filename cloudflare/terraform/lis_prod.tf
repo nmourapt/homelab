@@ -32,6 +32,14 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
         }
       },
       {
+        hostname = "ha.${var.tld}"
+        service = "http://192.168.1.65:8123"
+        origin_request = {
+          http2_origin = true
+          no_tls_verify = true
+        }
+      },
+      {
         service = "http_status:404"
       }
     ]
