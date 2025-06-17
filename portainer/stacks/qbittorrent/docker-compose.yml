@@ -13,8 +13,8 @@ services:
       - 10003:6881
       - 10003:6881/udp
     networks:
-      - prod_network
+      - prod_net
 
 networks:
-  prod_network:
+  prod_net:
     external: true
