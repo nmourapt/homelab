@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
     volumes:
-      - /volume2/docker/bazarr_pgsql/volumes/data:/var/lib/postgresql/data
+      - /volume2/docker/bazarr_pgsq/volumes/data:/var/lib/postgresql/data
     ports:
       - "10008:5432"
     healthcheck:
