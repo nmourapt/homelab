@@ -8,6 +8,16 @@ resource "portainer_docker_network" "prod_network" {
   scope       = "local"
 }
 
+resource "portainer_docker_network" "prod_network1" {
+  endpoint_id = 1
+  name        = "prod_network1"
+  driver      = "bridge"
+  internal    = false
+  attachable  = true
+  enable_ipv4 = true
+  scope       = "local"
+}
+
 #resource "portainer_docker_network" "vlan1config" {
 #  endpoint_id = 1
 #  name        = "vlan1config_unused"
