@@ -24,8 +24,8 @@ services:
       echo done > /initialised.txt &&
       wait'
     networks:
-      - prod_network
+      - prod_net
 
 networks:
-  prod_network:
+  prod_net:
     external: true
