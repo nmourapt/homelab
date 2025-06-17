@@ -1,12 +1,18 @@
 
 resource "portainer_docker_network" "prod_net" {
   endpoint_id = 1
-  name        = "5ff8ddfa32a50e1c6f54e8d8dd7180029010a39527d441ba2655a8370783765b"
+  name        = "prod_net"
   driver      = "bridge"
   internal    = false
   attachable  = true
   enable_ipv4 = true
   scope       = "local"
+  ipam_driver = "default"
+  ipam_config {
+    subnet    = "192.168.255.0/24"
+    gateway   = "192.168.255.254"
+    ip_range  = "192.168.255.64/27"
+  }
 }
 
 resource "portainer_docker_network" "vlan111config" {
