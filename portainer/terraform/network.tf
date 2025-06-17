@@ -4,6 +4,7 @@ resource "portainer_docker_network" "prod_network" {
   driver      = "bridge"
   internal    = false
   attachable  = true
+  enable_ipv4 = true
   scope       = "local"
 }
 
