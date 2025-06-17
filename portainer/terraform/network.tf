@@ -18,15 +18,11 @@ resource "portainer_docker_network" "vlan111config" {
   options = {
     parent = "eth0.111"
   }
-  ipam = {
-    driver = "default"
-    config = [
-      {
-        subnet = "192.168.111.0/24"
-        ip_range = "192.168.111.64/27"
-        gateway = "192.168.111.254"
-      }
-    ]
+  ipam_driver = "default"
+  ipam_config {
+    subnet    = "192.168.111.0/24"
+    gateway   = "192.168.111.254"
+    ip_range  = "192.168.111.64/27"
   }
 }
 
