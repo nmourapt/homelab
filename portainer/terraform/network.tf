@@ -1,7 +1,7 @@
 
 resource "portainer_docker_network" "prod_net" {
   endpoint_id = 1
-  name        = "prod_net"
+  name        = "5ff8ddfa32a50e1c6f54e8d8dd7180029010a39527d441ba2655a8370783765b"
   driver      = "bridge"
   internal    = false
   attachable  = true
