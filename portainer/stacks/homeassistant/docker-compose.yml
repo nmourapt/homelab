@@ -9,18 +9,26 @@ services:
       - /etc/localtime:/etc/localtime:ro
     privileged: true
     networks:
-      vlan101:
-          ipv4_address: "192.168.101.65"
+      - vlan101
+    #networks:
+    #  vlan101:
+    #      ipv4_address: "192.168.101.65"
 
 networks:
   vlan101:
-    driver: macvlan
-    driver_opts:
-      parent: eth0.101
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.101.0/24
-          ip_range: 192.168.101.64/27
-          gateway: 192.168.101.254
+    external: true
+    
 
+#networks:
+#  vlan101:
+#    driver: macvlan
+#    driver_opts:
+#      parent: eth0.101
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 192.168.101.0/24
+#          ip_range: 192.168.101.64/27
+#          gateway: 192.168.101.254
+#
+#

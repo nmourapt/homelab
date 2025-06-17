@@ -15,27 +15,27 @@ resource "portainer_docker_network" "prod_net" {
   }
 }
 
-resource "portainer_docker_network" "vlan111config" {
+resource "portainer_docker_network" "vlan101config" {
   endpoint_id = 1
-  name        = "vlan111config"
+  name        = "vlan101config"
   driver      = "macvlan"
   config_only = true
   enable_ipv4 = true
   options = {
-    parent = "eth0.111"
+    parent = "eth0.101"
   }
   ipam_driver = "default"
   ipam_config {
-    subnet    = "192.168.111.0/24"
-    gateway   = "192.168.111.254"
-    ip_range  = "192.168.111.64/27"
+    subnet    = "192.168.101.0/24"
+    gateway   = "192.168.101.254"
+    ip_range  = "192.168.101.64/27"
   }
 }
 
-resource "portainer_docker_network" "vlan111" {
+resource "portainer_docker_network" "vlan101" {
   endpoint_id = 1
-  name        = "vlan111"
+  name        = "vlan101"
   driver      = "macvlan"
-  config_from = "vlan111config"
-  depends_on        = [portainer_docker_network.vlan111config]
+  config_from = "vlan101config"
+  depends_on  = [portainer_docker_network.vlan101config]
 }
