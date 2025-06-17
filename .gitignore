@@ -18,9 +18,9 @@ __pycache__/
 **/*.tfstate.backup
 crash.log
 
-# Local terraform backend
-portainer/terraform/backend-local.hcl
-cloudflare/terraform/backend-local.hcl
+# Local terraform backend and state
+**/backend-local.hcl
+**/*state.json
 
 # Secrets
 secrets/secrets.yml

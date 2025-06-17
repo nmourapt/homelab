@@ -9,7 +9,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     privileged: true
     networks:
-      - vlan101
+      vlan101:
+        ipv4_address: "192.168.101.65"
     #networks:
     #  vlan101:
     #      ipv4_address: "192.168.101.65"
