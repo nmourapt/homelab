@@ -2,7 +2,7 @@ terraform {
   required_providers {
     portainer = {
       source = "portainer/portainer"
-      version = "1.4.4"
+      version = "1.4.2"
     }
   }
 }

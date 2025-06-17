@@ -6,14 +6,6 @@ resource "portainer_docker_network" "prod_network" {
   attachable  = true
 }
 
-resource "portainer_docker_network" "prod1_network" {
-  endpoint_id = 1
-  name        = "prod1_network"
-  driver      = "bridge"
-  internal    = false
-  attachable  = true
-}
-
 #resource "portainer_docker_network" "vlan1config" {
 #  endpoint_id = 1
 #  name        = "vlan1config_unused"
