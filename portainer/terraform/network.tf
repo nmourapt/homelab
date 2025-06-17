@@ -1,12 +1,3 @@
-resource "portainer_docker_network" "prod_network" {
-  endpoint_id = 1
-  name        = "prod_network"
-  driver      = "bridge"
-  internal    = false
-  attachable  = true
-  enable_ipv4 = true
-  scope       = "local"
-}
 
 resource "portainer_docker_network" "prod_net" {
   endpoint_id = 1
