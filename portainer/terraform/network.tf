@@ -4,6 +4,7 @@ resource "portainer_docker_network" "prod_network" {
   driver      = "bridge"
   internal    = false
   attachable  = true
+  scope       = "local"
 }
 
 #resource "portainer_docker_network" "vlan1config" {
