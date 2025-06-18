@@ -347,19 +347,32 @@ jobs:
       always() && 
       needs.detect-changes.result == 'success' && 
       (
-        (github.event_name == 'push' && needs.detect-changes.outputs.services != '[]') ||
-        github.event_name == 'workflow_dispatch' ||
-        needs.deploy-infrastructure.result == 'success'
+        (
+          needs.deploy-infrastructure.result == 'success' &&
+          needs.detect-changes.outputs.all-services-list != '[]' &&
+          needs.detect-changes.outputs.all-services-list != ''
+        ) ||
+        (
+          github.event_name == 'push' && 
+          needs.detect-changes.outputs.services != '[]' && 
+          needs.detect-changes.outputs.services != ''
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          needs.detect-changes.outputs.services != '[]' &&
+          needs.detect-changes.outputs.services != ''
+        )
       )
     strategy:
       matrix:
         service: >-
           ${{
             needs.deploy-infrastructure.result == 'success'
-            && fromJson(needs.detect-changes.outputs.all-services-list || '[]')
-            || fromJson(needs.detect-changes.outputs.services || '[]')
+            && fromJson(needs.detect-changes.outputs.all-services-list)
+            || fromJson(needs.detect-changes.outputs.services)
           }}
       fail-fast: false
+      
     steps:
     - name: Debug job conditions
       run: |
