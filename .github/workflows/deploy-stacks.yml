@@ -356,8 +356,8 @@ jobs:
         service: >-
           ${{
             needs.deploy-infrastructure.result == 'success'
-            && fromJson(needs.detect-changes.outputs.all-services-list)
-            || fromJson(needs.detect-changes.outputs.services)
+            && fromJson(needs.detect-changes.outputs.all-services-list || '[]')
+            || fromJson(needs.detect-changes.outputs.services || '[]')
           }}
       fail-fast: false
     steps:
