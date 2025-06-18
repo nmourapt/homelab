@@ -302,7 +302,7 @@ jobs:
         sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" portainer/terraform/backend.tf
 
     - name: Terraform Init
-      run: terraform init
+      run: terraform init -upgrade
       working-directory: ./portainer/terraform
 
     - name: Terraform Plan
@@ -577,7 +577,7 @@ jobs:
 
     - name: Terraform Init
       if: steps.check-files.outputs.terraform-exists == 'true'
-      run: terraform init
+      run: terraform init -upgrade
       working-directory: ./portainer/terraform
 
     - name: Terraform Plan
