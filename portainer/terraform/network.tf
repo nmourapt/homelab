@@ -22,6 +22,7 @@ resource "portainer_docker_network" "vlan101config" {
   driver      = "macvlan"
   config_only = true
   enable_ipv4 = true
+  scope       = "local"
   options = {
     parent = "eth0.101"
   }
