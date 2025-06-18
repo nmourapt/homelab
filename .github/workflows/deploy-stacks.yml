@@ -103,7 +103,22 @@ jobs:
         echo "Has infra changes: ${{ steps.detect.outputs.has_infra_changes }}"
         echo "Services JSON: ${{ steps.detect.outputs.services }}"
         echo "Services not empty: ${{ steps.detect.outputs.services != '[]' }}"
-
+        - name: Ensure valid JSON outputs
+        run: |
+          # Fix services output
+          SERVICES=$(echo '${{ steps.detect.outputs.services }}' | tr -d '\n\r' | grep -v '^ || echo '[]')
+          if [ -z "$SERVICES" ] || [ "$SERVICES" = "null" ] || [ "$SERVICES" = '""' ]; then
+            SERVICES='[]'
+          fi
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          
+          # Fix all-services-list output  
+          ALL_SERVICES=$(echo '${{ steps.detect.outputs.all-services-list }}' | tr -d '\n\r' | grep -v '^ || echo '[]')
+          if [ -z "$ALL_SERVICES" ] || [ "$ALL_SERVICES" = "null" ] || [ "$ALL_SERVICES" = '""' ]; then
+            ALL_SERVICES='[]'
+          fi
+          echo "all-services-list=$ALL_SERVICES" >> $GITHUB_OUTPUT
+          
   deploy-infrastructure:
     needs: detect-changes
     runs-on: ubuntu-latest
@@ -340,38 +355,31 @@ jobs:
         rm -f /tmp/substitute.py
         rm -f ~/.config/sops/age/keys.txt
 
-  deploy-services:
-    needs: [detect-changes, deploy-infrastructure]
-    runs-on: ubuntu-latest
-    if: >-
-      always() && 
-      needs.detect-changes.result == 'success' && 
-      (
-        (
-          needs.deploy-infrastructure.result == 'success' &&
-          needs.detect-changes.outputs.all-services-list != '[]' &&
-          needs.detect-changes.outputs.all-services-list != ''
-        ) ||
-        (
-          github.event_name == 'push' && 
-          needs.detect-changes.outputs.services != '[]' && 
-          needs.detect-changes.outputs.services != ''
-        ) ||
-        (
-          github.event_name == 'workflow_dispatch' &&
-          needs.detect-changes.outputs.services != '[]' &&
-          needs.detect-changes.outputs.services != ''
-        )
-      )
-    strategy:
-      matrix:
-        service: >-
-          ${{
-            needs.deploy-infrastructure.result == 'success'
-            && fromJson(needs.detect-changes.outputs.all-services-list)
-            || fromJson(needs.detect-changes.outputs.services)
-          }}
-      fail-fast: false
+        deploy-services:
+          needs: [detect-changes, deploy-infrastructure]
+          runs-on: ubuntu-latest
+          if: >-
+            always() && 
+            needs.detect-changes.result == 'success' && 
+            (
+              (
+                needs.deploy-infrastructure.result == 'success' &&
+                needs.detect-changes.outputs.all-services-list != '[]'
+              ) ||
+              (
+                needs.detect-changes.outputs.services != '[]' &&
+                (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+              )
+            )
+          strategy:
+            matrix:
+              service: >-
+                ${{
+                  needs.deploy-infrastructure.result == 'success'
+                  && fromJson(needs.detect-changes.outputs.all-services-list)
+                  || fromJson(needs.detect-changes.outputs.services)
+                }}
+            fail-fast: false
       
     steps:
     - name: Debug job conditions
