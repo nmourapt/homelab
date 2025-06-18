@@ -66,3 +66,14 @@ resource "portainer_docker_network" "vlan1" {
   config_from = "vlan1config"
   depends_on  = [portainer_docker_network.vlan1config]
 }
+
+resource "portainer_docker_network" "test_net" {
+  endpoint_id = 1
+  name        = "test_net"
+  driver      = "bridge"
+  internal    = false
+  attachable  = true
+  enable_ipv4 = true
+  scope       = "local"
+}
+
