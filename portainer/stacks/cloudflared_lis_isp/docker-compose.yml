@@ -10,23 +10,7 @@ services:
     networks:
       vlan1:
         ipv4_address: "192.168.1.65"
-    #networks:
-    #  vlan1:
-    #     ipv4_address: "192.168.1.65"
 
 networks:
   vlan1:
     external: true
-
-#networks:
-#  vlan1:
-#    driver: macvlan
-#    driver_opts:
-#      parent: eth0.1
-#    ipam:
-#      driver: default
-#      config:
-#        - subnet: 192.168.1.0/24
-#          ip_range: 192.168.1.64/27
-#          gateway: 192.168.1.254
-#
