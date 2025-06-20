@@ -21,6 +21,7 @@ services:
       until pg_isready -U ${PG_USER}; do sleep 3; done &&
       psql -U ${PG_USER} -d postgres -c "CREATE DATABASE \"readarr-main\";" || true &&
       psql -U ${PG_USER} -d postgres -c "CREATE DATABASE \"readarr-log\";" || true &&
+      psql -U ${PG_USER} -d postgres -c "CREATE DATABASE \"readarr-cache\";" || true &&
       echo done > /initialised.txt &&
       wait'
     networks:
