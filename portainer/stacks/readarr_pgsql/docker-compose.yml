@@ -1,0 +1,31 @@
+services:
+  readarr_pgsql:
+    container_name: readarr_pgsql
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - /volume2/docker/readarr_pgsql/volumes/data:/var/lib/postgresql/data
+    ports:
+      - "10008:5432"
+    healthcheck:
+      test: 'cat /initialised.txt && pg_isready -U ${PG_USER}'
+      interval: "10s"
+      timeout: "5s"
+      retries: "5"
+    entrypoint: >
+      /bin/bash -c '
+      docker-entrypoint.sh postgres &
+      rm -f /initialised.txt || true &&
+      until pg_isready -U ${PG_USER}; do sleep 3; done &&
+      psql -U ${PG_USER} -d postgres -c "CREATE DATABASE \"readarr-main\";" || true &&
+      psql -U ${PG_USER} -d postgres -c "CREATE DATABASE \"readarr-log\";" || true &&
+      echo done > /initialised.txt &&
+      wait'
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true
