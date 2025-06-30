@@ -5,6 +5,8 @@ services:
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
+      DB_USERNAME: ${PG_USER}
+      DB_DATABASE_NAME: immich
     volumes:
       - /volume1/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
