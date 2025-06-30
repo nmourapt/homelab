@@ -20,6 +20,8 @@ services:
     depends_on:
       - redis
       - database
+    devices:
+      - /dev/dri:/dev/dri
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
