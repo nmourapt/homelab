@@ -1,7 +1,7 @@
 services:
   prowlarr_pgsql:
     container_name: prowlarr_pgsql
-    image: postgres:17
+    image: postgres:14
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
