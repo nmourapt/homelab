@@ -32,6 +32,14 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_isp_config" {
         }
       },
       {
+        hostname = "kvm.${var.tld}"
+        service = "http://192.168.1.115:80"
+        origin_request = {
+          http2_origin = true
+          no_tls_verify = true
+        }
+      },
+      {
         service = "http_status:404"
       }
     ]
@@ -55,6 +63,18 @@ resource "cloudflare_dns_record" "isp_record" {
   zone_id = var.cloudflare_tld_zone_id
   type = "CNAME"
   name = "isp"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_isp.id}.cfargotunnel.com"
+  ttl = 1
+  comment = "Managed by terraform - do not edit"
+  proxied = true
+  tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
+}
+
+resource "cloudflare_dns_record" "kvm_record" {
+  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_isp]
+  zone_id = var.cloudflare_tld_zone_id
+  type = "CNAME"
+  name = "kvm"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_isp.id}.cfargotunnel.com"
   ttl = 1
   comment = "Managed by terraform - do not edit"
