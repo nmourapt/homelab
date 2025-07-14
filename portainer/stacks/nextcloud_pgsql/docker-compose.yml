@@ -23,8 +23,9 @@ services:
       echo done > /initialised.txt &&
       wait'
     networks:
-      - prod_net
+      vlan101:
+        ipv4_address: "192.168.101.66"
 
 networks:
-  prod_net:
+  vlan101:
     external: true
