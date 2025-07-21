@@ -86,4 +86,3 @@ resource "portainer_docker_network" "vlan1" {
   }
   depends_on  = [portainer_docker_network.vlan1config]
 }
-
