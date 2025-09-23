@@ -67,5 +67,5 @@ resource "cloudflare_access_rule" "allow_portugal_rule" {
   }
   mode = "whitelist"
   zone_id = cloudflare_zone.spectrum_zone.id
-  notes = "Managed by terraform - do not edit"
+  notes = "Managed by terraform - do not edi"
 }
