@@ -53,7 +53,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   }
   ip_firewall = true
   origin_dns = {
-    name = "dummy.spectrum.nmoura.pt"
+    name = "home.nmoura.pt"
   }
   origin_port = 3128
   proxy_protocol = "off"
