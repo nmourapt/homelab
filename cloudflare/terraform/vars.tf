@@ -10,6 +10,18 @@ variable "cloudflare_account_id" {
   sensitive   = true
 }
 
+variable "cloudflare_email" {
+  description = "Cloudflare account email (for global API key auth)"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_api_key" {
+  description = "Cloudflare Global API Key (not token)"
+  type        = string
+  sensitive   = true
+}
+
 variable "cloudflare_tld_zone_id" {
   description = "Cloudflare TLD Zone ID"
   type        = string

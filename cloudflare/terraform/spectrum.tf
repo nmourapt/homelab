@@ -38,6 +38,7 @@ resource "cloudflare_dns_record" "spectrum_ns2_record" {
 }
 
 resource "cloudflare_spectrum_application" "squid_spectrum_app" {
+  provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
   dns = {
     name = "spectrum.nmoura.pt"
@@ -57,4 +58,14 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   origin_port = 3128
   proxy_protocol = "off"
   tls = "off"
+}
+
+resource "cloudflare_access_rule" "allow_portugal_rule" {
+  configuration = {
+    target = "country"
+    value = "PT"
+  }
+  mode = "allow"
+  zone_id = cloudflare_zone.spectrum_zone.id
+  notes = "Managed by terraform - do not edit"
 }
