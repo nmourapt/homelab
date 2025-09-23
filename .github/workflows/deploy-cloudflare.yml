@@ -47,6 +47,13 @@ jobs:
       run: |
         sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" cloudflare/terraform/backend.tf
 
+    - name: Debug API Key
+      run: |
+        echo "API Key length: ${#CF_API_KEY}"
+        echo "API Key (hidden): ${CF_API_KEY:0:5}...${CF_API_KEY: -5}"
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+
     - name: Terraform Init
       run: terraform init
       working-directory: ./cloudflare/terraform
