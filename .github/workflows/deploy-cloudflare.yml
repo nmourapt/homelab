@@ -54,6 +54,8 @@ jobs:
         TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
         TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
+        TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
+        TF_VAR_cloudflare_api_key: ${{ secrets.CF_EMAIL }}
         TF_VAR_tld: ${{ secrets.TLD }}
 
     - name: Terraform Plan
