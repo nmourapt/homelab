@@ -65,7 +65,7 @@ resource "cloudflare_access_rule" "allow_portugal_rule" {
     target = "country"
     value = "PT"
   }
-  mode = "whitelist"
+  mode = "allow"
   zone_id = cloudflare_zone.spectrum_zone.id
   notes = "Managed by terraform - do not edit"
 }
