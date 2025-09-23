@@ -37,3 +37,24 @@ resource "cloudflare_dns_record" "spectrum_ns2_record" {
   tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
 }
 
+resource "cloudflare_spectrum_application" "squid_spectrum_app" {
+  zone_id = cloudflare_zone.spectrum_zone.id
+  dns = {
+    name = "spectrum.nmoura.pt"
+    type = "CNAME"
+  }
+  protocol = "tcp/3128"
+  traffic_type = "direct"
+  argo_smart_routing = true
+  edge_ips = {
+    connectivity = "ipv4"
+    type = "dynamic"
+  }
+  ip_firewall = true
+  origin_dns = {
+    name = "home.nmoura.pt"
+  }
+  origin_port = 3128
+  proxy_protocol = "off"
+  tls = "off"
+}
