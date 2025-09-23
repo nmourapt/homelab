@@ -41,7 +41,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
   dns = {
-    name = "spectrum.nmoura.pt"
+    name = "squid.spectrum.nmoura.pt"
     type = "CNAME"
   }
   protocol = "tcp/3128"
@@ -53,7 +53,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   }
   ip_firewall = true
   origin_dns = {
-    name = "home.nmoura.pt"
+    name = "dummy.spectrum.nmoura.pt"
   }
   origin_port = 3128
   proxy_protocol = "off"
