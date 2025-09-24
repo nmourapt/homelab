@@ -37,6 +37,18 @@ resource "cloudflare_dns_record" "spectrum_ns2_record" {
   tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
 }
 
+resource "cloudflare_dns_record" "dummy_cname_record" {
+  depends_on = [cloudflare_zone.spectrum_zone]
+  zone_id = cloudflare_zone.spectrum_zone.id
+  type = "CNAME"
+  name = "dummy"
+  content = "home.nmoura.pt"
+  proxied = true
+  ttl = 1
+  comment = "Managed by terraform - do not edit"
+  tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
+}
+
 resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
