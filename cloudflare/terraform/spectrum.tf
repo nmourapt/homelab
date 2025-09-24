@@ -72,10 +72,10 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   tls = "off"
 }
 
-resource "cloudflare_access_rule" "allow_portugal_rule" {
+resource "cloudflare_access_rule" "allow_cloudflare_rule" {
   configuration = {
-    target = "country"
-    value = "PT"
+    target = "asn"
+    value = "13335"
   }
   mode = "whitelist"
   zone_id = cloudflare_zone.spectrum_zone.id
