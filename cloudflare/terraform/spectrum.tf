@@ -68,7 +68,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
     name = "dummy.spectrum.nmoura.pt"
   }
   origin_port = 3128
-  proxy_protocol = "off"
+  proxy_protocol = "v2"
   tls = "off"
 }
 
