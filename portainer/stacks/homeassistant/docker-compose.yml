@@ -1,7 +1,7 @@
 
 services:
   homeassistant:
-    image: "ghcr.io/home-assistant/home-assistant:2025.10.1"
+    image: "ghcr.io/home-assistant/home-assistant:2025.10.2"
     container_name: homeassistant
     restart: unless-stopped
     volumes:
