@@ -1,0 +1,21 @@
+services:
+  radarr_pgsql:
+    container_name: plex
+    image: ghcr.io/hotio/plex:release-1.42.2.10156-f737b826c
+    environment:
+      PLEX_CLAIM_TOKEN: ${PLEX_CLAIM_TOKEN}
+      PLEX_ADVERTISE_URL: ${PLEX_ADVERTISE_URL}
+      PLEX_NO_AUTH_NETWORKS: "192.168.0.0/16"
+      PLEX_BETA_INSTALL: "true"
+    volumes:
+      - /volume2/docker/plex/volumes/config:/config
+      - /volume2/docker/plex/volumes/transcode:/transcode
+      - /volume1/data/media:/media
+    ports:
+      - "32400:32400"
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true

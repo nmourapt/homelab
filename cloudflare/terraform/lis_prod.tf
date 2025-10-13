@@ -40,6 +40,14 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
         }
       },
       {
+        hostname = "media.${var.tld}"
+        service = "http://plex:32400"
+        origin_request = {
+          http2_origin = true
+          no_tls_verify = true
+        }
+      },
+      {
         hostname = "ha.${var.tld}"
         service = "http://192.168.101.65:8123"
         origin_request = {
@@ -110,8 +118,20 @@ resource "cloudflare_dns_record" "immich_record" {
   tags = ["terraform", "lis_prod", "cloudflared", "tunnel"]
 }
 
+resource "cloudflare_dns_record" "plex_record" {
+  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_prod]
+  zone_id = var.cloudflare_tld_zone_id
+  type = "CNAME"
+  name = "media"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_prod.id}.cfargotunnel.com"
+  ttl = 1
+  comment = "Managed by terraform - do not edit"
+  proxied = true
+  tags = ["terraform", "lis_prod", "cloudflared", "tunnel"]
+}
+
 resource "cloudflare_dns_record" "kvm_record" {
-  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_isp]
+  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_prod]
   zone_id = var.cloudflare_tld_zone_id
   type = "CNAME"
   name = "kvm"
@@ -119,5 +139,5 @@ resource "cloudflare_dns_record" "kvm_record" {
   ttl = 1
   comment = "Managed by terraform - do not edit"
   proxied = true
-  tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
+  tags = ["terraform", "lis_prod", "cloudflared", "tunnel"]
 }
