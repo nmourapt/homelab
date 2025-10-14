@@ -56,7 +56,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
     name = "squid.spectrum.nmoura.pt"
     type = "CNAME"
   }
-  protocol = "tcp/3128"
+  protocol = "tcp/36334"
   traffic_type = "direct"
   argo_smart_routing = true
   edge_ips = {
@@ -67,7 +67,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   origin_dns = {
     name = "dummy.spectrum.nmoura.pt"
   }
-  origin_port = 3128
+  origin_port = 36334
   proxy_protocol = "off"
   tls = "off"
 }
