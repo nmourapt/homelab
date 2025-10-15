@@ -57,7 +57,6 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
     type = "CNAME"
   }
   protocol = "tcp/36334"
-  traffic_type = "direct"
   argo_smart_routing = true
   edge_ips = {
     connectivity = "ipv4"
@@ -68,14 +67,15 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
     name = "dummy.spectrum.nmoura.pt"
   }
   origin_port = 36334
-  proxy_protocol = "off"
+  proxy_protocol = "v2"
   tls = "off"
+  traffic_type = "direct"
 }
 
 resource "cloudflare_access_rule" "allow_cloudflare_rule" {
   configuration = {
     target = "asn"
-    value = "13335"
+    value = "AS13335"
   }
   mode = "whitelist"
   zone_id = cloudflare_zone.spectrum_zone.id
