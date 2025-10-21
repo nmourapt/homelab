@@ -1,7 +1,7 @@
 
 resource "cloudflare_zero_trust_access_identity_provider" "pocketid" {
   account_id = var.cloudflare_account_id
-  name       = "Pocket-ID"
+  name       = "Pocket ID"
   type       = "oidc"
   config = {
     client_id = var.pocketid_client_id
