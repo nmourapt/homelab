@@ -57,6 +57,8 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan
@@ -68,6 +70,8 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
@@ -80,6 +84,8 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
 
     - name: Cleanup
       if: always()
