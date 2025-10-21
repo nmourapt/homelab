@@ -6,7 +6,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid" {
   config = {
     client_id = var.pocketid_client_id
     client_secret = var.pocketid_client_secret
-    auth_url = "https://oidc.${var.tld}/authorize"
+    auth_url = "https://oidc.${var.tld}/"
     token_url = "https://oidc.${var.tld}/token"
     certs_url = "https://oidc.${var.tld}/.well-known/openid-configuration"
     pkce_enabled = true
