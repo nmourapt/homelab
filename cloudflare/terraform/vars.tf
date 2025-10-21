@@ -32,3 +32,13 @@ variable "tld" {
   description = "Top Level Domain"
   type        = string
 }
+
+variable "pocketid_client_id" {
+  description = "Pocket ID OIDC client ID"
+  type        = string
+}
+
+variable "pocketid_client_secret" {
+  description = "Pocket ID OIDC client secret"
+  type        = string
+}
