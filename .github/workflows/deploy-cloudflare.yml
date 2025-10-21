@@ -24,7 +24,7 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: "1.6.6"
+        terraform_version: "1.11.0"
 
     - name: Configure R2 Credentials
       run: |
