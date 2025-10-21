@@ -48,6 +48,14 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
         }
       },
       {
+        hostname = "oidc.${var.tld}"
+        service = "http://pocketid:1411"
+        origin_request = {
+          http2_origin = true
+          no_tls_verify = true
+        }
+      },
+      {
         hostname = "ha.${var.tld}"
         service = "http://192.168.101.65:8123"
         origin_request = {
