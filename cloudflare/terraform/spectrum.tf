@@ -59,7 +59,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   protocol = "tcp/36334"
   argo_smart_routing = true
   edge_ips = {
-    connectivity = "ipv4"
+    connectivity = "all"
     type = "dynamic"
   }
   ip_firewall = true
@@ -75,7 +75,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
 resource "cloudflare_access_rule" "allow_cloudflare_rule" {
   configuration = {
     target = "asn"
-    value = "AS13334"
+    value = "AS13335"
   }
   mode = "whitelist"
   zone_id = cloudflare_zone.spectrum_zone.id
