@@ -75,7 +75,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
 resource "cloudflare_access_rule" "allow_cloudflare_rule" {
   configuration = {
     target = "asn"
-    value = "AS13335"
+    value = "AS13334"
   }
   mode = "whitelist"
   zone_id = cloudflare_zone.spectrum_zone.id
