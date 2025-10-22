@@ -43,7 +43,7 @@ resource "cloudflare_dns_record" "dummy_cname_record" {
   type = "CNAME"
   name = "dummy"
   content = "home.nmoura.pt"
-  proxied = true
+  proxied = false
   ttl = 1
   comment = "Managed by terraform - do not edit"
   tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
