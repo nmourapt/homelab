@@ -59,7 +59,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   protocol = "tcp/36334"
   argo_smart_routing = true
   edge_ips = {
-    connectivity = "all"
+    connectivity = "ipv4"
     type = "dynamic"
   }
   ip_firewall = true
