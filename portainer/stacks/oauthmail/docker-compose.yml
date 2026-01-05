@@ -1,5 +1,5 @@
 services:
-  emailproxy:
+  oauthmail:
     container_name: oauthmail
     image: blacktirion/email-oauth2-proxy-docker:2025.10.09
     environment:
@@ -10,9 +10,8 @@ services:
     volumes:
       - /volume2/docker/oauthmail/volumes/config:/config
     ports:
-      - 1587:1587
-      - 1588:1588
-      - 1589:1589
+      - 1587:1587 # Auth
+      - 1588:1588 # SMTP
     networks:
       - prod_net
 
