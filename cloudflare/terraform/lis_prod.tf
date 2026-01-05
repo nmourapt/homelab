@@ -64,14 +64,6 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
         }
       },
       {
-        hostname = "nodecast.${var.tld}"
-        service = "http://nodecast-tv:3000"
-        origin_request = {
-          http2_origin = true
-          no_tls_verify = true
-        }
-      },
-      {
         hostname = "ha.${var.tld}"
         service = "http://192.168.101.65:8123"
         origin_request = {
@@ -171,18 +163,6 @@ resource "cloudflare_dns_record" "pocketid_record" {
   zone_id = var.cloudflare_tld_zone_id
   type = "CNAME"
   name = "oidc"
-  content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_prod.id}.cfargotunnel.com"
-  ttl = 1
-  comment = "Managed by terraform - do not edit"
-  proxied = true
-  tags = ["terraform", "lis_prod", "cloudflared", "tunnel"]
-}
-
-resource "cloudflare_dns_record" "nodecast_record" {
-  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_prod]
-  zone_id = var.cloudflare_tld_zone_id
-  type = "CNAME"
-  name = "nodecast"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_prod.id}.cfargotunnel.com"
   ttl = 1
   comment = "Managed by terraform - do not edit"
