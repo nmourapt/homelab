@@ -72,6 +72,29 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   traffic_type = "direct"
 }
 
+resource "cloudflare_spectrum_application" "oauthmail_spectrum_app" {
+  provider = cloudflare.global_key
+  zone_id = cloudflare_zone.spectrum_zone.id
+  dns = {
+    name = "emailrelay.spectrum.nmoura.pt"
+    type = "CNAME"
+  }
+  protocol = "tcp/1588"
+  argo_smart_routing = true
+  edge_ips = {
+    connectivity = "ipv4"
+    type = "dynamic"
+  }
+  ip_firewall = true
+  origin_dns = {
+    name = "dummy.spectrum.nmoura.pt"
+  }
+  origin_port = 1588
+  proxy_protocol = "off"
+  tls = "off"
+  traffic_type = "direct"
+}
+
 resource "cloudflare_access_rule" "allow_cloudflare_rule" {
   configuration = {
     target = "asn"
