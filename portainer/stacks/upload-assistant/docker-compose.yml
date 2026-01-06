@@ -12,7 +12,7 @@ services:
     ports: 
       - "1590:5000" #change left side to your specific port.
     volumes:
-      - /volume1/data:/data/torrents/
+      - /volume1/data:/data
       - /volume2/docker/qbittorrent/volumes/config/data/BT_backup/:/torrent_storage_dir
       - /volume2/docker/upload-assistant/volumes/tmp/:/Upload-Assistant/tmp
       - /volume2/docker/upload-assistant/volumes/data/config.py:/Upload-Assistant/data/config.py
