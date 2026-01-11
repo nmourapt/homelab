@@ -1,7 +1,7 @@
 services:
   pocketid:
     container_name: pocketid
-    image: ghcr.io/pocket-id/pocket-id:v2.1.0
+    image: ghcr.io/pocket-id/pocket-id:v2.2.0
     environment:
       APP_URL: ${APP_URL}
       MAXMIND_LICENSE_KEY: ${MAXMIND_LICENSE_KEY}
