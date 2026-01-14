@@ -1,0 +1,94 @@
+resource "cloudflare_zero_trust_access_group" "pocket_id_idps" {
+  name = "TF - Pocket ID Instances"
+  include = [
+    {
+      login_method = {
+        id = cloudflare_zero_trust_access_identity_provider.pocketid.id
+      }
+    },
+    {
+      login_method = {
+        id = cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+      }
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_policy" "pocketid_admins" {
+  name             = "TF - Pocket ID Admins - Portugal"
+  account_id       = var.cloudflare_account_id
+  decision         = "allow"
+  session_duration = "8h"
+
+  include = [
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "administrators"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid.id
+      }
+    },
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "administrators"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+      }
+    }
+  ]
+
+  exclude = []
+
+  require = [
+    {
+      geo = {
+        country_code = "PT"
+      }
+    },
+    {
+      group = {
+        id = cloudflare_zero_trust_access_group.pocket_id_idps
+      }
+    }
+  ]
+}
+
+
+resource "cloudflare_zero_trust_access_policy" "pocketid_admins_row" {
+  name             = "TF - Pocket ID Admins - RoW"
+  account_id       = var.cloudflare_account_id
+  decision         = "allow"
+  session_duration = "15m"
+
+  include = [
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "administrators"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid.id
+      }
+    },
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "administrators"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+      }
+    }
+  ]
+
+  exclude = []
+
+  require = [
+    {
+      geo = {
+        country_code = "PT"
+      }
+    },
+    {
+      group = {
+        id = cloudflare_zero_trust_access_group.pocket_id_idps
+      }
+    }
+  ]
+}
