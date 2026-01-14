@@ -9,8 +9,8 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   auto_redirect_to_identity = true
 
   policies = [
-    id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
-    id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id
+    { id = cloudflare_zero_trust_access_policy.pocketid_admins.id },
+    { id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id }
   ]
 
   app_launcher_visible = false
