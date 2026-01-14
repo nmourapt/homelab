@@ -13,6 +13,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
