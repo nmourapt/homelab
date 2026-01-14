@@ -2,6 +2,7 @@
 # Then run: terraform plan to see the current state and fill in this resource
 
 resource "cloudflare_zero_trust_access_application" "sso_app" {
+  provider    = cloudflare.global_key
   account_id       = var.cloudflare_account_id
   name             = "SSO App"
   type             = "dash_sso"
@@ -16,7 +17,7 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
     { id = cloudflare_zero_trust_access_policy.pocketid_admins.id },
     { id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id }
   ]
-  
+
   saas_app = {
     auth_type = "saml"
   }
