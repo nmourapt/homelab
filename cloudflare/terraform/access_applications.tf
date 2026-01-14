@@ -6,7 +6,8 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   account_id       = var.cloudflare_account_id
   name             = "SSO App"
   type             = "dash_sso"
-  session_duration = "24h"
+  session_duration     = "24h"
+  app_launcher_visible = true
 
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
