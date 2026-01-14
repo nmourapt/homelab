@@ -47,7 +47,7 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins" {
     },
     {
       group = {
-        id = cloudflare_zero_trust_access_group.pocket_id_idps
+        id = cloudflare_zero_trust_access_group.pocket_id_idps.id
       }
     }
   ]
