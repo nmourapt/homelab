@@ -42,3 +42,13 @@ variable "pocketid_client_secret" {
   description = "Pocket ID OIDC client secret"
   type        = string
 }
+
+variable "pocketid_reauth_client_id" {
+  description = "Pocket ID OIDC client ID for reauth"
+  type        = string
+}
+
+variable "pocketid_reauth_client_secret" {
+  description = "Pocket ID OIDC client secret for reauth"
+  type        = string
+}
