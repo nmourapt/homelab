@@ -6,6 +6,7 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   allowed_idps: [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
   ]
+  auto_redirect_to_identity = true
 
   policies = [
     {
@@ -21,6 +22,5 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   ]
 
   app_launcher_visible = true
-  auto_redirect_to_identity = true
   logo_url = "https://seeklogo.com/images/C/cloudflare-logo-6B7D159387-seeklogo.com.png"
 }
