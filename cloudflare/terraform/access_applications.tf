@@ -2,12 +2,11 @@
 # Then run: terraform plan to see the current state and fill in this resource
 
 resource "cloudflare_zero_trust_access_application" "sso_app" {
-  provider         = cloudflare.global_key
-  account_id       = var.cloudflare_account_id
-  name             = "SSO App"
-  type             = "dash_sso"
-  session_duration     = "24h"
-  app_launcher_visible = true
+  provider             = cloudflare.global_key
+  account_id           = var.cloudflare_account_id
+  name                 = "SSO App"
+  type                 = "dash_sso"
+  session_duration = "24h"
 
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
@@ -39,5 +38,9 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
 
   saas_app = {
     auth_type = "saml"
+  }
+
+  lifecycle {
+    ignore_changes = [app_launcher_visible]
   }
 }
