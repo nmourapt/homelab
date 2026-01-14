@@ -3,7 +3,7 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   name = "SSO App"
   type = "dash_sso"
 
-  allowed_idps: [
+  allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
   ]
   auto_redirect_to_identity = true
