@@ -13,6 +13,5 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
     { id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id }
   ]
 
-  app_launcher_visible = false
   logo_url = "https://seeklogo.com/images/C/cloudflare-logo-6B7D159387-seeklogo.com.png"
 }
