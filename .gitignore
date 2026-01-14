@@ -24,4 +24,4 @@ crash.log
 
 # Secrets
 secrets/secrets.yml
-**/*.secrets.env
+**/*.secrets.env.decrypted~*
