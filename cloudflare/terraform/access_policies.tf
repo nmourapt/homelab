@@ -1,6 +1,6 @@
 resource "cloudflare_zero_trust_access_group" "pocket_id_idps" {
-  name = "TF - Pocket ID Instances"
-  account_id       = var.cloudflare_account_id
+  name       = "TF - Pocket ID Instances"
+  account_id = var.cloudflare_account_id
   include = [
     {
       login_method = {
