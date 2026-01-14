@@ -14,4 +14,10 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid" {
     claims = ["groups"]
     scopes = ["openid", "email", "profile", "groups"]
   }
+  scim_config = {
+    enabled = true
+    identity_update_behavior = "automatic"
+    seat_deprovision = true
+    user_deprovision = true
+  }
 }
