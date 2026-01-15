@@ -18,7 +18,15 @@ services:
       INSTALLATION_KEY: ${INSTALLATION_KEY}
       YUBICO_CLIENT_ID: ${YUBICO_CLIENT_ID}
       YUBICO_SECRET_KEY: ${YUBICO_SECRET_KEY}
-      SIGNUPS_ALLOWED: "true"
+      SIGNUPS_ALLOWED: "false"
+      SSO_ENABLED: "true"
+      SSO_ONLY: "false"
+      SSO_SIGNUPS_MATCH_EMAIL: "true"
+      SSO_AUTHORITY: ${SSO_AUTHORITY}
+      SSO_SCOPES: "openid email profile groups"
+      SSO_PKCE: "true"
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
     volumes:
       - /volume2/docker/vaultwarden/volumes/data:/data:rw
     ports:
