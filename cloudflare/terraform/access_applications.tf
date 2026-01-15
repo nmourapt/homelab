@@ -4,7 +4,7 @@
 resource "cloudflare_zero_trust_access_application" "sso_app" {
   provider             = cloudflare.global_key
   account_id           = var.cloudflare_account_id
-  name                 = "TF - SSO App"
+  name                 = "SSO App"
   type                 = "dash_sso"
   session_duration     = "24h"
 
