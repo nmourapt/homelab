@@ -44,7 +44,7 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
 
 resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
   account_id           = var.cloudflare_account_id
-  name                 = "Vaultwarden"
+  name                 = "TF - Vaultwarden"
   type                 = "saas"
   session_duration     = "24h"
 
