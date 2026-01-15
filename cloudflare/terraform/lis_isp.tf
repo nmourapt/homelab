@@ -5,10 +5,6 @@ resource "cloudflare_zero_trust_tunnel_cloudflared" "lis_isp" {
   config_src = "cloudflare"
 }
 
-output "lis_isp_tunnel_id" {
-  value = cloudflare_zero_trust_tunnel_cloudflared.lis_isp.id
-}
-
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_isp_config" {
   depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_isp]
   account_id = var.cloudflare_account_id
