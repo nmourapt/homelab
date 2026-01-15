@@ -83,3 +83,9 @@ variable "google_workspace_client_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "egress_ips_json" {
+  description = "JSON string of egress IPs list"
+  type        = string
+  sensitive   = true
+}
