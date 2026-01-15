@@ -70,13 +70,18 @@ resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
       "https://warden.${var.tld}/identity/connect/oidc-signin"
     ]
     grant_types = [
-      "authorization_code_with_pkce"    
+      "authorization_code_with_pkce",
+      "refresh_tokens"   
     ]
     scopes = [
       "openid",
       "email",
       "profile",
-      "groups"
+      "offline_access"
     ]
+    access_token_lifetime = "24h"
+    refresh_token_options = {
+      lifetime = "30d"
+    }
   }
 }
