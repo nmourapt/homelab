@@ -61,6 +61,7 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
         TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
         TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
         TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}
@@ -76,6 +77,7 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
         TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
         TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
         TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}
@@ -92,6 +94,7 @@ jobs:
         TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
         TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
         TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
         TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
         TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
         TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}

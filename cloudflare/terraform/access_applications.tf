@@ -1,6 +1,3 @@
-# Import with: terraform import cloudflare_zero_trust_access_application.sso_app <account_id>/096f1074-4a80-4dfe-9d9e-0173af52aecc
-# Then run: terraform plan to see the current state and fill in this resource
-
 resource "cloudflare_zero_trust_access_application" "sso_app" {
   provider             = cloudflare.global_key
   account_id           = var.cloudflare_account_id
@@ -27,7 +24,7 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
       include    = [
         {
           email_domain = {
-            domain = "babybites.pt"
+            domain = "${var.tld_alt}"
           }
         }
       ]
@@ -36,11 +33,47 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
     }
   ]
 
+  lifecycle {
+    ignore_changes = [app_launcher_visible]
+  }
+
   saas_app = {
     auth_type = "saml"
   }
+}
 
-  lifecycle {
-    ignore_changes = [app_launcher_visible]
+resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
+  account_id           = var.cloudflare_account_id
+  name                 = "Vaultwarden"
+  type                 = "saas"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://s3-eu-west-1.amazonaws.com/tpd/logos/5c92a3d0634b4d00012fa165/0x0.png"
+
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://warden.${var.tld}"
+    redirect_uris = [
+      "https://warden.${var.tld}/identity/connect/oidc-signin"
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+      "groups"
+    ]
   }
 }

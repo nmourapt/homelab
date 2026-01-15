@@ -33,6 +33,11 @@ variable "tld" {
   type        = string
 }
 
+variable "tld_alt" {
+  description = "Alternative Top Level Domain"
+  type        = string
+}
+
 variable "pocketid_client_id" {
   description = "Pocket ID OIDC client ID"
   type        = string
