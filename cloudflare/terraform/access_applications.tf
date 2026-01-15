@@ -4,9 +4,9 @@
 resource "cloudflare_zero_trust_access_application" "sso_app" {
   provider             = cloudflare.global_key
   account_id           = var.cloudflare_account_id
-  name                 = "SSO App"
+  name                 = "TF - SSO App"
   type                 = "dash_sso"
-  session_duration = "24h"
+  session_duration     = "24h"
 
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
