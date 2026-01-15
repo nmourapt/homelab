@@ -77,7 +77,6 @@ resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
       "openid",
       "email",
       "profile",
-      "offline_access"
     ]
     access_token_lifetime = "24h"
     refresh_token_options = {

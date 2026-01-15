@@ -23,7 +23,7 @@ services:
       SSO_ONLY: "false"
       SSO_SIGNUPS_MATCH_EMAIL: "true"
       SSO_AUTHORITY: ${SSO_AUTHORITY}
-      SSO_SCOPES: "openid email profile offline_access"
+      SSO_SCOPES: "openid email profile"
       SSO_PKCE: "true"
       SSO_CLIENT_ID: ${SSO_CLIENT_ID}
       SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
