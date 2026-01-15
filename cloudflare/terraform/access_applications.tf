@@ -69,6 +69,9 @@ resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
     redirect_uris = [
       "https://warden.${var.tld}/identity/connect/oidc-signin"
     ]
+    grant_types = [
+      "authorization_code_with_pkce"    
+    ]
     scopes = [
       "openid",
       "email",
