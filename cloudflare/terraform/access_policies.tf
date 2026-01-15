@@ -159,3 +159,20 @@ resource "cloudflare_zero_trust_access_policy" "bypass_everyone" {
   exclude = []
   require = []
 }
+
+resource "cloudflare_zero_trust_access_policy" "bypass_egress_ips" {
+  name             = "TF - Egress IPs"
+  account_id       = var.cloudflare_account_id
+  decision         = "bypass"
+  session_duration = "24h"
+
+  include = [
+    {
+      ip_list = {
+        id = cloudflare_zero_trust_list.egress_ips.id
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}
