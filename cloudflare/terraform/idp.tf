@@ -47,7 +47,6 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid_reauth" {
 
 resource "cloudflare_zero_trust_access_identity_provider" "google" {
   account_id = var.cloudflare_account_id
-  id         = "6f8429d0-442a-4ce9-9ebc-a92af2fc3857"
   name       = "TF - Google"
   type       = "google"
   config = {
