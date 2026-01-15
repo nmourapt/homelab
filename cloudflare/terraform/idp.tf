@@ -44,3 +44,27 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid_reauth" {
     user_deprovision = true
   }
 }
+
+resource "cloudflare_zero_trust_access_identity_provider" "google" {
+  account_id = var.cloudflare_account_id
+  id         = "6f8429d0-442a-4ce9-9ebc-a92af2fc3857"
+  name       = "TF - Google"
+  type       = "google"
+  config = {
+    client_id     = var.google_client_id
+    client_secret = var.google_client_secret
+    pkce_enabled  = true
+  }
+}
+
+resource "cloudflare_zero_trust_access_identity_provider" "google_workspace" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Google Workspace"
+  type       = "google-apps"
+  config = {
+    client_id     = var.google_workspace_client_id
+    client_secret = var.google_workspace_client_secret
+    apps_domain   = var.tld_alt
+    pkce_enabled  = true
+  }
+}

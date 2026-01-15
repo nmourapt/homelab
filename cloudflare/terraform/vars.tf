@@ -31,11 +31,13 @@ variable "cloudflare_tld_zone_id" {
 variable "tld" {
   description = "Top Level Domain"
   type        = string
+  sensitive   = true
 }
 
 variable "tld_alt" {
   description = "Alternative Top Level Domain"
   type        = string
+  sensitive   = true
 }
 
 variable "pocketid_client_id" {
@@ -46,6 +48,7 @@ variable "pocketid_client_id" {
 variable "pocketid_client_secret" {
   description = "Pocket ID OIDC client secret"
   type        = string
+  sensitive   = true
 }
 
 variable "pocketid_reauth_client_id" {
@@ -56,4 +59,27 @@ variable "pocketid_reauth_client_id" {
 variable "pocketid_reauth_client_secret" {
   description = "Pocket ID OIDC client secret for reauth"
   type        = string
+  sensitive   = true
+}
+
+variable "google_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+}
+
+variable "google_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "google_workspace_client_id" {
+  description = "Google Workspace OAuth client ID"
+  type        = string
+}
+
+variable "google_workspace_client_secret" {
+  description = "Google Workspace OAuth client secret"
+  type        = string
+  sensitive   = true
 }
