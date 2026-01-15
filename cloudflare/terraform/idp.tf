@@ -72,4 +72,5 @@ resource "cloudflare_zero_trust_access_identity_provider" "otp" {
   account_id = var.cloudflare_account_id
   name       = "TF - OTP"
   type       = "onetimepin"
+  config = {}
 }
