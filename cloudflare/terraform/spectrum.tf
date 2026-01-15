@@ -9,10 +9,8 @@ resource "cloudflare_zone" "spectrum_zone" {
 
 resource "cloudflare_zone_subscription" "spectrum_zone_subscription" {
   zone_id = cloudflare_zone.spectrum_zone.id
-  frequency = "monthly"
   rate_plan = {
     id = "enterprise"
-    externally_managed = false
   }
 }
 
