@@ -37,9 +37,6 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins" {
       }
     }
   ]
-
-  exclude = []
-
   require = [
     {
       geo = {
@@ -52,6 +49,7 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins" {
       }
     }
   ]
+  exclude = []
 }
 
 
@@ -77,9 +75,6 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins_row" {
       }
     }
   ]
-
-  exclude = []
-
   require = [
     {
       geo = {
@@ -92,4 +87,69 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins_row" {
       }
     }
   ]
+  exclude = []
+}
+
+resource "cloudflare_zero_trust_access_policy" "pocketid_everyone" {
+  name             = "TF - Pocket ID Everyone"
+  account_id       = var.cloudflare_account_id
+  decision         = "allow"
+  session_duration = "8h"
+
+  include = [
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "everyone"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid.id
+      }
+    },
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "everyone"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+      }
+    }
+  ]
+  exclude = []
+  require = [
+    {
+      group = {
+        id = cloudflare_zero_trust_access_group.pocket_id_idps.id
+      }
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_policy" "cloudflare" {
+  name             = "TF - Cloudflare"
+  account_id       = var.cloudflare_account_id
+  decision         = "allow"
+  session_duration = "30m"
+
+  include = [
+    {
+      email_domain = {
+        domain = "cloudflare.com"
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}
+
+resource "cloudflare_zero_trust_access_policy" "bypass_everyone" {
+  name             = "TF - Everyone"
+  account_id       = var.cloudflare_account_id
+  decision         = "bypass"
+  session_duration = "24h"
+
+  include = [
+    {
+      everyone = {}
+    }
+  ]
+  exclude = []
+  require = []
 }
