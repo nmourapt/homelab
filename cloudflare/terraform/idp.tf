@@ -28,7 +28,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid_reauth" {
   type       = "oidc"
   config = {
     client_id = var.pocketid_reauth_client_id
-    client_secret = var.pocketid_client_secret
+    client_secret = var.pocketid_reauth_client_secret
     auth_url = "https://oidc.${var.tld}/authorize"
     token_url = "https://oidc.${var.tld}/api/oidc/token"
     certs_url = "https://oidc.${var.tld}/.well-known/jwks.json"
