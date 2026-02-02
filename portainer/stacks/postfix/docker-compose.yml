@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - RELAYHOST=smtp.gmail.com:587
-      - MYNETWORKS="0.0.0.0/0"
+      - MYNETWORKS=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - RELAYHOST_USERNAME=${RELAYHOST_USERNAME}
       - RELAYHOST_PASSWORD=${RELAYHOST_PASSWORD}
       - ALLOWED_SENDER_DOMAINS=${ALLOWED_SENDER_DOMAINS}
