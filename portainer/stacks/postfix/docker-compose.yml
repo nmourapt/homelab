@@ -13,6 +13,8 @@ services:
       - SMTPD_SASL_USERS=${SMTPD_SASL_USERS}
       - POSTFIX_smtpd_sender_restrictions=permit_sasl_authenticated,reject
       - POSTFIX_smtpd_relay_restrictions=permit_sasl_authenticated,reject
+      - POSTFIX_smtpd_tls_security_level=may
+      - POSTFIX_smtpd_tls_auth_only=yes
     ports:
       - "1587:587"
     networks:
