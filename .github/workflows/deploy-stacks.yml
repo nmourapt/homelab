@@ -220,8 +220,15 @@ jobs:
                     is_quoted = (value.startswith('"') and value.endswith('"')) or \
                               (value.startswith("'") and value.endswith("'"))
                     
+                    # Check if we're in a Docker Compose environment list context: "- VAR=${...}"
+                    # In this context, everything after = is already a string, no quotes needed
+                    is_env_list_context = re.match(r'^\s*-\s*[A-Za-z_][A-Za-z0-9_]*=\$\{', line)
+                    
                     if is_quoted:
                         # Keep the value as is (with its quotes)
+                        replacement = value
+                    elif is_env_list_context:
+                        # In environment list context, no quoting needed
                         replacement = value
                     else:
                         # For unquoted values, check if they need quotes for YAML
@@ -512,8 +519,15 @@ jobs:
                     is_quoted = (value.startswith('"') and value.endswith('"')) or \
                               (value.startswith("'") and value.endswith("'"))
                     
+                    # Check if we're in a Docker Compose environment list context: "- VAR=${...}"
+                    # In this context, everything after = is already a string, no quotes needed
+                    is_env_list_context = re.match(r'^\s*-\s*[A-Za-z_][A-Za-z0-9_]*=\$\{', line)
+                    
                     if is_quoted:
                         # Keep the value as is (with its quotes)
+                        replacement = value
+                    elif is_env_list_context:
+                        # In environment list context, no quoting needed
                         replacement = value
                     else:
                         # For unquoted values, check if they need quotes for YAML
