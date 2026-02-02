@@ -20,7 +20,7 @@ services:
       - XOAUTH2_INITIAL_ACCESS_TOKEN=${XOAUTH2_INITIAL_ACCESS_TOKEN}
       - XOAUTH2_INITIAL_REFRESH_TOKEN=${XOAUTH2_INITIAL_REFRESH_TOKEN}
     ports:
-      - "1587:587"
+      - "1588:587"
     networks:
       - prod_net
 
