@@ -1,0 +1,20 @@
+services:
+  postfix:
+    container_name: postfix-relay
+    image: mailcow/postfix
+    restart: unless-stopped
+    environment:
+      - RELAYHOST=[smtp.gmail.com]:587
+      - RELAYHOST_USER=${RELAYHOST_USER}
+      - RELAYHOST_PASSWORD=${RELAYHOST_PASSWORD}
+      - SMTPD_RELAY_TO_LOCALHOST=y
+      - SMTP_USE_TLS=yes
+    ports:
+      - "1588:25"
+    networks:
+      - prod_net
+
+
+networks:
+  prod_net:
+    external: true
