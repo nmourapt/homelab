@@ -4,7 +4,7 @@ services:
     image: boky/postfix:5.1.0
     restart: unless-stopped
     environment:
-      - HOSTNAME=postfixrelay
+      - HOSTNAME=postfix
       - RELAYHOST=smtp.gmail.com:587
       - POSTFIX_mynetworks=127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
       - RELAYHOST_USERNAME=${RELAYHOST_USERNAME}
