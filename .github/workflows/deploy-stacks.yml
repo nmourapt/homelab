@@ -28,6 +28,7 @@ jobs:
       all-services: ${{ steps.detect.outputs.all-services }}
       all-services-list: ${{ steps.detect.outputs.all-services-list }}
       has_infra_changes: ${{ steps.detect.outputs.has_infra_changes }}
+      deleted-services: ${{ steps.detect.outputs.deleted-services }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -49,18 +50,32 @@ jobs:
           echo "services=[\"${{ github.event.inputs.service }}\"]" >> $GITHUB_OUTPUT
           echo "all-services=false" >> $GITHUB_OUTPUT
           echo "has_infra_changes=false" >> $GITHUB_OUTPUT
+          echo "deleted-services=[]" >> $GITHUB_OUTPUT
           exit 0
         fi
         
         # Get changed files - handle case where there's no previous commit
         if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          # Detect deleted .tf files (services that were removed)
+          DELETED_TF_FILES=$(git diff --name-only --diff-filter=D HEAD^ HEAD | grep -E '^portainer/terraform/[^/]+\.tf$' | grep -vE '(main|backend|vars|provider|network)\.tf$' || true)
         else
           # First commit - check all files
           CHANGED_FILES=$(git ls-files)
+          DELETED_TF_FILES=""
         fi
         
         echo "Changed files: $CHANGED_FILES"
+        echo "Deleted TF files: $DELETED_TF_FILES"
+        
+        # Extract deleted service names
+        if [ -n "$DELETED_TF_FILES" ]; then
+          DELETED_SERVICES=$(echo "$DELETED_TF_FILES" | xargs -n1 basename | sed 's/\.tf$//' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        else
+          DELETED_SERVICES='[]'
+        fi
+        echo "Deleted services: $DELETED_SERVICES"
+        echo "deleted-services=$DELETED_SERVICES" >> $GITHUB_OUTPUT
         
         # Check for infrastructure changes
         if echo "$CHANGED_FILES" | grep -q "portainer/terraform/\(main\|backend\|vars\|provider\|network\)\.tf"; then
@@ -632,3 +647,64 @@ jobs:
         rm -f "/tmp/compose/${SERVICE}.yml"
         rm -f "/tmp/substitute.py"
         rm -f ~/.config/sops/age/keys.txt
+
+  destroy-services:
+    needs: [detect-changes]
+    runs-on: ubuntu-latest
+    if: >-
+      needs.detect-changes.outputs.deleted-services != '[]' &&
+      needs.detect-changes.outputs.deleted-services != '' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.deleted-services) }}
+      fail-fast: false
+    steps:
+    - name: Debug destroy job
+      run: |
+        echo "Destroying service: ${{ matrix.service }}"
+        echo "Event name: ${{ github.event_name }}"
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_PORTAINER_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_PORTAINER_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" portainer/terraform/backend.tf
+
+    - name: Terraform Init
+      run: terraform init -upgrade
+      working-directory: ./portainer/terraform
+
+    - name: Terraform Destroy
+      if: github.ref == 'refs/heads/main'
+      run: |
+        SERVICE="${{ matrix.service }}"
+        echo "Destroying stack: ${SERVICE}"
+        # Destroy the specific resource that was removed
+        terraform destroy -target="portainer_stack.${SERVICE}_stack" -auto-approve
+      working-directory: ./portainer/terraform
+      env:
+        TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
