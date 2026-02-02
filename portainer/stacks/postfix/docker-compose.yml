@@ -12,7 +12,7 @@ services:
       - ALLOWED_SENDER_DOMAINS=${ALLOWED_SENDER_DOMAINS}
       - SMTPD_SASL_USERS=${SMTPD_SASL_USERS}
     ports:
-      - "1589:587"
+      - "1587:587"
     networks:
       - prod_net
 
