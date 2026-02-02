@@ -197,19 +197,18 @@ jobs:
 
         def substitute_vars(compose_content, env_vars):
             """Substitute environment variables in compose content."""
-            # First, find all variable patterns in the content
+            # First, find all variable patterns and determine replacements on ORIGINAL content
             var_pattern = r'\$\{([^}]+)\}'
-            matches = re.finditer(var_pattern, compose_content)
+            replacements = {}  # full_match -> replacement
             
-            # For each match, determine if it's in a quoted or unquoted context
-            for match in matches:
+            for match in re.finditer(var_pattern, compose_content):
                 full_match = match.group(0)  # ${VAR}
                 var_name = match.group(1)    # VAR
                 
-                if var_name in env_vars:
+                if var_name in env_vars and full_match not in replacements:
                     value = env_vars[var_name]
                     
-                    # Find the line containing this variable
+                    # Find the line containing this variable (using original positions)
                     line_start = compose_content.rfind('\n', 0, match.start()) + 1
                     line_end = compose_content.find('\n', match.end())
                     if line_end == -1:
@@ -225,20 +224,20 @@ jobs:
                     is_env_list_context = re.match(r'^\s*-\s*[A-Za-z_][A-Za-z0-9_]*=\$\{', line)
                     
                     if is_quoted:
-                        # Keep the value as is (with its quotes)
                         replacement = value
                     elif is_env_list_context:
-                        # In environment list context, no quoting needed
                         replacement = value
                     else:
-                        # For unquoted values, check if they need quotes for YAML
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
                             replacement = value
                     
-                    # Replace the variable
-                    compose_content = compose_content.replace(full_match, replacement)
+                    replacements[full_match] = replacement
+            
+            # Now apply all replacements
+            for full_match, replacement in replacements.items():
+                compose_content = compose_content.replace(full_match, replacement)
             
             return compose_content
 
@@ -496,19 +495,18 @@ jobs:
 
         def substitute_vars(compose_content, env_vars):
             """Substitute environment variables in compose content."""
-            # First, find all variable patterns in the content
+            # First, find all variable patterns and determine replacements on ORIGINAL content
             var_pattern = r'\$\{([^}]+)\}'
-            matches = re.finditer(var_pattern, compose_content)
+            replacements = {}  # full_match -> replacement
             
-            # For each match, determine if it's in a quoted or unquoted context
-            for match in matches:
+            for match in re.finditer(var_pattern, compose_content):
                 full_match = match.group(0)  # ${VAR}
                 var_name = match.group(1)    # VAR
                 
-                if var_name in env_vars:
+                if var_name in env_vars and full_match not in replacements:
                     value = env_vars[var_name]
                     
-                    # Find the line containing this variable
+                    # Find the line containing this variable (using original positions)
                     line_start = compose_content.rfind('\n', 0, match.start()) + 1
                     line_end = compose_content.find('\n', match.end())
                     if line_end == -1:
@@ -524,20 +522,20 @@ jobs:
                     is_env_list_context = re.match(r'^\s*-\s*[A-Za-z_][A-Za-z0-9_]*=\$\{', line)
                     
                     if is_quoted:
-                        # Keep the value as is (with its quotes)
                         replacement = value
                     elif is_env_list_context:
-                        # In environment list context, no quoting needed
                         replacement = value
                     else:
-                        # For unquoted values, check if they need quotes for YAML
                         if ' ' in value or ':' in value or '#' in value or value.startswith('{') or value.startswith('[') or value.startswith('http'):
                             replacement = f'"{value}"'
                         else:
                             replacement = value
                     
-                    # Replace the variable
-                    compose_content = compose_content.replace(full_match, replacement)
+                    replacements[full_match] = replacement
+            
+            # Now apply all replacements
+            for full_match, replacement in replacements.items():
+                compose_content = compose_content.replace(full_match, replacement)
             
             return compose_content
 
