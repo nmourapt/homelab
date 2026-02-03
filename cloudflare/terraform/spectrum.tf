@@ -40,7 +40,7 @@ resource "cloudflare_dns_record" "dummy_cname_record" {
   zone_id = cloudflare_zone.spectrum_zone.id
   type = "CNAME"
   name = "dummy"
-  content = "home.nmoura.pt"
+  content = "home.${var.tld}"
   proxied = false
   ttl = 1
   comment = "Managed by terraform - do not edit"
@@ -51,7 +51,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
   dns = {
-    name = "squid.spectrum.nmoura.pt"
+    name = "squid.spectrum.${var.tld}"
     type = "CNAME"
   }
   protocol = "tcp/36334"
@@ -62,7 +62,7 @@ resource "cloudflare_spectrum_application" "squid_spectrum_app" {
   }
   ip_firewall = true
   origin_dns = {
-    name = "dummy.spectrum.nmoura.pt"
+    name = "dummy.spectrum.${var.tld}"
   }
   origin_port = 36334
   proxy_protocol = "off"
@@ -74,7 +74,7 @@ resource "cloudflare_spectrum_application" "oauthmail_spectrum_app" {
   provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
   dns = {
-    name = "emailrelay.spectrum.nmoura.pt"
+    name = "emailrelay.spectrum.${var.tld}"
     type = "CNAME"
   }
   protocol = "tcp/1588"
@@ -85,7 +85,7 @@ resource "cloudflare_spectrum_application" "oauthmail_spectrum_app" {
   }
   ip_firewall = true
   origin_dns = {
-    name = "dummy.spectrum.nmoura.pt"
+    name = "dummy.spectrum.${var.tld}"
   }
   origin_port = 1588
   proxy_protocol = "off"
