@@ -69,7 +69,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
       },
       {
         hostname = "netboot.${var.tld}"
-        service = "http://netboot:3000"
+        service = "http://netboot:3001"
         origin_request = {
           http2_origin = true
           no_tls_verify = true

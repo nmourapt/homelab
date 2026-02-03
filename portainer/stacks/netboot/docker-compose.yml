@@ -9,7 +9,7 @@ services:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
     ports:
-      - "3000:3000"   # Web UI for config
+      - "3001:3000"   # Web UI for config
       - "69:69/udp"   # TFTP
       - "8085:80"     # HTTP for boot assets
     networks:
