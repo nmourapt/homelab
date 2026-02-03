@@ -6,7 +6,7 @@ services:
     environment:
       TZ: "Europe/Lisbon"
       WEB_APP_PORT: "3000"
-      NGINX_PORT: "3000"
+      NGINX_PORT: "80"
     volumes:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
