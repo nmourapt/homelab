@@ -37,4 +37,5 @@ services:
       --auth-oidc-scopes=openid
       --auth-oidc-scopes=profile
       --auth-oidc-scopes=email
+      --auth-oidc-skip-email-verified-check
       --sqlite-storage-path=/sqlite/omni-sqlite.db
