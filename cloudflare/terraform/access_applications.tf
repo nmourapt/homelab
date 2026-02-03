@@ -213,7 +213,6 @@ resource "cloudflare_zero_trust_access_application" "omni_app" {
       "https://cluster.${var.tld}/oidc/consume"
     ]
     grant_types = [
-      "authorization_code_with_pkce",
       "refresh_tokens"   
     ]
     scopes = [
