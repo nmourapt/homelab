@@ -4,7 +4,6 @@ services:
     image: netbootxyz/netbootxyz:0.7.6-nbxyz10
     restart: unless-stopped
     environment:
-      TZ: "Europe/Lisbon"
       WEB_APP_PORT: "3000"
       NGINX_PORT: "80"
     volumes:
