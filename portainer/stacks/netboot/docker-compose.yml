@@ -6,8 +6,8 @@ services:
     environment:
       WEB_APP_PORT: "3001"
       NGINX_PORT: "3002"
-      PUID: "0"
-      PGID: "0"
+      PUID: "1026"
+      PGID: "100"
     volumes:
       - /volume2/docker/netbootxyz/volumes/config:/config
       - /volume2/docker/netbootxyz/volumes/assets:/assets
