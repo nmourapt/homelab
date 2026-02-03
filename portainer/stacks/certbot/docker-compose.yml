@@ -1,0 +1,19 @@
+services:
+  certbot:
+    container_name: certbot
+    image: certbot/dns-cloudflare:latest
+    restart: "no"
+    volumes:
+      - /volume2/docker/certbot/volumes/letsencrypt:/etc/letsencrypt
+      - /volume2/docker/certbot/volumes/lib:/var/lib/letsencrypt
+      - /volume2/docker/certbot/volumes/cloudflare.ini:/cloudflare.ini:ro
+    environment:
+      TZ: "Europe/Lisbon"
+    command: >
+      certonly
+      --dns-cloudflare
+      --dns-cloudflare-credentials /cloudflare.ini
+      -d ${CERT_DOMAIN}
+      -d *.${CERT_DOMAIN}
+      --agree-tos
+      --non-interactive

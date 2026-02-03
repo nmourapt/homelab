@@ -1,33 +1,38 @@
 services:
   omni:
     container_name: omni
-    image: "ghcr.io/siderolabs/omni:${OMNI_IMG_TAG:-v1.4.7}"
+    image: "ghcr.io/siderolabs/omni:v1.4.7"
     restart: unless-stopped
     devices:
       - /dev/net/tun
     volumes:
-      - ${ETCD_VOLUME_PATH}:/_out/etcd
-      - ${ETCD_ENCRYPTION_KEY}:/omni.asc
-      - ${TLS_CERT}:/tls.crt
-      - ${TLS_KEY}:/tls.key
+      - /volume2/docker/omni/volumes/db/etcd:/_out/etcd
+      - /volume2/docker/omni/volumes/db/omni.asc:/omni.asc
+      - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/fullchain.pem:/tls.crt
+      - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/privkey.pem:/tls.key
     network_mode: "host"
     cap_add:
       - NET_ADMIN
     command: >
       --account-id=${OMNI_ACCOUNT_UUID} 
-      --name=${NAME} 
+      --name=omni
       --cert=/tls.crt
       --key=/tls.key
       --machine-api-cert=/tls.crt
       --machine-api-key=/tls.key
       --private-key-source='file:///omni.asc' 
-      --event-sink-port=${EVENT_SINK_PORT}
-      --bind-addr=${BIND_ADDR}
-      --machine-api-bind-addr=${MACHINE_API_BIND_ADDR}
-      --k8s-proxy-bind-addr=${K8S_PROXY_BIND_ADDR}
-      --advertised-api-url=${ADVERTISED_API_URL}
-      --advertised-kubernetes-proxy-url=${ADVERTISED_K8S_PROXY_URL}
-      --siderolink-api-advertised-url=${SIDEROLINK_ADVERTISED_API_URL}
-      --siderolink-wireguard-advertised-addr=${SIDEROLINK_WIREGUARD_ADVERTISED_ADDR}
-      --initial-users=${INITIAL_USER_EMAILS}
-      ${AUTH}
+      --event-sink-port=8091
+      --bind-addr=0.0.0.0:443
+      --machine-api-bind-addr=0.0.0.0:8090
+      --k8s-proxy-bind-addr=0.0.0.0:8100
+      --advertised-api-url=https://${OMNI_DOMAIN}
+      --siderolink-api-advertised-url=https://${OMNI_DOMAIN}:8090
+      --advertised-kubernetes-proxy-url=https://${OMNI_DOMAIN}:8100
+      --siderolink-wireguard-advertised-addr=192.168.202.1:50180
+      --auth-oidc-enabled \
+      --auth-oidc-provider-url ${OIDC_PROVIDER_URL} \
+      --auth-oidc-client-id ${OIDC_CLIENT_ID} \
+      --auth-oidc-client-secret ${OIDC_CLIENT_SECRET} \
+      --auth-oidc-scopes openid \
+      --auth-oidc-scopes profile \
+      --auth-oidc-scopes email
