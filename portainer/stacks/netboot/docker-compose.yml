@@ -1,7 +1,7 @@
 services:
   netboot:
     container_name: netbootxyz
-    image: lscr.io/linuxserver/netbootxyz:v0.7.6-LS222
+    image: lscr.io/linuxserver/netbootxyz:0.7.6-ls222
     restart: unless-stopped
     environment:
       WEB_APP_PORT: "3001"
