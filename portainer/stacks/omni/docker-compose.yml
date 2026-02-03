@@ -30,11 +30,11 @@ services:
       --siderolink-api-advertised-url=https://${OMNI_DOMAIN}:8090
       --advertised-kubernetes-proxy-url=https://${OMNI_DOMAIN}:8100
       --siderolink-wireguard-advertised-addr=192.168.202.1:50180
-      --auth-oidc-enabled \
-      --auth-oidc-provider-url ${OIDC_PROVIDER_URL} \
-      --auth-oidc-client-id ${OIDC_CLIENT_ID} \
-      --auth-oidc-client-secret ${OIDC_CLIENT_SECRET} \
-      --auth-oidc-scopes openid \
-      --auth-oidc-scopes profile \
-      --auth-oidc-scopes email \
-      --sqlite-storage-path /sqlite/omni-sqlite.db
+      --auth-oidc-enabled
+      --auth-oidc-provider-url=${OIDC_PROVIDER_URL}
+      --auth-oidc-client-id=${OIDC_CLIENT_ID}
+      --auth-oidc-client-secret=${OIDC_CLIENT_SECRET}
+      --auth-oidc-scopes=openid
+      --auth-oidc-scopes=profile
+      --auth-oidc-scopes=email
+      --sqlite-storage-path=/sqlite/omni-sqlite.db
