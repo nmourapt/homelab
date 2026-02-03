@@ -1,14 +1,14 @@
 services:
   netboot:
     container_name: netbootxyz
-    image: netbootxyz/netbootxyz:0.7.5-nbxyz9
+    image: netbootxyz/netbootxyz:0.7.6-nbxyz10
     restart: unless-stopped
     environment:
       WEB_APP_PORT: "3001"
       NGINX_PORT: "3002"
     volumes:
-      - /volume2/docker/netboot/volumes/config:/config
-      - /volume2/docker/netboot/volumes/assets:/assets
+      - /volume2/docker/netbootxyz/volumes/config:/config
+      - /volume2/docker/netbootxyz/volumes/assets:/assets
     ports:
       - "3001:3001"
       - "69:69/udp"
