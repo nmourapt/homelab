@@ -8,6 +8,7 @@ services:
     volumes:
       - /volume2/docker/omni/volumes/db/etcd:/_out/etcd
       - /volume2/docker/omni/volumes/db/omni.asc:/omni.asc
+      - /volume2/docker/omni/volumes/db/sqlite:/sqlite
       - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/fullchain.pem:/tls.crt
       - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/privkey.pem:/tls.key
     network_mode: "host"
@@ -35,4 +36,5 @@ services:
       --auth-oidc-client-secret ${OIDC_CLIENT_SECRET} \
       --auth-oidc-scopes openid \
       --auth-oidc-scopes profile \
-      --auth-oidc-scopes email
+      --auth-oidc-scopes email \
+      --sqlite-storage-path /sqlite/omni-sqlite.db
