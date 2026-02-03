@@ -5,15 +5,15 @@ services:
     restart: unless-stopped
     environment:
       TZ: "Europe/Lisbon"
-      PUID: "1026"
-      PGID: "100"
+      WEB_APP_PORT: "3000"
+      NGINX_PORT: "3000"
     volumes:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
     ports:
-      - "3001:3000"   # Web UI for config
-      - "69:69/udp"   # TFTP
-      - "8085:80"     # HTTP for boot assets
+      - "3001:3000"
+      - "69:69/udp"
+      - "8085:80"
     networks:
       - prod_net
 
