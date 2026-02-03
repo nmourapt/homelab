@@ -85,7 +85,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_prod_config" {
       },
       {
         hostname = "cluster.${var.tld}"
-        service = "https://192.168.202.1:443"
+        service = "https://192.168.202.1:2443"
         origin_request = {
           http2_origin = true
           no_tls_verify = true
