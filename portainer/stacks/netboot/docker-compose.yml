@@ -1,6 +1,6 @@
 services:
   netboot:
-    container_name: netboot
+    container_name: netbootxyz
     image: ghcr.io/netbootxyz/netbootxyz:3.0.0
     restart: unless-stopped
     environment:
