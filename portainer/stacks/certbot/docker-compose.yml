@@ -2,7 +2,7 @@ services:
   certbot:
     container_name: certbot
     image: certbot/dns-cloudflare:latest
-    restart: "no"
+    restart: unless-stopped
     volumes:
       - /volume2/docker/certbot/volumes/letsencrypt:/etc/letsencrypt
       - /volume2/docker/certbot/volumes/lib:/var/lib/letsencrypt
@@ -19,4 +19,11 @@ services:
           -d $$DOMAIN \
           -d *.$$DOMAIN \
           --agree-tos \
-          --non-interactive
+          --non-interactive \
+          --keep-until-expiring
+        
+        # Run renewal check twice daily
+        while true; do
+          sleep 12h
+          certbot renew --quiet
+        done
