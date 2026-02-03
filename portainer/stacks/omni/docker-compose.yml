@@ -26,9 +26,9 @@ services:
       --bind-addr=0.0.0.0:2443
       --machine-api-bind-addr=0.0.0.0:8090
       --k8s-proxy-bind-addr=0.0.0.0:8100
-      --advertised-api-url=https://${OMNI_DOMAIN}
-      --siderolink-api-advertised-url=https://api-${OMNI_DOMAIN}:8090
-      --advertised-kubernetes-proxy-url=https://proxy-${OMNI_DOMAIN}:8100
+      --advertised-api-url=https://${OMNI_DOMAIN}:2443
+      --siderolink-api-advertised-url=https://${OMNI_DOMAIN}:8090
+      --advertised-kubernetes-proxy-url=https://${OMNI_DOMAIN}:8100
       --siderolink-wireguard-advertised-addr=192.168.202.1:50180
       --auth-oidc-enabled
       --auth-oidc-provider-url=${OIDC_PROVIDER_URL}
