@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     environment:
       TZ: "Europe/Lisbon"
+      PUID: "1026"
+      PGID: "100"
     volumes:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
