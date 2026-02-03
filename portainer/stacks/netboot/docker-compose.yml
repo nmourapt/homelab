@@ -1,0 +1,20 @@
+services:
+  netboot:
+    container_name: netboot
+    image: ghcr.io/netbootxyz/netboot.xyz:3.0.0
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Lisbon"
+    volumes:
+      - /volume2/docker/netboot/volumes/config:/config
+      - /volume2/docker/netboot/volumes/assets:/assets
+    ports:
+      - "3000:3000"   # Web UI for config
+      - "69:69/udp"   # TFTP
+      - "8085:80"     # HTTP for boot assets
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true
