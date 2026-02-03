@@ -8,8 +8,8 @@ services:
     volumes:
       - /volume2/docker/omni/volumes/db/etcd:/_out/etcd
       - /volume2/docker/omni/volumes/db/omni.asc:/omni.asc
-      - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/fullchain.pem:/tls.crt
-      - /volume2/docker/certbot/volumes/letsencrypt/live/${DOMAIN}/privkey.pem:/tls.key
+      - /volume2/docker/certbot/volumes/letsencrypt/live/nmoura.pt/fullchain.pem:/tls.crt
+      - /volume2/docker/certbot/volumes/letsencrypt/live/nmoura.pt/privkey.pem:/tls.key
     network_mode: "host"
     cap_add:
       - NET_ADMIN
