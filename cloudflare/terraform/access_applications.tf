@@ -220,9 +220,5 @@ resource "cloudflare_zero_trust_access_application" "omni_app" {
       "email",
       "profile",
     ]
-    access_token_lifetime = "24h"
-    refresh_token_options = {
-      lifetime = "30d"
-    }
   }
 }
