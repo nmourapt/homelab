@@ -23,7 +23,7 @@ services:
       --machine-api-key=/tls.key
       --private-key-source='file:///omni.asc' 
       --event-sink-port=8091
-      --bind-addr=0.0.0.0:443
+      --bind-addr=0.0.0.0:2443
       --machine-api-bind-addr=0.0.0.0:8090
       --k8s-proxy-bind-addr=0.0.0.0:8100
       --advertised-api-url=https://${OMNI_DOMAIN}
