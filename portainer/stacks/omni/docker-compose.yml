@@ -38,4 +38,5 @@ services:
       --auth-oidc-scopes=profile
       --auth-oidc-scopes=email
       --auth-oidc-allow-unverified-email
+      --initial-users=${INITIAL_USER_EMAILS}
       --sqlite-storage-path=/sqlite/omni-sqlite.db
