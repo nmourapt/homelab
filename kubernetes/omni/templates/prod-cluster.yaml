@@ -31,13 +31,14 @@ patches:
 ---
 kind: ControlPlane
 machines:
-  # Replace with actual machine UUIDs after registering NUCs with Omni
-  - nuc-01-uuid
-  - nuc-02-uuid
-  - nuc-03-uuid
+  # TODO: Replace with actual machine UUIDs after registering NUCs with Omni
+  # Run `omnictl get machines` to find the UUIDs
+  - 00000000-0000-0000-0000-000000000001
+  - 00000000-0000-0000-0000-000000000002
+  - 00000000-0000-0000-0000-000000000003
 ---
 kind: Machine
-name: nuc-01-uuid
+name: 00000000-0000-0000-0000-000000000001
 install:
   disk: /dev/sda
 patches:
@@ -77,7 +78,7 @@ patches:
             - 1.1.1.1
 ---
 kind: Machine
-name: nuc-02-uuid
+name: 00000000-0000-0000-0000-000000000002
 install:
   disk: /dev/sda
 patches:
@@ -117,7 +118,7 @@ patches:
             - 1.1.1.1
 ---
 kind: Machine
-name: nuc-03-uuid
+name: 00000000-0000-0000-0000-000000000003
 install:
   disk: /dev/sda
 patches:
