@@ -61,7 +61,6 @@ patches:
                 - rshared
                 - rw
         network:
-          $patch: replace
           hostname: nuc-01
           interfaces:
             - interface: enp1s0
@@ -102,7 +101,6 @@ patches:
                 - rshared
                 - rw
         network:
-          $patch: replace
           hostname: nuc-02
           interfaces:
             - interface: enp1s0
@@ -143,7 +141,6 @@ patches:
                 - rshared
                 - rw
         network:
-          $patch: replace
           hostname: nuc-03
           interfaces:
             - interface: enp1s0
