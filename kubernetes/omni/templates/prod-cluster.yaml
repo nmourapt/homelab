@@ -29,455 +29,488 @@ patches:
         proxy:
           disabled: true
         inlineManifests:
-          - name: cilium
-            contents: |
-              ---
-              apiVersion: v1
-              kind: ServiceAccount
-              metadata:
-                name: cilium
-                namespace: kube-system
-              ---
-              apiVersion: v1
-              kind: ServiceAccount
-              metadata:
-                name: cilium-operator
-                namespace: kube-system
-              ---
-              apiVersion: rbac.authorization.k8s.io/v1
+        - name: cilium-config
+          contents: |
+            ---
+            apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: cilium-config
+              namespace: kube-system
+            data:
+              debug: "false"
+              enable-ipv4: "true"
+              enable-ipv6: "false"
+              cluster-name: prod
+              cluster-id: "0"
+              ipam: kubernetes
+              kube-proxy-replacement: "true"
+              k8s-require-ipv4-pod-cidr: "true"
+              enable-endpoint-health-checking: "true"
+              enable-health-checking: "true"
+              enable-bpf-masquerade: "true"
+              install-no-conntrack-iptables-rules: "true"
+              auto-direct-node-routes: "true"
+              enable-local-redirect-policy: "true"
+              cni-exclusive: "true"
+              cni-chaining-mode: "none"
+              write-cni-conf-when-ready: /host/etc/cni/net.d/05-cilium.conflist
+        - name: cilium-rbac
+          contents: |
+            ---
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: cilium
+              namespace: kube-system
+            ---
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: cilium-operator
+              namespace: kube-system
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRole
+            metadata:
+              name: cilium
+            rules:
+            - apiGroups:
+              - networking.k8s.io
+              resources:
+              - networkpolicies
+              verbs:
+              - get
+              - list
+              - watch
+            - apiGroups:
+              - discovery.k8s.io
+              resources:
+              - endpointslices
+              verbs:
+              - get
+              - list
+              - watch
+            - apiGroups:
+              - ""
+              resources:
+              - namespaces
+              - services
+              - pods
+              - endpoints
+              - nodes
+              verbs:
+              - get
+              - list
+              - watch
+            - apiGroups:
+              - apiextensions.k8s.io
+              resources:
+              - customresourcedefinitions
+              verbs:
+              - list
+              - watch
+              - get
+            - apiGroups:
+              - cilium.io
+              resources:
+              - ciliumnetworkpolicies
+              - ciliumnetworkpolicies/status
+              - ciliumclusterwidenetworkpolicies
+              - ciliumclusterwidenetworkpolicies/status
+              - ciliumendpoints
+              - ciliumendpoints/status
+              - ciliumnodes
+              - ciliumnodes/status
+              - ciliumidentities
+              - ciliumidentities/status
+              - ciliumlocalredirectpolicies
+              - ciliumlocalredirectpolicies/status
+              - ciliumegressgatewaypolicies
+              - ciliumenvoyconfigs
+              - ciliumenvoyconfigs/status
+              - ciliumclusterwideenvoyconfigs
+              - ciliumclusterwideenvoyconfigs/status
+              verbs:
+              - '*'
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRole
+            metadata:
+              name: cilium-operator
+            rules:
+            - apiGroups:
+              - ""
+              resources:
+              - pods
+              verbs:
+              - get
+              - list
+              - watch
+              - delete
+            - apiGroups:
+              - ""
+              resources:
+              - nodes
+              verbs:
+              - list
+              - watch
+            - apiGroups:
+              - ""
+              resources:
+              - namespaces
+              verbs:
+              - get
+              - list
+              - watch
+            - apiGroups:
+              - cilium.io
+              resources:
+              - ciliumnetworkpolicies
+              - ciliumnetworkpolicies/status
+              - ciliumnetworkpolicies/finalizers
+              - ciliumclusterwidenetworkpolicies
+              - ciliumclusterwidenetworkpolicies/status
+              - ciliumclusterwidenetworkpolicies/finalizers
+              - ciliumendpoints
+              - ciliumendpoints/status
+              - ciliumendpoints/finalizers
+              - ciliumnodes
+              - ciliumnodes/status
+              - ciliumnodes/finalizers
+              - ciliumidentities
+              - ciliumidentities/finalizers
+              - ciliumlocalredirectpolicies
+              - ciliumlocalredirectpolicies/status
+              - ciliumlocalredirectpolicies/finalizers
+              - ciliumegressgatewaypolicies
+              - ciliumegressgatewaypolicies/finalizers
+              - ciliumenvoyconfigs
+              - ciliumenvoyconfigs/finalizers
+              - ciliumclusterwideenvoyconfigs
+              - ciliumclusterwideenvoyconfigs/finalizers
+              verbs:
+              - '*'
+            - apiGroups:
+              - apiextensions.k8s.io
+              resources:
+              - customresourcedefinitions
+              verbs:
+              - get
+              - list
+              - watch
+              - update
+              - create
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRoleBinding
+            metadata:
+              name: cilium
+            roleRef:
+              apiGroup: rbac.authorization.k8s.io
               kind: ClusterRole
-              metadata:
-                name: cilium
-              rules:
-              - apiGroups:
-                - networking.k8s.io
-                resources:
-                - networkpolicies
-                verbs:
-                - get
-                - list
-                - watch
-              - apiGroups:
-                - discovery.k8s.io
-                resources:
-                - endpointslices
-                verbs:
-                - get
-                - list
-                - watch
-              - apiGroups:
-                - ""
-                resources:
-                - namespaces
-                - services
-                - pods
-                - endpoints
-                - nodes
-                verbs:
-                - get
-                - list
-                - watch
-              - apiGroups:
-                - apiextensions.k8s.io
-                resources:
-                - customresourcedefinitions
-                verbs:
-                - list
-                - watch
-                - get
-              - apiGroups:
-                - cilium.io
-                resources:
-                - ciliumnetworkpolicies
-                - ciliumnetworkpolicies/status
-                - ciliumclusterwidenetworkpolicies
-                - ciliumclusterwidenetworkpolicies/status
-                - ciliumendpoints
-                - ciliumendpoints/status
-                - ciliumnodes
-                - ciliumnodes/status
-                - ciliumidentities
-                - ciliumidentities/status
-                - ciliumlocalredirectpolicies
-                - ciliumlocalredirectpolicies/status
-                - ciliumegressgatewaypolicies
-                - ciliumenvoyconfigs
-                - ciliumenvoyconfigs/status
-                - ciliumclusterwideenvoyconfigs
-                - ciliumclusterwideenvoyconfigs/status
-                verbs:
-                - '*'
-              ---
-              apiVersion: rbac.authorization.k8s.io/v1
+              name: cilium
+            subjects:
+            - kind: ServiceAccount
+              name: cilium
+              namespace: kube-system
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRoleBinding
+            metadata:
+              name: cilium-operator
+            roleRef:
+              apiGroup: rbac.authorization.k8s.io
               kind: ClusterRole
-              metadata:
-                name: cilium-operator
-              rules:
-              - apiGroups:
-                - ""
-                resources:
-                - pods
-                verbs:
-                - get
-                - list
-                - watch
-                - delete
-              - apiGroups:
-                - ""
-                resources:
-                - nodes
-                verbs:
-                - list
-                - watch
-              - apiGroups:
-                - ""
-                resources:
-                - namespaces
-                verbs:
-                - get
-                - list
-                - watch
-              - apiGroups:
-                - cilium.io
-                resources:
-                - ciliumnetworkpolicies
-                - ciliumnetworkpolicies/status
-                - ciliumnetworkpolicies/finalizers
-                - ciliumclusterwidenetworkpolicies
-                - ciliumclusterwidenetworkpolicies/status
-                - ciliumclusterwidenetworkpolicies/finalizers
-                - ciliumendpoints
-                - ciliumendpoints/status
-                - ciliumendpoints/finalizers
-                - ciliumnodes
-                - ciliumnodes/status
-                - ciliumnodes/finalizers
-                - ciliumidentities
-                - ciliumidentities/finalizers
-                - ciliumlocalredirectpolicies
-                - ciliumlocalredirectpolicies/status
-                - ciliumlocalredirectpolicies/finalizers
-                - ciliumegressgatewaypolicies
-                - ciliumegressgatewaypolicies/finalizers
-                - ciliumenvoyconfigs
-                - ciliumenvoyconfigs/finalizers
-                - ciliumclusterwideenvoyconfigs
-                - ciliumclusterwideenvoyconfigs/finalizers
-                verbs:
-                - '*'
-              - apiGroups:
-                - apiextensions.k8s.io
-                resources:
-                - customresourcedefinitions
-                verbs:
-                - get
-                - list
-                - watch
-                - update
-                - create
-              ---
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRoleBinding
-              metadata:
-                name: cilium
-              roleRef:
-                apiGroup: rbac.authorization.k8s.io
-                kind: ClusterRole
-                name: cilium
-              subjects:
-              - kind: ServiceAccount
-                name: cilium
-                namespace: kube-system
-              ---
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRoleBinding
-              metadata:
-                name: cilium-operator
-              roleRef:
-                apiGroup: rbac.authorization.k8s.io
-                kind: ClusterRole
-                name: cilium-operator
-              subjects:
-              - kind: ServiceAccount
-                name: cilium-operator
-                namespace: kube-system
-              ---
-              apiVersion: apps/v1
-              kind: DaemonSet
-              metadata:
-                name: cilium
-                namespace: kube-system
-              spec:
-                selector:
-                  matchLabels:
+              name: cilium-operator
+            subjects:
+            - kind: ServiceAccount
+              name: cilium-operator
+              namespace: kube-system
+        - name: cilium
+          contents: |
+            ---
+            apiVersion: apps/v1
+            kind: DaemonSet
+            metadata:
+              name: cilium
+              namespace: kube-system
+            spec:
+              selector:
+                matchLabels:
+                  k8s-app: cilium
+              template:
+                metadata:
+                  labels:
                     k8s-app: cilium
-                template:
-                  metadata:
-                    labels:
-                      k8s-app: cilium
-                  spec:
-                    containers:
-                    - name: cilium-agent
-                      image: quay.io/cilium/cilium:v1.16.5
-                      imagePullPolicy: IfNotPresent
-                      command:
-                      - cilium-agent
-                      args:
-                      - --config-dir=/tmp/cilium/config-map
-                      env:
-                      - name: K8S_NODE_NAME
-                        valueFrom:
-                          fieldRef:
-                            apiVersion: v1
-                            fieldPath: spec.nodeName
-                      - name: CILIUM_K8S_NAMESPACE
-                        valueFrom:
-                          fieldRef:
-                            apiVersion: v1
-                            fieldPath: metadata.namespace
-                      - name: KUBERNETES_SERVICE_HOST
-                        value: "192.168.202.10"
-                      - name: KUBERNETES_SERVICE_PORT
-                        value: "6443"
-                      lifecycle:
-                        preStop:
-                          exec:
-                            command:
-                            - /cni-uninstall.sh
-                      livenessProbe:
-                        httpGet:
-                          host: 127.0.0.1
-                          path: /healthz
-                          port: 9879
-                          scheme: HTTP
-                        periodSeconds: 30
-                        successThreshold: 1
-                        failureThreshold: 10
-                        timeoutSeconds: 5
-                      readinessProbe:
-                        httpGet:
-                          host: 127.0.0.1
-                          path: /healthz
-                          port: 9879
-                          scheme: HTTP
-                        periodSeconds: 30
-                        successThreshold: 1
-                        failureThreshold: 3
-                        timeoutSeconds: 5
-                      securityContext:
-                        capabilities:
-                          add:
-                          - NET_ADMIN
-                          - SYS_MODULE
-                          - SYS_ADMIN
-                          - SYS_RESOURCE
-                        privileged: true
-                      volumeMounts:
-                      - name: bpf-maps
-                        mountPath: /sys/fs/bpf
-                        mountPropagation: HostToContainer
-                      - name: cilium-run
-                        mountPath: /var/run/cilium
-                      - name: cni-path
-                        mountPath: /host/opt/cni/bin
-                      - name: etc-cni-netd
-                        mountPath: /host/etc/cni/net.d
-                      - name: cilium-config-path
-                        mountPath: /tmp/cilium/config-map
-                        readOnly: true
-                      - name: lib-modules
-                        mountPath: /lib/modules
-                        readOnly: true
-                      - name: xtables-lock
-                        mountPath: /run/xtables.lock
-                    hostNetwork: true
-                    initContainers:
-                    - name: mount-cgroup
-                      image: quay.io/cilium/cilium:v1.16.5
-                      imagePullPolicy: IfNotPresent
-                      env:
-                      - name: CGROUP_ROOT
-                        value: /run/cilium/cgroupv2
-                      - name: BIN_PATH
-                        value: /opt/cni/bin
-                      command:
-                      - sh
-                      - -ec
-                      - |
-                        cp /usr/bin/cilium-mount /hostbin/cilium-mount;
-                        nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
-                        rm /hostbin/cilium-mount
-                      volumeMounts:
-                      - name: hostproc
-                        mountPath: /hostproc
-                      - name: cni-path
-                        mountPath: /hostbin
-                      securityContext:
-                        privileged: true
-                    - name: apply-sysctl-overwrites
-                      image: quay.io/cilium/cilium:v1.16.5
-                      imagePullPolicy: IfNotPresent
-                      env:
-                      - name: BIN_PATH
-                        value: /opt/cni/bin
-                      command:
-                      - sh
-                      - -ec
-                      - |
-                        cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
-                        nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
-                        rm /hostbin/cilium-sysctlfix
-                      volumeMounts:
-                      - name: hostproc
-                        mountPath: /hostproc
-                      - name: cni-path
-                        mountPath: /hostbin
-                      securityContext:
-                        privileged: true
-                    - name: install-cni-binaries
-                      image: quay.io/cilium/cilium:v1.16.5
-                      imagePullPolicy: IfNotPresent
-                      command:
-                      - /install-plugin.sh
-                      resources:
-                        requests:
-                          cpu: 100m
-                          memory: 10Mi
-                      securityContext:
-                        capabilities:
-                          drop:
-                          - ALL
-                      volumeMounts:
-                      - name: cni-path
-                        mountPath: /host/opt/cni/bin
-                    priorityClassName: system-node-critical
-                    restartPolicy: Always
-                    serviceAccount: cilium
-                    serviceAccountName: cilium
-                    terminationGracePeriodSeconds: 1
-                    tolerations:
-                    - operator: Exists
-                    volumes:
-                    - name: cilium-run
-                      hostPath:
-                        path: /var/run/cilium
-                        type: DirectoryOrCreate
+                spec:
+                  containers:
+                  - name: cilium-agent
+                    image: quay.io/cilium/cilium:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    command:
+                    - cilium-agent
+                    args:
+                    - --config-dir=/tmp/cilium/config-map
+                    env:
+                    - name: K8S_NODE_NAME
+                      valueFrom:
+                        fieldRef:
+                          apiVersion: v1
+                          fieldPath: spec.nodeName
+                    - name: CILIUM_K8S_NAMESPACE
+                      valueFrom:
+                        fieldRef:
+                          apiVersion: v1
+                          fieldPath: metadata.namespace
+                    - name: KUBERNETES_SERVICE_HOST
+                      value: "192.168.202.10"
+                    - name: KUBERNETES_SERVICE_PORT
+                      value: "6443"
+                    startupProbe:
+                      httpGet:
+                        host: 127.0.0.1
+                        path: /healthz
+                        port: 9879
+                        scheme: HTTP
+                      failureThreshold: 105
+                      periodSeconds: 2
+                      successThreshold: 1
+                    livenessProbe:
+                      httpGet:
+                        host: 127.0.0.1
+                        path: /healthz
+                        port: 9879
+                        scheme: HTTP
+                      periodSeconds: 30
+                      successThreshold: 1
+                      failureThreshold: 10
+                      timeoutSeconds: 5
+                    readinessProbe:
+                      httpGet:
+                        host: 127.0.0.1
+                        path: /healthz
+                        port: 9879
+                        scheme: HTTP
+                      periodSeconds: 30
+                      successThreshold: 1
+                      failureThreshold: 3
+                      timeoutSeconds: 5
+                    securityContext:
+                      capabilities:
+                        add:
+                        - NET_ADMIN
+                        - SYS_MODULE
+                        - SYS_ADMIN
+                        - SYS_RESOURCE
+                      privileged: true
+                    volumeMounts:
                     - name: bpf-maps
-                      hostPath:
-                        path: /sys/fs/bpf
-                        type: DirectoryOrCreate
-                    - name: hostproc
-                      hostPath:
-                        path: /proc
-                        type: Directory
-                    - name: cilium-cgroup
-                      hostPath:
-                        path: /run/cilium/cgroupv2
-                        type: DirectoryOrCreate
+                      mountPath: /sys/fs/bpf
+                      mountPropagation: HostToContainer
+                    - name: cilium-run
+                      mountPath: /var/run/cilium
                     - name: cni-path
-                      hostPath:
-                        path: /opt/cni/bin
-                        type: DirectoryOrCreate
+                      mountPath: /host/opt/cni/bin
                     - name: etc-cni-netd
-                      hostPath:
-                        path: /etc/cni/net.d
-                        type: DirectoryOrCreate
+                      mountPath: /host/etc/cni/net.d
+                    - name: cilium-config-path
+                      mountPath: /tmp/cilium/config-map
+                      readOnly: true
                     - name: lib-modules
-                      hostPath:
-                        path: /lib/modules
+                      mountPath: /lib/modules
+                      readOnly: true
                     - name: xtables-lock
-                      hostPath:
-                        path: /run/xtables.lock
-                        type: FileOrCreate
+                      mountPath: /run/xtables.lock
+                  hostNetwork: true
+                  initContainers:
+                  - name: config-check
+                    image: quay.io/cilium/cilium:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    command:
+                    - sh
+                    - -c
+                    - |
+                      echo "Waiting for ConfigMap..."
+                      while [ ! -f /tmp/cilium/config-map/debug ]; do
+                        sleep 1
+                      done
+                      echo "ConfigMap found"
+                    volumeMounts:
                     - name: cilium-config-path
-                      configMap:
-                        name: cilium-config
-              ---
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: cilium-operator
-                namespace: kube-system
-              spec:
-                replicas: 1
-                selector:
-                  matchLabels:
+                      mountPath: /tmp/cilium/config-map
+                      readOnly: true
+                  - name: mount-cgroup
+                    image: quay.io/cilium/cilium:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    env:
+                    - name: CGROUP_ROOT
+                      value: /run/cilium/cgroupv2
+                    - name: BIN_PATH
+                      value: /opt/cni/bin
+                    command:
+                    - sh
+                    - -ec
+                    - |
+                      cp /usr/bin/cilium-mount /hostbin/cilium-mount;
+                      nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
+                      rm /hostbin/cilium-mount
+                    volumeMounts:
+                    - name: hostproc
+                      mountPath: /hostproc
+                    - name: cni-path
+                      mountPath: /hostbin
+                    securityContext:
+                      privileged: true
+                  - name: apply-sysctl-overwrites
+                    image: quay.io/cilium/cilium:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    env:
+                    - name: BIN_PATH
+                      value: /opt/cni/bin
+                    command:
+                    - sh
+                    - -ec
+                    - |
+                      cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
+                      nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
+                      rm /hostbin/cilium-sysctlfix
+                    volumeMounts:
+                    - name: hostproc
+                      mountPath: /hostproc
+                    - name: cni-path
+                      mountPath: /hostbin
+                    securityContext:
+                      privileged: true
+                  - name: install-cni-binaries
+                    image: quay.io/cilium/cilium:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    command:
+                    - /install-plugin.sh
+                    resources:
+                      requests:
+                        cpu: 100m
+                        memory: 10Mi
+                    securityContext:
+                      capabilities:
+                        drop:
+                        - ALL
+                    volumeMounts:
+                    - name: cni-path
+                      mountPath: /host/opt/cni/bin
+                  priorityClassName: system-node-critical
+                  restartPolicy: Always
+                  serviceAccount: cilium
+                  serviceAccountName: cilium
+                  terminationGracePeriodSeconds: 1
+                  tolerations:
+                  - operator: Exists
+                  volumes:
+                  - name: cilium-run
+                    hostPath:
+                      path: /var/run/cilium
+                      type: DirectoryOrCreate
+                  - name: bpf-maps
+                    hostPath:
+                      path: /sys/fs/bpf
+                      type: DirectoryOrCreate
+                  - name: hostproc
+                    hostPath:
+                      path: /proc
+                      type: Directory
+                  - name: cilium-cgroup
+                    hostPath:
+                      path: /run/cilium/cgroupv2
+                      type: DirectoryOrCreate
+                  - name: cni-path
+                    hostPath:
+                      path: /opt/cni/bin
+                      type: DirectoryOrCreate
+                  - name: etc-cni-netd
+                    hostPath:
+                      path: /etc/cni/net.d
+                      type: DirectoryOrCreate
+                  - name: lib-modules
+                    hostPath:
+                      path: /lib/modules
+                  - name: xtables-lock
+                    hostPath:
+                      path: /run/xtables.lock
+                      type: FileOrCreate
+                  - name: cilium-config-path
+                    configMap:
+                      name: cilium-config
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: cilium-operator
+              namespace: kube-system
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  name: cilium-operator
+              strategy:
+                type: RollingUpdate
+              template:
+                metadata:
+                  labels:
                     name: cilium-operator
-                strategy:
-                  type: RollingUpdate
-                template:
-                  metadata:
-                    labels:
-                      name: cilium-operator
-                  spec:
-                    containers:
-                    - name: cilium-operator
-                      image: quay.io/cilium/operator-generic:v1.16.5
-                      imagePullPolicy: IfNotPresent
-                      command:
-                      - cilium-operator-generic
-                      args:
-                      - --config-dir=/tmp/cilium/config-map
-                      - --debug=$(CILIUM_DEBUG)
-                      env:
-                      - name: K8S_NODE_NAME
-                        valueFrom:
-                          fieldRef:
-                            apiVersion: v1
-                            fieldPath: spec.nodeName
-                      - name: CILIUM_K8S_NAMESPACE
-                        valueFrom:
-                          fieldRef:
-                            apiVersion: v1
-                            fieldPath: metadata.namespace
-                      - name: CILIUM_DEBUG
-                        valueFrom:
-                          configMapKeyRef:
-                            key: debug
-                            name: cilium-config
-                            optional: true
-                      - name: KUBERNETES_SERVICE_HOST
-                        value: "192.168.202.10"
-                      - name: KUBERNETES_SERVICE_PORT
-                        value: "6443"
-                      livenessProbe:
-                        httpGet:
-                          host: 127.0.0.1
-                          path: /healthz
-                          port: 9234
-                          scheme: HTTP
-                        initialDelaySeconds: 60
-                        periodSeconds: 10
-                        timeoutSeconds: 3
-                      volumeMounts:
-                      - name: cilium-config-path
-                        mountPath: /tmp/cilium/config-map
-                        readOnly: true
-                    hostNetwork: true
-                    restartPolicy: Always
-                    serviceAccount: cilium-operator
-                    serviceAccountName: cilium-operator
-                    tolerations:
-                    - operator: Exists
-                    volumes:
+                spec:
+                  containers:
+                  - name: cilium-operator
+                    image: quay.io/cilium/operator-generic:v1.16.5
+                    imagePullPolicy: IfNotPresent
+                    command:
+                    - cilium-operator-generic
+                    args:
+                    - --config-dir=/tmp/cilium/config-map
+                    - --debug=$(CILIUM_DEBUG)
+                    env:
+                    - name: K8S_NODE_NAME
+                      valueFrom:
+                        fieldRef:
+                          apiVersion: v1
+                          fieldPath: spec.nodeName
+                    - name: CILIUM_K8S_NAMESPACE
+                      valueFrom:
+                        fieldRef:
+                          apiVersion: v1
+                          fieldPath: metadata.namespace
+                    - name: CILIUM_DEBUG
+                      valueFrom:
+                        configMapKeyRef:
+                          key: debug
+                          name: cilium-config
+                          optional: true
+                    - name: KUBERNETES_SERVICE_HOST
+                      value: "192.168.202.10"
+                    - name: KUBERNETES_SERVICE_PORT
+                      value: "6443"
+                    livenessProbe:
+                      httpGet:
+                        host: 127.0.0.1
+                        path: /healthz
+                        port: 9234
+                        scheme: HTTP
+                      initialDelaySeconds: 60
+                      periodSeconds: 10
+                      timeoutSeconds: 3
+                    volumeMounts:
                     - name: cilium-config-path
-                      configMap:
-                        name: cilium-config
-              ---
-              apiVersion: v1
-              kind: ConfigMap
-              metadata:
-                name: cilium-config
-                namespace: kube-system
-              data:
-                debug: "false"
-                enable-ipv4: "true"
-                enable-ipv6: "false"
-                cluster-name: prod
-                cluster-id: "0"
-                ipam: kubernetes
-                kube-proxy-replacement: "true"
-                k8s-require-ipv4-pod-cidr: "true"
+                      mountPath: /tmp/cilium/config-map
+                      readOnly: true
+                  hostNetwork: true
+                  restartPolicy: Always
+                  serviceAccount: cilium-operator
+                  serviceAccountName: cilium-operator
+                  tolerations:
+                  - operator: Exists
+                  volumes:
+                  - name: cilium-config-path
+                    configMap:
+                      name: cilium-config
 ---
 kind: ControlPlane
 machines:
