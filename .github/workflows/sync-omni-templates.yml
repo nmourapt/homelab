@@ -1,0 +1,143 @@
+name: Sync Omni Cluster Templates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kubernetes/omni/templates/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'kubernetes/omni/templates/**'
+  workflow_dispatch:
+    inputs:
+      template:
+        description: 'Specific template file to sync (optional, e.g., prod-cluster.yaml)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run only (no changes applied)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  OMNI_ENDPOINT: ${{ secrets.OMNI_ENDPOINT }}
+  OMNI_SERVICE_ACCOUNT_KEY: ${{ secrets.OMNI_SERVICE_ACCOUNT_KEY }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      templates: ${{ steps.detect.outputs.templates }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install omnictl
+        run: |
+          curl -sL https://omni.siderolabs.io/omnictl/omnictl-linux-amd64 -o omnictl
+          chmod +x omnictl
+          sudo mv omnictl /usr/local/bin/
+
+      - name: Detect changed templates
+        id: detect
+        run: |
+          if [ "${{ github.event.inputs.template }}" != "" ]; then
+            # Manual dispatch with specific template
+            TEMPLATES='["${{ github.event.inputs.template }}"]'
+          elif [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "push" ]; then
+            # Get changed template files
+            if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              CHANGED=$(git diff --name-only HEAD^ HEAD -- 'kubernetes/omni/templates/*.yaml' | xargs -n1 basename 2>/dev/null || true)
+            else
+              CHANGED=$(find kubernetes/omni/templates -name "*.yaml" -type f | xargs -n1 basename 2>/dev/null || true)
+            fi
+            
+            if [ -z "$CHANGED" ]; then
+              # No specific changes, sync all templates
+              CHANGED=$(find kubernetes/omni/templates -name "*.yaml" -type f | xargs -n1 basename 2>/dev/null || true)
+            fi
+            
+            TEMPLATES=$(echo "$CHANGED" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            # workflow_dispatch without specific template - sync all
+            TEMPLATES=$(find kubernetes/omni/templates -name "*.yaml" -type f | xargs -n1 basename | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
+          
+          echo "Templates to process: $TEMPLATES"
+          echo "templates=$TEMPLATES" >> $GITHUB_OUTPUT
+
+      - name: Process templates with secrets
+        run: |
+          mkdir -p /tmp/processed-templates
+          TEMPLATES='${{ steps.detect.outputs.templates }}'
+          
+          for template in $(echo "$TEMPLATES" | jq -r '.[]'); do
+            echo "Processing kubernetes/omni/templates/$template..."
+            # Substitute ${TLD} placeholder with actual value
+            sed 's/\${TLD}/${{ secrets.TLD }}/g' "kubernetes/omni/templates/$template" > "/tmp/processed-templates/$template"
+          done
+
+      - name: Validate templates
+        run: |
+          TEMPLATES='${{ steps.detect.outputs.templates }}'
+          
+          for template in $(echo "$TEMPLATES" | jq -r '.[]'); do
+            echo "Validating /tmp/processed-templates/$template..."
+            omnictl cluster template validate -f "/tmp/processed-templates/$template"
+          done
+
+  sync:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    strategy:
+      matrix:
+        template: ${{ fromJson(needs.validate.outputs.templates) }}
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install omnictl
+        run: |
+          curl -sL https://omni.siderolabs.io/omnictl/omnictl-linux-amd64 -o omnictl
+          chmod +x omnictl
+          sudo mv omnictl /usr/local/bin/
+
+      - name: Process template with secrets
+        run: |
+          mkdir -p /tmp/processed-templates
+          echo "Processing kubernetes/omni/templates/${{ matrix.template }}..."
+          # Substitute ${TLD} placeholder with actual value
+          sed 's/\${TLD}/${{ secrets.TLD }}/g' "kubernetes/omni/templates/${{ matrix.template }}" > "/tmp/processed-templates/${{ matrix.template }}"
+
+      - name: Sync template (dry-run)
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "Dry-run sync for ${{ matrix.template }}..."
+          omnictl cluster template sync -f "/tmp/processed-templates/${{ matrix.template }}" --dry-run
+
+      - name: Sync template
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          echo "Syncing ${{ matrix.template }}..."
+          omnictl cluster template sync -f "/tmp/processed-templates/${{ matrix.template }}"
+
+      - name: Verify sync
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          # Extract cluster name from processed template
+          CLUSTER_NAME=$(grep -A1 "^kind: Cluster" "/tmp/processed-templates/${{ matrix.template }}" | grep "name:" | awk '{print $2}')
+          
+          if [ -n "$CLUSTER_NAME" ]; then
+            echo "Verifying cluster $CLUSTER_NAME status..."
+            omnictl get cluster "$CLUSTER_NAME" -o yaml || true
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: rm -rf /tmp/processed-templates

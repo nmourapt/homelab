@@ -1,0 +1,4 @@
+contexts:
+    default:
+        url: https://omni.nmoura.pt
+context: default
