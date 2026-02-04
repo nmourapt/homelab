@@ -243,7 +243,7 @@ resource "cloudflare_zero_trust_access_application" "omni_app" {
     auth_type = "oidc"
     app_launcher_url = "https://cluster.${var.tld}"
     redirect_uris = [
-      "https://cluster.${var.tld}:2443/oidc/consume"
+      "https://cluster.${var.tld}/oidc/consume"
     ]
     grant_types = [
       "authorization_code"
