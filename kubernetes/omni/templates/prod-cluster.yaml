@@ -33,12 +33,12 @@ kind: ControlPlane
 machines:
   # TODO: Replace with actual machine UUIDs after registering NUCs with Omni
   # Run `omnictl get machines` to find the UUIDs
-  - 00000000-0000-0000-0000-000000000001
+  - b2b24080-3eaf-11ef-a623-226974e21f00
   - 00000000-0000-0000-0000-000000000002
   - 00000000-0000-0000-0000-000000000003
 ---
 kind: Machine
-name: 00000000-0000-0000-0000-000000000001
+name: b2b24080-3eaf-11ef-a623-226974e21f00
 install:
   disk: /dev/sda
 patches:
