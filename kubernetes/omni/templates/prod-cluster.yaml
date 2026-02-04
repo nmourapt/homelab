@@ -61,7 +61,6 @@ patches:
                 - rshared
                 - rw
         network:
-          hostname: nuc-01
           interfaces:
             - interface: enp1s0
               addresses:
@@ -101,7 +100,6 @@ patches:
                 - rshared
                 - rw
         network:
-          hostname: nuc-02
           interfaces:
             - interface: enp1s0
               addresses:
@@ -141,7 +139,6 @@ patches:
                 - rshared
                 - rw
         network:
-          hostname: nuc-03
           interfaces:
             - interface: enp1s0
               addresses:
