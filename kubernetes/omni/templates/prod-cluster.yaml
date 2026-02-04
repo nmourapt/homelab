@@ -1,5 +1,5 @@
 kind: Cluster
-name: prod
+name: homelab
 kubernetes:
   version: v1.34.2
 talos:
