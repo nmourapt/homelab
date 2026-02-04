@@ -1,0 +1,157 @@
+kind: Cluster
+name: prod
+kubernetes:
+  version: v1.34.2
+talos:
+  version: v1.12.2
+systemExtensions:
+  - siderolabs/iscsi-tools
+  - siderolabs/util-linux-tools
+  - siderolabs/i915
+features:
+  backupConfiguration:
+    interval: 12h0m0s
+patches:
+  - name: allow-scheduling-on-control-plane
+    inline:
+      cluster:
+        allowSchedulingOnControlPlanes: true
+  - name: cilium-cni
+    inline:
+      cluster:
+        network:
+          cni:
+            name: none
+          podSubnets:
+            - 10.244.0.0/16
+          serviceSubnets:
+            - 10.96.0.0/12
+        proxy:
+          disabled: true
+---
+kind: ControlPlane
+machines:
+  # Replace with actual machine UUIDs after registering NUCs with Omni
+  - nuc-01-uuid
+  - nuc-02-uuid
+  - nuc-03-uuid
+---
+kind: Machine
+name: nuc-01-uuid
+install:
+  disk: /dev/sda
+patches:
+  - name: nuc-01-config
+    inline:
+      machine:
+        certSANs:
+          - nuc-01.talos.${TLD}
+          - talos.${TLD}
+          - localhost
+        disks:
+          - device: /dev/nvme0n1
+            partitions:
+              - mountpoint: /var/lib/longhorn
+        kubelet:
+          extraMounts:
+            - destination: /var/lib/longhorn
+              source: /var/lib/longhorn
+              type: bind
+              options:
+                - bind
+                - rshared
+                - rw
+        network:
+          hostname: nuc-01
+          interfaces:
+            - interface: enp1s0
+              addresses:
+                - 192.168.202.11/24
+              routes:
+                - gateway: 192.168.202.254
+                  network: 0.0.0.0/0
+              vip:
+                ip: 192.168.202.10
+          nameservers:
+            - 8.8.8.8
+            - 1.1.1.1
+---
+kind: Machine
+name: nuc-02-uuid
+install:
+  disk: /dev/sda
+patches:
+  - name: nuc-02-config
+    inline:
+      machine:
+        certSANs:
+          - nuc-02.talos.${TLD}
+          - talos.${TLD}
+          - localhost
+        disks:
+          - device: /dev/nvme0n1
+            partitions:
+              - mountpoint: /var/lib/longhorn
+        kubelet:
+          extraMounts:
+            - destination: /var/lib/longhorn
+              source: /var/lib/longhorn
+              type: bind
+              options:
+                - bind
+                - rshared
+                - rw
+        network:
+          hostname: nuc-02
+          interfaces:
+            - interface: enp1s0
+              addresses:
+                - 192.168.202.12/24
+              routes:
+                - gateway: 192.168.202.254
+                  network: 0.0.0.0/0
+              vip:
+                ip: 192.168.202.10
+          nameservers:
+            - 8.8.8.8
+            - 1.1.1.1
+---
+kind: Machine
+name: nuc-03-uuid
+install:
+  disk: /dev/sda
+patches:
+  - name: nuc-03-config
+    inline:
+      machine:
+        certSANs:
+          - nuc-03.talos.${TLD}
+          - talos.${TLD}
+          - localhost
+        disks:
+          - device: /dev/nvme0n1
+            partitions:
+              - mountpoint: /var/lib/longhorn
+        kubelet:
+          extraMounts:
+            - destination: /var/lib/longhorn
+              source: /var/lib/longhorn
+              type: bind
+              options:
+                - bind
+                - rshared
+                - rw
+        network:
+          hostname: nuc-03
+          interfaces:
+            - interface: enp1s0
+              addresses:
+                - 192.168.202.13/24
+              routes:
+                - gateway: 192.168.202.254
+                  network: 0.0.0.0/0
+              vip:
+                ip: 192.168.202.10
+          nameservers:
+            - 8.8.8.8
+            - 1.1.1.1
