@@ -38,7 +38,7 @@ jobs:
 
       - name: Install omnictl
         run: |
-          curl -sL https://omni.siderolabs.io/omnictl/omnictl-linux-amd64 -o omnictl
+          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
           chmod +x omnictl
           sudo mv omnictl /usr/local/bin/
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: Install omnictl
         run: |
-          curl -sL https://omni.siderolabs.io/omnictl/omnictl-linux-amd64 -o omnictl
+          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
           chmod +x omnictl
           sudo mv omnictl /usr/local/bin/
 
