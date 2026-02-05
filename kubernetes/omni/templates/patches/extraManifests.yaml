@@ -1,0 +1,5 @@
+cluster:
+  extraManifests:
+    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/install_cilium.yaml
+    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/l2_announcements.yaml
+    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/ip_pool.yaml
