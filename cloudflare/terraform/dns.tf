@@ -19,6 +19,6 @@ resource "cloudflare_dns_record" "omni_record" {
   content = "home.${var.tld}"
   ttl = 1
   comment = "Managed by terraform - do not edit"
-  proxied = true
+  proxied = false
   tags = ["terraform", "lis_prod", "cloudflared", "tunnel"]
 }
