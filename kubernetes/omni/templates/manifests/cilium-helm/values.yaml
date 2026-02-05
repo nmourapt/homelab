@@ -38,9 +38,3 @@ l2announcements:
   
 externalIPs:
   enabled: true
-
-hubble:
-  relay:
-    enabled: true
-  ui:
-    enabled: true
