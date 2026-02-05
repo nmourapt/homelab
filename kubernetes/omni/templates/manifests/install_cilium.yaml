@@ -1041,12 +1041,10 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "6443"
         securityContext:
+          privileged: true
           seLinuxOptions:
             level: s0
             type: spc_t
-          capabilities:
-            add: ["NET_ADMIN", "SYS_MODULE", "SYS_ADMIN", "SYS_RESOURCE"]
-            drop: ["ALL"]
         volumeMounts:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
