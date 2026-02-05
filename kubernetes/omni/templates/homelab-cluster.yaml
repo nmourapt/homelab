@@ -1866,7 +1866,7 @@ patches:
                           - name: cilium-config-path
                             configMap:
                               name: cilium-config
-                    ---
+---
 kind: ControlPlane
 machines:
   - b2b24080-3eaf-11ef-a623-226974e21f00
