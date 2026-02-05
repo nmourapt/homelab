@@ -30,9 +30,6 @@ cgroup:
 k8sServiceHost: localhost
 k8sServicePort: "7445"
 
-bpf:
-  hostLegacyRouting: true
-
 l2announcements:
   enabled: true
   
