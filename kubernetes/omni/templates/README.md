@@ -2,30 +2,64 @@
 
 Cluster templates for managing Talos Linux clusters via [Omni](https://docs.siderolabs.com/omni/).
 
+## Directory Structure
+
+```
+templates/
+├── homelab-cluster.yaml      # Main cluster template
+├── patches/
+│   └── extraManifests.yaml   # Patch to install Cilium via extraManifests
+└── manifests/
+    ├── cilium-helm/
+    │   └── values.yaml       # Helm values used to generate Cilium manifests
+    ├── cilium_manifests.yaml # Pre-rendered Cilium Helm chart manifests
+    ├── l2_announcements.yaml # CiliumL2AnnouncementPolicy for LB IPs
+    └── ip_pool.yaml          # CiliumLoadBalancerIPPool (192.168.202.101-199)
+```
+
 ## Clusters
 
 | Template | Description |
 |----------|-------------|
-| `prod-cluster.yaml` | Production cluster - 3x NUC nodes (control plane + workers) |
+| `homelab-cluster.yaml` | Homelab cluster - 1x NUC node (control plane with scheduling enabled) |
 
 ## Template Variables
 
 Templates use `${TLD}` placeholder for the domain, which is substituted by the CI/CD pipeline using the `TLD` GitHub secret.
 
-## Prod Cluster Configuration
+## Homelab Cluster Configuration
 
 - **Kubernetes**: v1.34.2
 - **Talos**: v1.12.2
-- **CNI**: Cilium (Flannel disabled, kube-proxy disabled)
+- **CNI**: Cilium (native CNI disabled, kube-proxy disabled)
 - **Storage**: Longhorn (NVMe drives mounted at `/var/lib/longhorn`)
-- **Nodes**: 3x NUCs with VIP at 192.168.202.10
-- **Features**: Disk encryption, workload proxy, 12h etcd backups
+- **Nodes**: 1x NUC with VIP at 192.168.202.10
+- **Features**: 12h etcd backups, scheduling on control plane enabled
 
 ### System Extensions
 
 - `siderolabs/iscsi-tools` - iSCSI support for Longhorn
 - `siderolabs/util-linux-tools` - Utilities for storage management
 - `siderolabs/i915` - Intel GPU drivers
+
+### Cilium Configuration
+
+Cilium is deployed via `extraManifests` using pre-rendered Helm chart manifests. Key features:
+
+- **kube-proxy replacement**: Enabled
+- **IPAM**: Kubernetes mode
+- **L2 Announcements**: Enabled for LoadBalancer IPs
+- **External IPs**: Enabled
+- **LoadBalancer IP Pool**: 192.168.202.101-199
+
+To regenerate Cilium manifests after modifying `cilium-helm/values.yaml`:
+
+```bash
+helm template cilium cilium/cilium \
+  --namespace kube-system \
+  --values manifests/cilium-helm/values.yaml \
+  > manifests/cilium_manifests.yaml
+```
 
 ## Usage
 
@@ -45,16 +79,16 @@ omnictl get clusters
 omnictl get machines
 
 # Validate template
-omnictl cluster template validate -f templates/prod-cluster.yaml
+omnictl cluster template validate -f templates/homelab-cluster.yaml
 
 # Sync template (dry-run)
-omnictl cluster template sync -f templates/prod-cluster.yaml --dry-run
+omnictl cluster template sync -f templates/homelab-cluster.yaml --dry-run
 
 # Apply template
-omnictl cluster template sync -f templates/prod-cluster.yaml
+omnictl cluster template sync -f templates/homelab-cluster.yaml
 
 # Export existing cluster to template
-omnictl cluster template export -c prod -o exported.yaml
+omnictl cluster template export -c homelab -o exported.yaml
 ```
 
 ### GitOps Workflow

@@ -60,9 +60,9 @@ homelab/
 
 ### Kubernetes (Omni/Talos)
 
-- **prod** cluster: 3x NUC nodes (control plane + workers)
+- **homelab** cluster: 1x NUC node (control plane with scheduling enabled)
 - Managed via Omni cluster templates
-- Cilium CNI, Longhorn storage
+- Cilium CNI (with L2 announcements, kube-proxy replacement), Longhorn storage
 
 ## Secrets Management
 
