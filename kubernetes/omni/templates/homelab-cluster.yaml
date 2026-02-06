@@ -35,6 +35,7 @@ kind: ControlPlane
 machines:
   - b2b24080-3eaf-11ef-a623-226974e21f00
   - 87335400-3eb7-11ef-ad6e-cf6ea0f06f00
+  - b4343680-3eb8-11ef-80af-6d6dfdff9100
 ---
 kind: Machine
 name: b2b24080-3eaf-11ef-a623-226974e21f00
@@ -105,6 +106,45 @@ patches:
             - interface: enp1s0
               addresses:
                 - 192.168.202.12/24
+              routes:
+                - gateway: 192.168.202.254
+                  network: 0.0.0.0/0
+              vip:
+                ip: 192.168.202.10
+          nameservers:
+            - 8.8.8.8
+            - 1.1.1.1
+---
+kind: Machine
+name: b4343680-3eb8-11ef-80af-6d6dfdff9100
+install:
+  disk: /dev/sda
+patches:
+  - name: nuc-03-config
+    inline:
+      machine:
+        certSANs:
+          - nuc-03.talos.${TLD}
+          - talos.${TLD}
+          - localhost
+        disks:
+          - device: /dev/nvme0n1
+            partitions:
+              - mountpoint: /var/lib/longhorn
+        kubelet:
+          extraMounts:
+            - destination: /var/lib/longhorn
+              source: /var/lib/longhorn
+              type: bind
+              options:
+                - bind
+                - rshared
+                - rw
+        network:
+          interfaces:
+            - interface: enp1s0
+              addresses:
+                - 192.168.202.13/24
               routes:
                 - gateway: 192.168.202.254
                   network: 0.0.0.0/0
