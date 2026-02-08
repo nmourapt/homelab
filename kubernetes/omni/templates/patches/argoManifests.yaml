@@ -1,4 +1,4 @@
 cluster:
   extraManifests:
-    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/argocd_manifests.yaml
+    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/argo_manifests.yaml
     - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/apps/_applicationset.yaml
