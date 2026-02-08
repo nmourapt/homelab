@@ -29,9 +29,9 @@ patches:
         proxy:
           disabled: true
   - name: install-cilium
-    file: patches/ciliumManifests.yaml
+    file: patches/ciliumPatch.yaml
   - name: install-argocd
-    file: patches/argoManifests.yaml
+    file: patches/argoPatch.yaml
 ---
 kind: ControlPlane
 machines:
