@@ -26,6 +26,7 @@ crash.log
 secrets/secrets.yml
 **/*.secrets.env
 **/.decrypted~*
+kubernetes/**/secret.yaml
 
 # Others
 kubernetes/management/**
