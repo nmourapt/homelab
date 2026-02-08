@@ -30015,6 +30015,8 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-cm
   namespace: argocd
+data:
+  kustomize.buildOptions: --enable-helm
 ---
 apiVersion: v1
 kind: ConfigMap
