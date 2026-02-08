@@ -20,7 +20,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/nmourapt/homelab.git
-        path: '{{.path}}'
+        path: '{{.path.path}}'
         targetRevision: main
       destination:
         server: https://kubernetes.default.svc
