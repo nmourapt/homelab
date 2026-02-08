@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cloudflared
+
+resources:
+  - namespace.yaml
+  - sealedsecret.yaml
+
+helmCharts:
+  - name: cloudflare-tunnel-remote
+    repo: https://cloudflare.github.io/helm-charts
+    version: 0.1.2
+    releaseName: cloudflared
+    namespace: cloudflared
+    valuesInline:
+      replicaCount: 2
+      cloudflare:
+        tunnel_token: "placeholder"
+
+patches:
+  - target:
+      kind: Deployment
+      name: cloudflared
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/name
+        value: cloudflared-tunnel-token
