@@ -8,11 +8,13 @@ Cluster templates for managing Talos Linux clusters via [Omni](https://docs.side
 templates/
 ├── homelab-cluster.yaml      # Main cluster template
 ├── patches/
-│   └── extraManifests.yaml   # Patch to install Cilium via extraManifests
+│   ├── ciliumPatch.yaml      # Patch for Cilium manifests
+│   └── argoPatch.yaml        # Patch for ArgoCD manifests
 └── manifests/
     ├── cilium-helm/
     │   └── values.yaml       # Helm values used to generate Cilium manifests
     ├── cilium_manifests.yaml # Pre-rendered Cilium Helm chart manifests
+    ├── argo_manifests.yaml   # ArgoCD installation manifests
     ├── l2_announcements.yaml # CiliumL2AnnouncementPolicy for LB IPs
     └── ip_pool.yaml          # CiliumLoadBalancerIPPool (192.168.202.101-199)
 ```
@@ -21,7 +23,7 @@ templates/
 
 | Template | Description |
 |----------|-------------|
-| `homelab-cluster.yaml` | Homelab cluster - 1x NUC node (control plane with scheduling enabled) |
+| `homelab-cluster.yaml` | Homelab cluster - 3x NUC nodes (control plane with scheduling enabled) |
 
 ## Template Variables
 
@@ -33,8 +35,9 @@ Templates use `${TLD}` placeholder for the domain, which is substituted by the C
 - **Talos**: v1.12.2
 - **CNI**: Cilium (native CNI disabled, kube-proxy disabled)
 - **Storage**: Longhorn (NVMe drives mounted at `/var/lib/longhorn`)
-- **Nodes**: 1x NUC with VIP at 192.168.202.10
+- **Nodes**: 3x NUC with VIP at 192.168.202.10
 - **Features**: 12h etcd backups, scheduling on control plane enabled
+- **GitOps**: ArgoCD deployed via extraManifests
 
 ### System Extensions
 
@@ -47,10 +50,19 @@ Templates use `${TLD}` placeholder for the domain, which is substituted by the C
 Cilium is deployed via `extraManifests` using pre-rendered Helm chart manifests. Key features:
 
 - **kube-proxy replacement**: Enabled
+- **Routing Mode**: VXLAN tunnel
+- **MTU**: 1450 (explicit, to avoid Siderolink MTU detection issues)
 - **IPAM**: Kubernetes mode
 - **L2 Announcements**: Enabled for LoadBalancer IPs
 - **External IPs**: Enabled
 - **LoadBalancer IP Pool**: 192.168.202.101-199
+
+### ArgoCD Configuration
+
+ArgoCD is deployed via `extraManifests` and manages applications in `kubernetes/apps/`. Key features:
+
+- **Kustomize Helm support**: `--enable-helm` flag enabled in `argocd-cm`
+- **ApplicationSet**: Auto-discovers apps from Git directories
 
 To regenerate Cilium manifests after modifying `cilium-helm/values.yaml`:
 

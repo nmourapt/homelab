@@ -25,7 +25,10 @@ Infrastructure as Code (IaC) repository for managing homelab services using Terr
 homelab/
 ├── .github/workflows/     # CI/CD pipelines
 ├── cloudflare/terraform/  # Cloudflare infrastructure (DNS, Access, Tunnels)
-├── kubernetes/omni/       # Talos Linux cluster templates managed via Omni
+├── kubernetes/
+│   ├── apps/              # ArgoCD-managed applications (Kustomize/Helm)
+│   ├── management/        # Kubeconfig and Talosconfig files (gitignored)
+│   └── omni/templates/    # Talos Linux cluster templates managed via Omni
 ├── portainer/
 │   ├── stacks/            # Docker Compose files for each service
 │   └── terraform/         # Terraform configs to deploy stacks to Portainer
@@ -60,9 +63,19 @@ homelab/
 
 ### Kubernetes (Omni/Talos)
 
-- **homelab** cluster: 1x NUC node (control plane with scheduling enabled)
+- **homelab** cluster: 3x NUC nodes (control plane with scheduling enabled)
 - Managed via Omni cluster templates
-- Cilium CNI (with L2 announcements, kube-proxy replacement), Longhorn storage
+- **CNI**: Cilium (VXLAN tunnel mode, L2 announcements, kube-proxy replacement)
+- **Storage**: Longhorn
+- **GitOps**: ArgoCD with ApplicationSet for automatic app discovery
+- **Secrets**: Sealed Secrets for encrypting secrets in Git
+
+#### ArgoCD Applications
+
+| Application | Description |
+|-------------|-------------|
+| **sealed-secrets** | Bitnami Sealed Secrets controller for encrypting K8s secrets |
+| **cloudflared** | Cloudflare Tunnel connector for secure ingress |
 
 ## Secrets Management
 
@@ -123,3 +136,24 @@ See `secrets/reposecrets.sops.yml` for the full list. Key secrets include:
 - `PORTAINER_API_KEY` - Portainer API key
 - `OMNI_ENDPOINT` - Omni instance URL
 - `OMNI_SERVICE_ACCOUNT_KEY` - Omni service account key
+
+## Kubernetes Secrets (Sealed Secrets)
+
+For Kubernetes applications, secrets are managed using [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets). This allows encrypted secrets to be stored safely in Git.
+
+```bash
+# Install kubeseal CLI
+brew install kubeseal
+
+# Create a secret and seal it
+kubectl create secret generic my-secret \
+  --from-literal=key=value \
+  --dry-run=client -o yaml > secret.yaml
+
+kubeseal --controller-name=sealed-secrets \
+  --controller-namespace=sealed-secrets \
+  -f secret.yaml -o yaml > sealedsecret.yaml
+
+# Delete the plain secret, commit only the sealed secret
+rm secret.yaml
+```
