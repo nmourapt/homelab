@@ -2,8 +2,8 @@
 enter:
   - echo "setting KUBECONFIG to $PWD/kubernetes/management/homelab-kubeconfig.yaml"
   - export KUBECONFIG=$PWD/kubernetes/management/homelab-kubeconfig.yaml
-  - echo "setting TALOSCONFIG to $PWD/kubernetes/management/prod-talosconfig.yaml"
-  - export TALOSCONFIG=$PWD/kubernetes/management/prod-talosconfig.yaml
+  - echo "setting TALOSCONFIG to $PWD/kubernetes/management/homelab-talosconfig.yaml"
+  - export TALOSCONFIG=$PWD/kubernetes/management/homelab-talosconfig.yaml
   - echo "setting OMNICONFIG to $PWD/kubernetes/management/omniconfig.yaml"
   - export OMNICONFIG=$PWD/kubernetes/management/omniconfig.yaml
 leave:

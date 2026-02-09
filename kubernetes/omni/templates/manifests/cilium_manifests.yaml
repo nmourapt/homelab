@@ -158,6 +158,7 @@ data:
   routing-mode: "tunnel"
   tunnel-protocol: "vxlan"
   tunnel-source-port-range: "0-0"
+  mtu: "1450"
   service-no-backend-response: "reject"
   policy-deny-response: "none"
 
