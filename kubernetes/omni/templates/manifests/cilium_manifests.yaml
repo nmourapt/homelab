@@ -155,10 +155,9 @@ data:
   #   - vxlan (default)
   #   - geneve
 
-  routing-mode: "tunnel"
-  tunnel-protocol: "vxlan"
-  tunnel-source-port-range: "0-0"
-  mtu: "1450"
+  routing-mode: "native"
+  auto-direct-node-routes: "true"
+  mtu: "1500"
   service-no-backend-response: "reject"
   policy-deny-response: "none"
 
