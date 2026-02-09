@@ -27,6 +27,10 @@ secrets/secrets.yml
 **/*.secrets.env
 **/.decrypted~*
 kubernetes/**/secret.yaml
+kubernetes/**/configmap.secret.yaml
 
 # Others
 kubernetes/management/**
+
+# Temp
+kubernetes/apps/traefik/**
