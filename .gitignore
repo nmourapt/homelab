@@ -33,4 +33,3 @@ kubernetes/**/configmap.secret.yaml
 kubernetes/management/**
 
 # Temp
-kubernetes/apps/traefik/**
