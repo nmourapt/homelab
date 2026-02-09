@@ -29913,6 +29913,28 @@ subjects:
     name: argocd-server
     namespace: argocd
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-repo-server-avp-read-secrets
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-repo-server-avp-read-secrets
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-repo-server-avp-read-secrets
+subjects:
+  - kind: ServiceAccount
+    name: argocd-repo-server
+    namespace: argocd
+---
 apiVersion: v1
 data:
   resource.customizations.ignoreResourceUpdates.ConfigMap: |
@@ -30089,6 +30111,51 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-tls-certs-cm
   namespace: argocd
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cmp-plugin
+  namespace: argocd
+data:
+  avp.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-vault-plugin
+    spec:
+      allowConcurrency: true
+      discover:
+        find:
+          command:
+            - sh
+            - "-c"
+            - "find . -name '*.yaml' | xargs -I {} grep '<path\\|avp\\.kubernetes\\.io' {} | grep ."
+      generate:
+        command:
+          - argocd-vault-plugin
+          - generate
+          - "."
+      lockRepo: false
+  avp-kustomize.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-vault-plugin-kustomize
+    spec:
+      allowConcurrency: true
+      discover:
+        find:
+          command:
+            - sh
+            - "-c"
+            - "find . -name '*.yaml' | xargs -I {} grep '<path\\|avp\\.kubernetes\\.io' {} | grep . && find . -name kustomization.yaml | grep ."
+      generate:
+        command:
+          - sh
+          - "-c"
+          - "kustomize build --enable-helm . | argocd-vault-plugin generate -"
+      lockRepo: false
 ---
 apiVersion: v1
 kind: Secret
@@ -30870,7 +30937,7 @@ spec:
                     app.kubernetes.io/part-of: argocd
                 topologyKey: kubernetes.io/hostname
               weight: 5
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       containers:
         - args:
             - /usr/local/bin/argocd-repo-server
@@ -31160,6 +31227,50 @@ spec:
               name: helm-working-dir
             - mountPath: /home/argocd/cmp-server/plugins
               name: plugins
+        - name: avp
+          command: [/var/run/argocd/argocd-cmp-server]
+          image: quay.io/argoproj/argocd:v3.3.0
+          env:
+            - name: AVP_TYPE
+              value: kubernetessecret
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: avp-tmp
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp.yaml
+              name: cmp-plugin
+            - name: custom-tools
+              subPath: argocd-vault-plugin
+              mountPath: /usr/local/bin/argocd-vault-plugin
+        - name: avp-kustomize
+          command: [/var/run/argocd/argocd-cmp-server]
+          image: quay.io/argoproj/argocd:v3.3.0
+          env:
+            - name: AVP_TYPE
+              value: kubernetessecret
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: avp-kustomize-tmp
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp-kustomize.yaml
+              name: cmp-plugin
+            - name: custom-tools
+              subPath: argocd-vault-plugin
+              mountPath: /usr/local/bin/argocd-vault-plugin
       initContainers:
         - args:
             - /bin/cp --update=none /usr/local/bin/argocd /var/run/argocd/argocd && /bin/ln -s /var/run/argocd/argocd /var/run/argocd/argocd-cmp-server
@@ -31180,6 +31291,18 @@ spec:
           volumeMounts:
             - mountPath: /var/run/argocd
               name: var-files
+        - name: download-tools
+          image: alpine:3.19
+          command: [sh, -c]
+          args:
+            - >-
+              wget -O argocd-vault-plugin
+              https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v1.18.1/argocd-vault-plugin_1.18.1_linux_amd64
+              && chmod +x argocd-vault-plugin
+              && mv argocd-vault-plugin /custom-tools/
+          volumeMounts:
+            - mountPath: /custom-tools
+              name: custom-tools
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: argocd-repo-server
@@ -31214,6 +31337,15 @@ spec:
           name: var-files
         - emptyDir: {}
           name: plugins
+        - configMap:
+            name: cmp-plugin
+          name: cmp-plugin
+        - emptyDir: {}
+          name: custom-tools
+        - emptyDir: {}
+          name: avp-tmp
+        - emptyDir: {}
+          name: avp-kustomize-tmp
 ---
 apiVersion: apps/v1
 kind: Deployment

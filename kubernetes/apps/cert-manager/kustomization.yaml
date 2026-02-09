@@ -5,31 +5,9 @@ namespace: cert-manager
 resources:
   - namespace.yaml
   - sealedsecret.yaml
+  - domain-secret.yaml
   - clusterissuer.yaml
-  - configmap.yaml
   - certificate.yaml
-
-replacements:
-  - source:
-      kind: ConfigMap
-      name: domain-config
-      fieldPath: data.domain
-    targets:
-      - select:
-          kind: Certificate
-          name: tls-cert
-        fieldPaths:
-          - spec.dnsNames.0
-  - source:
-      kind: ConfigMap
-      name: domain-config
-      fieldPath: data.wildcard
-    targets:
-      - select:
-          kind: Certificate
-          name: tls-cert
-        fieldPaths:
-          - spec.dnsNames.1
 
 helmCharts:
   - name: cert-manager

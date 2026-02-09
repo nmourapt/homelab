@@ -9,5 +9,5 @@ spec:
     name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
-    - "placeholder.com"
-    - "*.placeholder.com"
+    - <path:cert-manager:domain-config#domain>
+    - <path:cert-manager:domain-config#wildcard>
