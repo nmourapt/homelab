@@ -12,11 +12,12 @@ helmCharts:
     releaseName: traefik
     namespace: traefik
     valuesInline:
+      installCRDs: true
       ingressRoute:
         dashboard:
-          enabled: false
+          enabled: true
         healthcheck:
-          enabled: false
+          enabled: true
       service:
         type: LoadBalancer
         spec:
