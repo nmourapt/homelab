@@ -30050,6 +30050,10 @@ data:
       - email
       - profile
       - groups
+    requestedIDTokenClaims: {"groups": {"essential": true}}
+    enableUserInfoGroups: true
+    userInfoPath: /cdn-cgi/access/sso/oidc/159144c9bfde3716e9abc653261cc2efc996aac6eb1743ae199ecda4a45a6988/userinfo
+    userInfoCacheExpiration: "5m"
     enablePKCEAuthentication: true
 ---
 apiVersion: v1
