@@ -3,4 +3,4 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - argocd-secret-sealed.yaml
+  - argocd-oidc.sealedsecret.yaml
