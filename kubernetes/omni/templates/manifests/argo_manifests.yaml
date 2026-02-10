@@ -30091,7 +30091,6 @@ metadata:
 data:
   policy.default: role:readonly
   policy.csv: |
-    g, nuno@babybites.pt, role:admin
     g, administrators, role:admin
 ---
 apiVersion: v1
