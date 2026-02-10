@@ -341,6 +341,7 @@ resource "cloudflare_zero_trust_access_application" "argo_oidc" {
         source = {
           name = "groups"
         }
+        required = true
       }
     ]
   }
