@@ -334,5 +334,14 @@ resource "cloudflare_zero_trust_access_application" "argo_oidc" {
       "profile",
       "groups",
     ]
+    custom_claims = [
+      {
+        name  = "groups"
+        scope = "groups"
+        source = {
+          name = "groups"
+        }
+      }
+    ]
   }
 }
