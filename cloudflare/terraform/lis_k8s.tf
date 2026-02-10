@@ -21,7 +21,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_k8s_config" {
       },
       {
         hostname = "traefik.${var.tld}"
-        service = "http://traefik.traefik.svc.cluster.local:8080/dashboard"
+        service = "http://traefik.traefik.svc.cluster.local:8080"
         origin_request = {
           http2_origin = true
           no_tls_verify = true
