@@ -89,3 +89,9 @@ variable "egress_ips_json" {
   type        = string
   sensitive   = true
 }
+
+variable "personal_emails_json" {
+  description = "JSON string of personal emails list"
+  type        = string
+  sensitive   = true
+}

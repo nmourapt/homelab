@@ -7,8 +7,9 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
 
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+    cloudflare_zero_trust_access_identity_provider.google.id
   ]
-  auto_redirect_to_identity = true
+  auto_redirect_to_identity = false
 
   policies = [
     { 

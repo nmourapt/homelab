@@ -1,7 +1,7 @@
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "lis_k8s" {
   account_id = var.cloudflare_account_id
-  name = "lis_k8s"
+  name = "tf_lis_k8s"
   config_src = "cloudflare"
 }
 

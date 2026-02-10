@@ -176,3 +176,27 @@ resource "cloudflare_zero_trust_access_policy" "bypass_egress_ips" {
   exclude = []
   require = []
 }
+
+
+resource "cloudflare_zero_trust_access_policy" "personal_email_list" {
+  name             = "TF - Personal Emails"
+  account_id       = var.cloudflare_account_id
+  decision         = "allow"
+  session_duration = "30m"
+
+  include = [
+    {
+      email_list = {
+        id = cloudflare_zero_trust_list.personal_emails.id
+      }
+    }
+  ]
+  exclude = []
+  require = [
+    {
+      login_method = {
+        id = cloudflare_zero_trust_access_identity_provider.google.id
+      }
+    }
+  ]
+}
