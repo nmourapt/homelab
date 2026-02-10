@@ -27,7 +27,7 @@ secrets/secrets.yml
 **/*.secrets.env
 **/.decrypted~*
 kubernetes/**/secret.yaml
-kubernetes/**/configmap.secret.yaml
+kubernetes/**/*.secret.yaml
 
 # Others
 kubernetes/management/**
