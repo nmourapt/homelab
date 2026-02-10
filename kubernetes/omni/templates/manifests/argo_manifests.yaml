@@ -30039,6 +30039,17 @@ metadata:
   namespace: argocd
 data:
   kustomize.buildOptions: --enable-helm
+  oidc.config: |
+    name: Cloudflare
+    issuer: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/159144c9bfde3716e9abc653261cc2efc996aac6eb1743ae199ecda4a45a6988
+    clientID: 159144c9bfde3716e9abc653261cc2efc996aac6eb1743ae199ecda4a45a6988
+    clientSecret: $oidc.cloudflare.clientSecret
+    requestedScopes:
+      - openid
+      - email
+      - profile
+      - groups
+    enablePKCEAuthentication: true
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -30076,6 +30087,10 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-rbac-cm
   namespace: argocd
+data:
+  policy.default: role:readonly
+  policy.csv: |
+    g, administrators, role:admin
 ---
 apiVersion: v1
 data:
