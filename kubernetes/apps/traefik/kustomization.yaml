@@ -23,6 +23,10 @@ helmCharts:
     releaseName: traefik
     namespace: traefik
     valuesInline:
+      ports:
+        traefik:
+          expose:
+            default: true
       ingressRoute:
         dashboard:
           enabled: true
