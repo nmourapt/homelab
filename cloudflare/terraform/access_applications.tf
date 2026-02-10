@@ -264,8 +264,12 @@ resource "cloudflare_zero_trust_access_application" "omni_app" {
 
   policies = [
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
       precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
     }
   ]
 
@@ -289,10 +293,10 @@ resource "cloudflare_zero_trust_access_application" "omni_app" {
   }
 }
 
-resource "cloudflare_zero_trust_access_application" "argo" {
+resource "cloudflare_zero_trust_access_application" "argo_oidc" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - ArgoCD"
-  type                 = "self_hosted"
+  type                 = "saas"
   session_duration     = "24h"
 
   allowed_idps = [
@@ -314,10 +318,21 @@ resource "cloudflare_zero_trust_access_application" "argo" {
   app_launcher_visible = true
   logo_url = "https://argo-cd.readthedocs.io/en/stable/assets/logo.png"
 
-  destinations = [
-    { 
-      type = "public"
-      uri = "argo.${var.tld}"
-    }
-  ]
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://argo.${var.tld}"
+    redirect_uris = [
+      "https://argo.${var.tld}/auth/callback"
+    ]
+    grant_types = [
+      "authorization_code_with_pkce",
+      "authorization_code"
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+      "groups",
+    ]
+  }
 }
