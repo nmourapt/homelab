@@ -30039,12 +30039,11 @@ metadata:
   namespace: argocd
 data:
   kustomize.buildOptions: --enable-helm
-  url: https://argo.nmoura.pt
   oidc.config: |
     name: Cloudflare
     issuer: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/159144c9bfde3716e9abc653261cc2efc996aac6eb1743ae199ecda4a45a6988
     clientID: 159144c9bfde3716e9abc653261cc2efc996aac6eb1743ae199ecda4a45a6988
-    clientSecret: $oidc.cloudflare.clientSecret
+    clientSecret: $argocd-oidc-secret:oidc.cloudflare.clientSecret
     requestedScopes:
       - openid
       - email

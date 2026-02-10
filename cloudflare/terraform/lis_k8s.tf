@@ -54,3 +54,14 @@ resource "cloudflare_dns_record" "argo_record" {
   tags = ["terraform", "lis_k8s", "cloudflared", "tunnel"]
 }
 
+resource "cloudflare_dns_record" "traefik_record" {
+  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_k8s]
+  zone_id = var.cloudflare_tld_zone_id
+  type = "CNAME"
+  name = "traefik"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_k8s.id}.cfargotunnel.com"
+  ttl = 1
+  comment = "Managed by terraform - do not edit"
+  proxied = true
+  tags = ["terraform", "lis_k8s", "cloudflared", "tunnel"]
+}
