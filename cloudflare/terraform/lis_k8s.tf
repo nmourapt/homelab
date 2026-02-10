@@ -12,16 +12,16 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_k8s_config" {
   config = {
     ingress = [
       {
-        hostname = "*.${var.tld}"
-        service = "https://traefik.traefik.svc.cluster.local:443"
+        hostname = "argo.${var.tld}"
+        service = "http://argocd-server.argo.svc.cluster.local:443"
         origin_request = {
           http2_origin = true
           no_tls_verify = true
         }
       },
       {
-        hostname = "argo.${var.tld}"
-        service = "http://argocd-server.argo.svc.cluster.local:443"
+        hostname = "*.${var.tld}"
+        service = "https://traefik.traefik.svc.cluster.local:443"
         origin_request = {
           http2_origin = true
           no_tls_verify = true
