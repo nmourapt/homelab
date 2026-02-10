@@ -71,6 +71,7 @@ jobs:
         TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
         TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
         TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan
@@ -92,6 +93,7 @@ jobs:
         TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
         TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
         TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
@@ -114,6 +116,7 @@ jobs:
         TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
         TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
         TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}  
 
     - name: Cleanup
       if: always()

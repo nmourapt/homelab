@@ -1,7 +1,7 @@
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "lis_prod" {
   account_id = var.cloudflare_account_id
-  name = "lis_prod"
+  name = "tf_lis_prod"
   config_src = "cloudflare"
 }
 
