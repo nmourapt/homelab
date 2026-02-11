@@ -2,7 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: longhorn
-  namespace: longhorn
+  namespace: longhorn-system
   annotations:
     external-dns.alpha.kubernetes.io/target: <path:cloudflared:tunnel-config#tunnel-target>
 spec:
