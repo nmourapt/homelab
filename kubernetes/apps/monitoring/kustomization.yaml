@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+resources:
+  - namespace.yaml
+  - ingressroute-grafana.yaml
+  - ingressroute-prometheus.yaml
+  - ingressroute-alertmanager.yaml
+
+helmCharts:
+  - name: kube-prometheus-stack
+    repo: https://prometheus-community.github.io/helm-charts
+    version: 81.6.1
+    releaseName: kube-prometheus-stack
+    namespace: monitoring
+    valuesInline:
+      crds:
+        enabled: true
+      prometheus:
+        prometheusSpec:
+          retention: 30d
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: longhorn-single
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 50Gi
+          serviceMonitorSelectorNilUsesHelmValues: false
+          podMonitorSelectorNilUsesHelmValues: false
+          ruleSelectorNilUsesHelmValues: false
+      alertmanager:
+        alertmanagerSpec:
+          retention: 120h
+          storage:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: longhorn-single
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 5Gi
+      grafana:
+        persistence:
+          enabled: true
+          storageClassName: longhorn-single
+          size: 10Gi
+        defaultDashboardsEnabled: true
+        defaultDashboardsTimezone: Europe/Lisbon
+        sidecar:
+          dashboards:
+            enabled: true
+          datasources:
+            enabled: true
+      nodeExporter:
+        enabled: true
+      kubeStateMetrics:
+        enabled: true
