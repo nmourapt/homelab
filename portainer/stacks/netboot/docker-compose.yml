@@ -15,12 +15,12 @@ services:
       - "3001:3001"
       - "69:69/udp"
       - "3002:3002"
-    networks:
-      - prod_net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.netboot.rule=Host(`netboot.${DOMAIN}`)"
       - "traefik.http.routers.netboot.entrypoints=web"
+    networks:
+      - prod_net
 
 networks:
   prod_net:
