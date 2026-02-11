@@ -12,8 +12,6 @@ services:
       - /volume1/photos:/usr/src/app/upload
       - /volume1/Fotos:/Fotos
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "2283:2283"
     healthcheck:
       disable: false
     networks:
