@@ -13,6 +13,11 @@ services:
       - 10003:10003
     networks:
       - prod_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`down.${DOMAIN}`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
 
 networks:
   prod_net:

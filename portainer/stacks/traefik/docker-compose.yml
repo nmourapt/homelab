@@ -25,6 +25,7 @@ services:
       DOMAIN1: "${DOMAIN1}"
       DOMAIN1_ZONE_ID: "${DOMAIN1_ZONE_ID}"
       DOMAIN1_PROXIED: "true"
+      DOMAIN1_COMMENT: "added by traefik-cloudflare-companion"
     networks:
       - prod_net
 
