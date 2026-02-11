@@ -8,7 +8,7 @@ resource "cloudflare_ruleset" "redirect_rules" {
   rules = [
     {
       ref         = "traefik_dashboard_redirect"
-      description = "Redirect traefik root to /dashboard/"
+      description = "TF - Redirect traefik root to /dashboard/"
       expression  = "(http.host eq \"traefik.${var.tld}\" and http.request.uri.path eq \"/\")"
       action      = "redirect"
       action_parameters = {

@@ -1,0 +1,32 @@
+enter:
+  - echo "Loading Cloudflare Terraform environment variables..."
+  - export SOPS_AGE_KEY_FILE="$PWD/../../age.key"
+  - export AWS_ACCESS_KEY_ID=$(sops -d --extract '["R2_TF_CLOUDFLARE_ACCESS_KEY_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export AWS_SECRET_ACCESS_KEY=$(sops -d --extract '["R2_TF_CLOUDFLARE_SECRET_ACCESS_KEY"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_cloudflare_api_token=$(sops -d --extract '["CLOUDFLARE_API_TOKEN"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_cloudflare_account_id=$(sops -d --extract '["CF_ACCOUNT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_cloudflare_email=$(sops -d --extract '["CF_EMAIL"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_cloudflare_api_key=$(sops -d --extract '["CF_API_KEY"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_cloudflare_tld_zone_id=$(sops -d --extract '["CF_TLD_ZONE_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_tld=$(sops -d --extract '["TLD"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_tld_alt=$(sops -d --extract '["TLD_ALT"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_pocketid_client_id=$(sops -d --extract '["POCKETID_CLIENT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_pocketid_client_secret=$(sops -d --extract '["POCKETID_CLIENT_SECRET"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_pocketid_reauth_client_id=$(sops -d --extract '["POCKETID_REAUTH_CLIENT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_pocketid_reauth_client_secret=$(sops -d --extract '["POCKETID_REAUTH_CLIENT_SECRET"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_google_client_id=$(sops -d --extract '["GOOGLE_CLIENT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_google_client_secret=$(sops -d --extract '["GOOGLE_CLIENT_SECRET"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_google_workspace_client_id=$(sops -d --extract '["GOOGLE_WORKSPACE_CLIENT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_google_workspace_client_secret=$(sops -d --extract '["GOOGLE_WORKSPACE_CLIENT_SECRET"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_egress_ips_json=$(sops -d --extract '["EGRESS_IPS_JSON"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_personal_emails_json=$(sops -d --extract '["PERSONAL_EMAILS_JSON"]' ../../secrets/reposecrets.sops.yml)
+  - export CF_ACCOUNT_ID=$(sops -d --extract '["CF_ACCOUNT_ID"]' ../../secrets/reposecrets.sops.yml)
+  - echo "Done."
+leave:
+  - echo "Unsetting Cloudflare Terraform environment variables..."
+  - unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY CF_ACCOUNT_ID
+  - unset TF_VAR_cloudflare_api_token TF_VAR_cloudflare_account_id TF_VAR_cloudflare_email TF_VAR_cloudflare_api_key TF_VAR_cloudflare_tld_zone_id
+  - unset TF_VAR_tld TF_VAR_tld_alt
+  - unset TF_VAR_pocketid_client_id TF_VAR_pocketid_client_secret TF_VAR_pocketid_reauth_client_id TF_VAR_pocketid_reauth_client_secret
+  - unset TF_VAR_google_client_id TF_VAR_google_client_secret TF_VAR_google_workspace_client_id TF_VAR_google_workspace_client_secret
+  - unset TF_VAR_egress_ips_json TF_VAR_personal_emails_json
