@@ -19,8 +19,6 @@ services:
     image: tiredofit/traefik-cloudflare-companion:7.4.0
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    ports:
-      - "1734:80"
     environment:
       TARGET_DOMAIN: "${TARGET_DOMAIN}"
       CF_TOKEN: ${CF_TOKEN}
