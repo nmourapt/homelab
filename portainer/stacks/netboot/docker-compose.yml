@@ -19,8 +19,8 @@ services:
       - prod_net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`netboot.${DOMAIN}`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.netboot.rule=Host(`netboot.${DOMAIN}`)"
+      - "traefik.http.routers.netboot.entrypoints=web"
 
 networks:
   prod_net:
