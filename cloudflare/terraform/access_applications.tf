@@ -384,6 +384,105 @@ resource "cloudflare_zero_trust_access_application" "traefik" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "grafana" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Grafana"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/grafana.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "grafana.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "prometheus" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Prometheus"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/prometheus.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "prometheus.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "alertmanager" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Alertmanager"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/alertmanager.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "alertmanager.${var.tld}"
+    }
+  ]
+}
+
 resource "cloudflare_zero_trust_access_application" "longhorn" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Longhorn"
