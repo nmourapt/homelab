@@ -11,7 +11,6 @@ services:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
     ports:
-      - "3001:3001"
       - "69:69/udp"
       - "3002:3002"
     labels:
