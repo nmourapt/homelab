@@ -5,6 +5,7 @@ metadata:
   namespace: longhorn-system
   annotations:
     external-dns.alpha.kubernetes.io/target: <path:cloudflared:tunnel-config#tunnel-target>
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   entryPoints:
     - websecure
