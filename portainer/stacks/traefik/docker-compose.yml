@@ -20,8 +20,11 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
-      TARGET_DOMAIN: "${TARGET_DOMAIN}"
       CF_TOKEN: ${CF_TOKEN}
+      TARGET_DOMAIN: "${TARGET_DOMAIN}"
+      DOMAIN1: "${DOMAIN1}"
+      DOMAIN1_ZONE_ID: "${DOMAIN1_ZONE_ID}"
+      DOMAIN1_PROXIED: "true"
     networks:
       - prod_net
 
