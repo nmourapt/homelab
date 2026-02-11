@@ -38,7 +38,6 @@ jobs:
     - name: Debug event info
       run: |
         echo "Event name: ${{ github.event_name }}"
-        echo "Event type: ${{ github.event.type }}"
         echo "Manual service input: ${{ github.event.inputs.service }}"
         echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
 
