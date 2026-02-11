@@ -321,6 +321,7 @@ resource "cloudflare_zero_trust_access_application" "argo_oidc" {
   saas_app = {
     auth_type = "oidc"
     app_launcher_url = "https://argo.${var.tld}"
+    access_token_lifetime = "24h"
     redirect_uris = [
       "https://argo.${var.tld}/auth/callback"
     ]
