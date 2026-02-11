@@ -5,6 +5,7 @@ namespace: cloudflared
 resources:
   - namespace.yaml
   - sealedsecret.yaml
+  - tunnel-config.sealedsecret.yaml
 
 helmCharts:
   - name: cloudflare-tunnel-remote
