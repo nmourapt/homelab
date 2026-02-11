@@ -15,6 +15,11 @@ services:
       - "32400:32400"
     networks:
       - prod_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.rule=Host(`media.${DOMAIN}`)"
+      - "traefik.http.routers.plex.entrypoints=web"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
 
 networks:
   prod_net:
