@@ -23,12 +23,12 @@ helmCharts:
               name: cloudflare-api-token
               key: api-token
       extraArgs:
-        - --cloudflare-proxied
-        - --cloudflare-dns-records-per-page=5000
-        - --traefik-disable-legacy
+        cloudflare-proxied: true
+        cloudflare-dns-records-per-page: "5000"
+        traefik-disable-legacy: true
       sources:
         - ingress
         - traefik-proxy
-      policy: upsert-only
+      policy: sync
       txtOwnerId: external-dns
       txtPrefix: _externaldns.
