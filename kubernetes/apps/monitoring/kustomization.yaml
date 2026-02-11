@@ -7,6 +7,16 @@ resources:
   - ingressroute-grafana.yaml
   - ingressroute-prometheus.yaml
   - ingressroute-alertmanager.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusagents.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_scrapeconfigs.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+  - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.88.1/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -16,7 +26,7 @@ helmCharts:
     namespace: monitoring
     valuesInline:
       crds:
-        enabled: true
+        enabled: false
       prometheus:
         prometheusSpec:
           retention: 30d
