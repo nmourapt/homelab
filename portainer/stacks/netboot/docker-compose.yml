@@ -7,7 +7,6 @@ services:
       WEB_APP_PORT: "3001"
       NGINX_PORT: "3002"
       TFTPD_OPTS: "--tftp-single-port"
-      DOMAIN: ${DOMAIN}
     volumes:
       - /volume2/docker/netboot/volumes/config:/config
       - /volume2/docker/netboot/volumes/assets:/assets
@@ -15,10 +14,6 @@ services:
       - "3001:3001"
       - "69:69/udp"
       - "3002:3002"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.netboot.rule=Host(`netboot.${DOMAIN}`)"
-      - "traefik.http.routers.netboot.entrypoints=web"
     networks:
       - prod_net
 
