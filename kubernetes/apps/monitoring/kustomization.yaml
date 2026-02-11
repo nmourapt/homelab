@@ -55,6 +55,8 @@ helmCharts:
                   requests:
                     storage: 5Gi
       grafana:
+        deploymentStrategy:
+          type: Recreate
         persistence:
           enabled: true
           storageClassName: longhorn-single
