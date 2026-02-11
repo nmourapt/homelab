@@ -328,7 +328,7 @@ resource "cloudflare_zero_trust_access_application" "argo_oidc" {
     grant_types = [
       "authorization_code_with_pkce",
       "authorization_code",
-      "refresh_token"
+      "refresh_tokens"
     ]
     scopes = [
       "openid",
