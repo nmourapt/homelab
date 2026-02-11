@@ -1,7 +1,7 @@
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "lis_isp" {
   account_id = var.cloudflare_account_id
-  name = "tf_lis_isp"
+  name = "TF_lis_isp"
   config_src = "cloudflare"
 }
 
