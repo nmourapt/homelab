@@ -330,6 +330,9 @@ resource "cloudflare_zero_trust_access_application" "argo_oidc" {
       "authorization_code",
       "refresh_tokens"
     ]
+    refresh_token_options = {
+      lifetime = "1d"
+    }
     scopes = [
       "openid",
       "email",
