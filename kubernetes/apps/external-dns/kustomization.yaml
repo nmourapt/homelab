@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: external-dns
+
+resources:
+  - namespace.yaml
+  - sealedsecret.yaml
+  - traefik-rbac.yaml
+
+helmCharts:
+  - name: external-dns
+    repo: https://kubernetes-sigs.github.io/external-dns
+    version: 1.20.0
+    releaseName: external-dns
+    namespace: external-dns
+    valuesInline:
+      provider:
+        name: cloudflare
+      env:
+        - name: CF_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cloudflare-api-token
+              key: api-token
+      extraArgs:
+        - --cloudflare-proxied
+        - --cloudflare-dns-records-per-page=5000
+        - --traefik-disable-legacy
+      sources:
+        - ingress
+        - traefik-proxy
+      policy: upsert-only
+      txtOwnerId: external-dns
+      txtPrefix: _externaldns.
