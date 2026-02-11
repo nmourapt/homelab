@@ -30038,6 +30038,7 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
+  admin.enabled: "false"
   kustomize.buildOptions: --enable-helm
   url: https://argo.nmoura.pt
   oidc.config: |
@@ -30050,6 +30051,7 @@ data:
       - email
       - profile
       - groups
+      - offline_access
     requestedIDTokenClaims: {"groups": {"essential": true}}
     enableUserInfoGroups: true
     userInfoCacheExpiration: "5m"
