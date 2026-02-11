@@ -23,7 +23,6 @@ helmCharts:
               name: cloudflare-api-token
               key: api-token
       extraArgs:
-        cloudflare-proxied: null
         cloudflare-dns-records-per-page: "5000"
         traefik-disable-legacy: null
       sources:
