@@ -1,0 +1,19 @@
+services:
+  pocketid:
+    container_name: traefik
+    image: traefik:v3.6.7
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    ports:
+      - "1734:80"
+    networks:
+      - prod_net
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+
+networks:
+  prod_net:
+    external: true
