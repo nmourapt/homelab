@@ -27,3 +27,32 @@ helmCharts:
             dsm: '192.168.202.1'
             fsType: ext4
             location: '/volume2'
+
+# Talos doesn't ship /usr/bin/env — inject an init container to create it on the host
+patches:
+  - target:
+      kind: DaemonSet
+      name: synology-csi-node
+    patch: |
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: synology-csi-node
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: create-host-env
+                image: busybox:stable
+                command:
+                  - sh
+                  - -c
+                  - |
+                    if [ ! -f /host/usr/bin/env ]; then
+                      mkdir -p /host/usr/bin
+                      printf '#!/bin/sh\nexec "$@"\n' > /host/usr/bin/env
+                      chmod 755 /host/usr/bin/env
+                    fi
+                volumeMounts:
+                  - name: host-root
+                    mountPath: /host

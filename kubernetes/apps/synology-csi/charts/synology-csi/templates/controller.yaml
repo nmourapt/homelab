@@ -96,12 +96,11 @@ spec:
             - --csi-address=$(ADDRESS)
             - --timeout=60s
             - --v=5
-            - --extra-create-metadata
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .provisioner }}
-          image: {{ .image.repository }}:{{ .image.tag }}
+          image: {{ .image }}:{{ .tag }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
@@ -120,7 +119,7 @@ spec:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .attacher }}
-          image: {{ .image.repository }}:{{ .image.tag }}
+          image: {{ .image }}:{{ .tag }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
@@ -139,7 +138,7 @@ spec:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .resizer }}
-          image: {{ .image.repository }}:{{ .image.tag }}
+          image: {{ .image }}:{{ .tag }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
@@ -160,7 +159,7 @@ spec:
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .plugin }}
-          image: {{ .image.repository }}:{{ .image.tag | default $.Chart.AppVersion }}
+          image: {{ .image }}:{{ .tag | default $.Chart.AppVersion }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
