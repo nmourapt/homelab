@@ -1,7 +1,7 @@
 services:
   omni:
     container_name: omni
-    image: "ghcr.io/siderolabs/omni:v1.5.0"
+    image: "ghcr.io/siderolabs/omni:v1.5.1"
     restart: unless-stopped
     devices:
       - /dev/net/tun
