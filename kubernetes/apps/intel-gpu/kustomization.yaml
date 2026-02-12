@@ -26,6 +26,7 @@ helmCharts:
       sharedDevNum: 1
       enableMonitoring: true
 
+# avoid need for node-feature-discovery as all nodes have iGPU
 patches:
   - target:
       group: deviceplugin.intel.com
@@ -37,3 +38,4 @@ patches:
         path: /spec/nodeSelector
         value:
           kubernetes.io/arch: amd64
+          
