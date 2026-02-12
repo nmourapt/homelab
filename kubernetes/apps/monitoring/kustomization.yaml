@@ -7,7 +7,7 @@ resources:
   - ingressroute-grafana.yaml
   - ingressroute-prometheus.yaml
   - ingressroute-alertmanager.yaml
-  - grafana-oidc.secret.yaml
+  - grafana-oidc.sealedsecret.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
