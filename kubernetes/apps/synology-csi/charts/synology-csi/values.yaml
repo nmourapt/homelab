@@ -1,18 +1,18 @@
 ---
 clientInfoSecret:
   # How to connect to your Synology Diskstation?
-  clients:
-    - host: 192.168.1.1   # the IP address of the Diskstation
-      https: false        # whether the port expects HTTPS or not
-      password: password  # the password of the dedicated CSI user
-      port: 5000          # the port for connecting to the Diskstation Manager application
-      username: username  # the name of the dedicated CSI user
-    - host: 192.168.1.1
-      https: true
-      password: password
-      port: 5001
-      username: username
-  # Whether to create the secret if the chart gets installed or not; ignored on updates.
+#  clients:
+#    - host: 192.168.1.1   # the IP address of the Diskstation
+#      https: false        # whether the port expects HTTPS or not
+#      password: password  # the password of the dedicated CSI user
+#      port: 5000          # the port for connecting to the Diskstation Manager application
+#      username: username  # the name of the dedicated CSI user
+#    - host: 192.168.1.1
+#      https: true
+#      password: password
+#      port: 5001
+#      username: username
+  # Whether to create the secret or not
   create: false
   # Defaults to {{ include "synology-csi.fullname" $ }}-client-info if empty or not present:
   name: "client-info-secret"
@@ -24,31 +24,37 @@ controller:
 fullnameOverride: ""
 images:
   attacher:
-    image: registry.k8s.io/sig-storage/csi-attacher
     pullPolicy: IfNotPresent
-    tag: v4.2.0
+    image:
+      repository: registry.k8s.io/sig-storage/csi-attacher
+      tag: v4.8.1
   nodeDriverRegistrar:
-    image: registry.k8s.io/sig-storage/csi-node-driver-registrar
     pullPolicy: IfNotPresent
-    tag: v2.6.3
+    image:
+      repository: registry.k8s.io/sig-storage/csi-node-driver-registrar
+      tag: v2.13.0
   plugin:
-    image: synology/synology-csi
     pullPolicy: IfNotPresent
-    # Defaults to {{ $.Chart.AppVersion }} if empty or not present:
-    tag: ""
+    image:
+      repository: ghcr.io/zebernst/synology-csi
+      # Defaults to {{ $.Chart.AppVersion }} if empty or not present:
+      tag: ""
     supportChrootDir: true
   provisioner:
-    image: registry.k8s.io/sig-storage/csi-provisioner
     pullPolicy: IfNotPresent
-    tag: v3.4.0
+    image:
+      repository: registry.k8s.io/sig-storage/csi-provisioner
+      tag: v5.2.0
   resizer:
-    image: registry.k8s.io/sig-storage/csi-resizer
     pullPolicy: IfNotPresent
-    tag: v1.7.0
+    image:
+      repository: registry.k8s.io/sig-storage/csi-resizer
+      tag: v1.13.2
   snapshotter:
-    image: registry.k8s.io/sig-storage/csi-snapshotter
     pullPolicy: IfNotPresent
-    tag: v4.2.1
+    image:
+      repository: registry.k8s.io/sig-storage/csi-snapshotter
+      tag: v8.2.0
 installCSIDriver: true
 nameOverride: ""
 # Specifies affinity, nodeSelector and tolerations for the node DaemonSet
@@ -59,21 +65,19 @@ node:
   # If your kubelet path is not standard, specify it here :
   ## example for miocrok8s distrib : /var/snap/microk8s/common/var/lib/kubelet
   kubeletPath: /var/lib/kubelet
-  extraArgs: []
-  # - --iscsiadm-path=/usr/local/sbin/iscsiadm
 # Specifies affinity, nodeSelector and tolerations for the snapshotter StatefulSet
 snapshotter:
   affinity: { }
   nodeSelector: { }
   tolerations: [ ]
-storageClasses:
-  synology-iscsi-storage:
+storageClasses: {}
+#  synology-iscsi-storage:
     # One of true or false (default):
     ##disabled: false
     # One of true or false (default):
     ##isDefault: false
     # One of "Retain" or "Delete" (default):
-    reclaimPolicy: Retain
+#    reclaimPolicy: Retain
     # One of "WaitForFirstConsumer" or "Immediate" (default):
     ##volumeBindingMode: Immediate
 
@@ -85,12 +89,12 @@ storageClasses:
     ##  location: /volume1
   # synology-iscsi-storage-delete:
   #   reclaimPolicy: Delete
-volumeSnapshotClasses:
-  synology-snapshotclass:
+volumeSnapshotClasses: {}
+#  synology-snapshotclass:
     # One of true or false (default):
     ##disabled: false
     # One of "Retain" or "Delete" (default):
-    deletionPolicy: Delete
+#    deletionPolicy: Delete
     # One of true or false (default):
     ##isDefault: false
 
@@ -98,3 +102,6 @@ volumeSnapshotClasses:
     ##parameters:
     ##  description: "Kubernetes CSI"
     ##  is_locked: "false"
+test:
+  enabled: true
+  storageClass: synology-iscsi-storage-delete

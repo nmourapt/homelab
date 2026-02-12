@@ -19,19 +19,11 @@ helmCharts:
         name: client-info-secret
       images:
         plugin:
-          supportChrootDir: false
-      node:
-        extraArgs:
-          - --iscsiadm-path=/host/usr/local/sbin/iscsiadm
+          supportChrootDir: true
       storageClasses:
-        synology-iscsi-storage:
-          disabled: true
         synology-iscsi:
           reclaimPolicy: Retain
           parameters:
             dsm: '192.168.202.1'
             fsType: ext4
             location: '/volume2'
-      volumeSnapshotClasses:
-        synology-snapshotclass:
-          disabled: true
