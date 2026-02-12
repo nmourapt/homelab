@@ -439,7 +439,7 @@ resource "cloudflare_zero_trust_access_application" "grafana_oidc" {
     }
   ]
 
-  app_launcher_visible = false
+  app_launcher_visible = true
   logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/grafana.png"
 
   saas_app = {
@@ -457,16 +457,6 @@ resource "cloudflare_zero_trust_access_application" "grafana_oidc" {
       "email",
       "profile",
       "groups",
-    ]
-    custom_claims = [
-      {
-        name  = "groups"
-        scope = "groups"
-        source = {
-          name = "groups"
-        }
-        required = true
-      }
     ]
   }
 }
