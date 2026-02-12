@@ -19,7 +19,10 @@ helmCharts:
         name: client-info-secret
       images:
         plugin:
-          supportChrootDir: true
+          supportChrootDir: false
+      node:
+        extraArgs:
+          - --iscsiadm-path=/host/usr/local/sbin/iscsiadm
       storageClasses:
         synology-iscsi-storage:
           disabled: true
