@@ -22,7 +22,7 @@ rules:
     verbs: [ "get", "list", "watch" ]
   - apiGroups: [ "snapshot.storage.k8s.io" ]
     resources: [ "volumesnapshotcontents" ]
-    verbs: [ "create", "get", "list", "watch", "update", "delete" ]
+    verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
   - apiGroups: [ "snapshot.storage.k8s.io" ]
     resources: [ "volumesnapshotcontents/status" ]
     verbs: [ "update" ]
@@ -76,7 +76,7 @@ spec:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .snapshotter }}
-          image: {{ .image }}:{{ .tag }}
+          image: {{ .image.repository }}:{{ .image.tag }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
@@ -97,7 +97,7 @@ spec:
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
           {{- with .plugin }}
-          image: {{ .image }}:{{ .tag | default $.Chart.AppVersion }}
+          image: {{ .image.repository }}:{{ .image.tag | default $.Chart.AppVersion }}
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           securityContext:
