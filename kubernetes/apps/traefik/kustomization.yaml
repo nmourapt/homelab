@@ -5,6 +5,8 @@ namespace: traefik
 resources:
   - namespace.yaml
   - default-tlsstore.yaml
+  - servicemonitor.yaml
+  - dashboard-traefik.yaml
   - https://raw.githubusercontent.com/traefik/traefik-helm-chart/v39.0.0/traefik/crds/traefik.io_ingressroutes.yaml
   - https://raw.githubusercontent.com/traefik/traefik-helm-chart/v39.0.0/traefik/crds/traefik.io_ingressroutetcps.yaml
   - https://raw.githubusercontent.com/traefik/traefik-helm-chart/v39.0.0/traefik/crds/traefik.io_ingressrouteudps.yaml

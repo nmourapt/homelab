@@ -4,3 +4,5 @@ namespace: argocd
 
 resources:
   - argocd-oidc.sealedsecret.yaml
+  - servicemonitor.yaml
+  - dashboard-argocd.yaml
