@@ -1,0 +1,13 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: synology-nfs
+provisioner: csi.san.synology.com
+parameters:
+  protocol: 'nfs'
+  dsm: '192.168.202.1'
+  location: '/volume2/kubernetes'
+mountOptions:
+  - nfsvers=4.1
+reclaimPolicy: Retain
+allowVolumeExpansion: true
