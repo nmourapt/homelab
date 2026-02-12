@@ -7,6 +7,15 @@ resources:
   - https://raw.githubusercontent.com/intel/intel-device-plugins-for-kubernetes/v0.34.1/deployments/operator/crd/bases/deviceplugin.intel.com_gpudeviceplugins.yaml
 
 helmCharts:
+  - name: intel-device-plugins-operator
+    repo: https://intel.github.io/helm-charts
+    version: 0.34.1
+    releaseName: intel-gpu-operator
+    namespace: intel-gpu
+    valuesInline:
+      manager:
+        devices:
+          gpu: true
   - name: intel-device-plugins-gpu
     repo: https://intel.github.io/helm-charts
     version: 0.34.1
