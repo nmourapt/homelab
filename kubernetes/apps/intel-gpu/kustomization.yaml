@@ -22,7 +22,9 @@ helmCharts:
     releaseName: intel-gpu
     namespace: intel-gpu
     valuesInline:
-      nodeSelector: {}
+      nodeSelector:
+        intel.feature.node.kubernetes.io/gpu: null
+        kubernetes.io/arch: amd64
       nodeFeatureRule: false
       sharedDevNum: 1
       enableMonitoring: true
