@@ -6,6 +6,8 @@ resources:
   - namespace.yaml
   - ingressroute.yaml
   - storageclass-single.yaml
+  - servicemonitor.yaml
+  - dashboard-longhorn.yaml
 
 helmCharts:
   - name: longhorn
