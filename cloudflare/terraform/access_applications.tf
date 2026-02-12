@@ -417,6 +417,60 @@ resource "cloudflare_zero_trust_access_application" "grafana" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "grafana_oidc" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Grafana OIDC"
+  type                 = "saas"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = false
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/grafana.png"
+
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://grafana.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://grafana.${var.tld}/login/generic_oauth"
+    ]
+    grant_types = [
+      "authorization_code",
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+      "groups",
+    ]
+    custom_claims = [
+      {
+        name  = "groups"
+        scope = "groups"
+        source = {
+          name = "groups"
+        }
+        required = true
+      }
+    ]
+  }
+}
+
 resource "cloudflare_zero_trust_access_application" "prometheus" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Prometheus"
