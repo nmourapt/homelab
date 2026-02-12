@@ -5,7 +5,30 @@ namespace: synology-csi
 resources:
   - namespace.yaml
   - client-info.sealedsecret.yaml
-  - csi-driver.yaml
-  - controller.yaml
-  - node.yaml
-  - storageclass-iscsi.yaml
+
+helmGlobals:
+  chartHome: charts
+
+helmCharts:
+  - name: synology-csi
+    releaseName: synology-csi
+    namespace: synology-csi
+    valuesInline:
+      clientInfoSecret:
+        create: false
+        name: client-info-secret
+      images:
+        plugin:
+          supportChrootDir: true
+      storageClasses:
+        synology-iscsi-storage:
+          disabled: true
+        synology-iscsi:
+          reclaimPolicy: Retain
+          parameters:
+            dsm: '192.168.202.1'
+            fsType: ext4
+            location: '/volume2'
+      volumeSnapshotClasses:
+        synology-snapshotclass:
+          disabled: true
