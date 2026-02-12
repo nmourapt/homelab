@@ -7,6 +7,7 @@ resources:
   - ingressroute-grafana.yaml
   - ingressroute-prometheus.yaml
   - ingressroute-alertmanager.yaml
+  - grafana-oidc.secret.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -53,6 +54,23 @@ helmCharts:
           size: 10Gi
         defaultDashboardsEnabled: true
         defaultDashboardsTimezone: Europe/Lisbon
+        envFromSecrets:
+          - name: grafana-oidc
+            optional: false
+        grafana.ini:
+          server:
+            root_url: https://grafana.<path:cert-manager:domain-config#domain>
+          auth.generic_oauth:
+            enabled: true
+            name: Cloudflare
+            allow_sign_up: true
+            auto_login: true
+            scopes: openid email profile groups
+            auth_url: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/a98801bb1e8e2a09b4762335b5eb9e94df4de3652adc5e49bb4fd073ca9d0b68/authorization
+            token_url: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/a98801bb1e8e2a09b4762335b5eb9e94df4de3652adc5e49bb4fd073ca9d0b68/token
+            api_url: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/a98801bb1e8e2a09b4762335b5eb9e94df4de3652adc5e49bb4fd073ca9d0b68/userinfo
+            role_attribute_path: contains(groups[*], 'administrators') && 'Admin' || 'Viewer'
+            use_pkce: false
         sidecar:
           dashboards:
             enabled: true
