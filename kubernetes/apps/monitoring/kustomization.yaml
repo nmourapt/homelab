@@ -8,6 +8,8 @@ resources:
   - ingressroute-prometheus.yaml
   - ingressroute-alertmanager.yaml
   - grafana-oidc.sealedsecret.yaml
+  - servicemonitor-cilium.yaml
+  - dashboard-cilium.yaml
 
 helmCharts:
   - name: kube-prometheus-stack

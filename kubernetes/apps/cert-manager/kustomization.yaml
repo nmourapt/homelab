@@ -8,6 +8,8 @@ resources:
   - domain-secret.yaml
   - clusterissuer.yaml
   - certificate.yaml
+  - servicemonitor.yaml
+  - dashboard-cert-manager.yaml
 
 helmCharts:
   - name: cert-manager
