@@ -384,42 +384,9 @@ resource "cloudflare_zero_trust_access_application" "traefik" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "grafana" {
-  account_id           = var.cloudflare_account_id
-  name                 = "TF - Grafana"
-  type                 = "self_hosted"
-  session_duration     = "24h"
-
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid.id
-  ]
-  auto_redirect_to_identity = true
-
-  policies = [
-    { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
-      precedence = 1
-    },
-    { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
-      precedence = 2
-    }
-  ]
-
-  app_launcher_visible = true
-  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/grafana.png"
-
-  destinations = [
-    { 
-      type = "public"
-      uri = "grafana.${var.tld}"
-    }
-  ]
-}
-
 resource "cloudflare_zero_trust_access_application" "grafana_oidc" {
   account_id           = var.cloudflare_account_id
-  name                 = "TF - Grafana OIDC"
+  name                 = "TF - Grafana"
   type                 = "saas"
   session_duration     = "24h"
 
