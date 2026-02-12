@@ -26,6 +26,9 @@ helmCharts:
     releaseName: traefik
     namespace: traefik
     valuesInline:
+      metrics:
+        prometheus:
+          entryPoint: traefik
       ports:
         traefik:
           expose:
