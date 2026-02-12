@@ -22,9 +22,18 @@ helmCharts:
     releaseName: intel-gpu
     namespace: intel-gpu
     valuesInline:
-      nodeSelector:
-        intel.feature.node.kubernetes.io/gpu: null
-        kubernetes.io/arch: amd64
       nodeFeatureRule: false
       sharedDevNum: 1
       enableMonitoring: true
+
+patches:
+  - target:
+      group: deviceplugin.intel.com
+      version: v1
+      kind: GpuDevicePlugin
+      name: gpudeviceplugin-sample
+    patch: |
+      - op: replace
+        path: /spec/nodeSelector
+        value:
+          kubernetes.io/arch: amd64
