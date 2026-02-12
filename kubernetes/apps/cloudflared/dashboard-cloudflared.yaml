@@ -131,7 +131,7 @@ data:
             },
             "textMode": "auto"
           },
-          "title": "Active Streams",
+          "title": "Concurrent Requests",
           "type": "stat",
           "targets": [
             {
@@ -139,7 +139,7 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "sum(cloudflared_tunnel_active_streams{instance=~\"$instance\"})",
+              "expr": "sum(cloudflared_tunnel_concurrent_requests_per_tunnel{instance=~\"$instance\"})",
               "legendFormat": "",
               "refId": "A"
             }
@@ -907,7 +907,7 @@ data:
               "sort": "desc"
             }
           },
-          "title": "Active Streams",
+          "title": "Concurrent Requests",
           "type": "timeseries",
           "targets": [
             {
@@ -915,7 +915,7 @@ data:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "cloudflared_tunnel_active_streams{instance=~\"$instance\"}",
+              "expr": "cloudflared_tunnel_concurrent_requests_per_tunnel{instance=~\"$instance\"}",
               "legendFormat": "{{instance}}",
               "refId": "A"
             }
