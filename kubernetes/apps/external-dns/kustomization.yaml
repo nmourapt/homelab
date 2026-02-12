@@ -6,6 +6,8 @@ resources:
   - namespace.yaml
   - sealedsecret.yaml
   - traefik-rbac.yaml
+  - servicemonitor.yaml
+  - dashboard-external-dns.yaml
 
 helmCharts:
   - name: external-dns

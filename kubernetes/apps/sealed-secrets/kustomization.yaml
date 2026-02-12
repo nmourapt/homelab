@@ -4,6 +4,8 @@ namespace: sealed-secrets
 
 resources:
   - namespace.yaml
+  - servicemonitor.yaml
+  - dashboard-sealed-secrets.yaml
 
 helmCharts:
   - name: sealed-secrets
