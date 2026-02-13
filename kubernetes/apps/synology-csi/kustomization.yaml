@@ -21,7 +21,7 @@ helmCharts:
         plugin:
           image:
             tag: v1.2.0
-          supportChrootDir: true
+          supportChrootDir: false
       storageClasses:
         synology-iscsi:
           reclaimPolicy: Retain
