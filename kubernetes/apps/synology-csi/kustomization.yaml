@@ -28,4 +28,4 @@ helmCharts:
           parameters:
             dsm: '192.168.202.1'
             fsType: ext4
-            location: '/volume1'
+            location: '/volume2'
