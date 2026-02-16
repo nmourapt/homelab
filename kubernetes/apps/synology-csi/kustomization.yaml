@@ -5,6 +5,7 @@ namespace: synology-csi
 resources:
   - namespace.yaml
   - client-info.sealedsecret.yaml
+  - dashboard-synology-csi.yaml
 
 helmGlobals:
   chartHome: charts
