@@ -363,7 +363,22 @@ jobs:
             sed -i "s|stack_file_path.*=.*|stack_file_path   = \"/tmp/compose/${service}.yml\"|" "portainer/terraform/${service}.tf"
           fi
         done
-        terraform apply -auto-approve tfplan-infra
+        MAX_RETRIES=3
+        RETRY_DELAY=30
+        for attempt in $(seq 1 $MAX_RETRIES); do
+          echo "Attempt $attempt of $MAX_RETRIES..."
+          if terraform apply -auto-approve tfplan-infra 2>&1; then
+            echo "Apply succeeded on attempt $attempt"
+            exit 0
+          fi
+          if [ $attempt -lt $MAX_RETRIES ]; then
+            echo "Apply failed, waiting ${RETRY_DELAY}s before retry..."
+            sleep $RETRY_DELAY
+            terraform plan -out=tfplan-infra
+          fi
+        done
+        echo "All $MAX_RETRIES attempts failed"
+        exit 1
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
@@ -643,9 +658,25 @@ jobs:
       if: steps.check-files.outputs.terraform-exists == 'true' && github.ref == 'refs/heads/main'
       run: |
         SERVICE="${{ matrix.service }}"
-        terraform apply -auto-approve "tfplan-${SERVICE}"
-        # Clean up plan file after successful apply
+        MAX_RETRIES=3
+        RETRY_DELAY=30
+        for attempt in $(seq 1 $MAX_RETRIES); do
+          echo "Attempt $attempt of $MAX_RETRIES..."
+          if terraform apply -auto-approve "tfplan-${SERVICE}" 2>&1; then
+            echo "Apply succeeded on attempt $attempt"
+            rm -f "tfplan-${SERVICE}"
+            exit 0
+          fi
+          if [ $attempt -lt $MAX_RETRIES ]; then
+            echo "Apply failed, waiting ${RETRY_DELAY}s before retry..."
+            sleep $RETRY_DELAY
+            # Re-plan since the plan file is consumed on failure
+            terraform plan -target="portainer_stack.${SERVICE}_stack" -out="tfplan-${SERVICE}"
+          fi
+        done
+        echo "All $MAX_RETRIES attempts failed"
         rm -f "tfplan-${SERVICE}"
+        exit 1
       working-directory: ./portainer/terraform
       env:
         TF_VAR_portainer_api_key: ${{ secrets.PORTAINER_API_KEY }}
