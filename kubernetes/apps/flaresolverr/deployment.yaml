@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: flaresolverr
-          image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
+          image: alexfozor/flaresolverr:pr-1300-experimental
           ports:
             - containerPort: 8191
               protocol: TCP
