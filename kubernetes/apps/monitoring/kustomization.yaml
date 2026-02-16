@@ -10,6 +10,8 @@ resources:
   - grafana-oidc.sealedsecret.yaml
   - servicemonitor-cilium.yaml
   - dashboard-cilium.yaml
+  - alertmanager-telegram.sealedsecret.yaml
+  - prometheusrule-homelab.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -38,6 +40,8 @@ helmCharts:
       alertmanager:
         alertmanagerSpec:
           retention: 120h
+          secrets:
+            - alertmanager-telegram
           storage:
             volumeClaimTemplate:
               spec:
@@ -47,6 +51,50 @@ helmCharts:
                 resources:
                   requests:
                     storage: 5Gi
+        config:
+          global:
+            resolve_timeout: 5m
+          route:
+            receiver: telegram
+            group_by: ['namespace', 'alertname']
+            group_wait: 30s
+            group_interval: 5m
+            repeat_interval: 12h
+            routes:
+              - receiver: 'null'
+                matchers:
+                  - alertname = "InfoInhibitor"
+              - receiver: telegram
+                matchers:
+                  - severity =~ "critical|warning"
+                continue: false
+          receivers:
+            - name: 'null'
+            - name: telegram
+              telegram_configs:
+                - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+                  chat_id: 8283832115
+                  parse_mode: HTML
+                  message: |-
+                    {{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} <b>{{ .Status | toUpper }}</b>
+                    {{ range .Alerts }}
+                    <b>{{ .Labels.alertname }}</b> ({{ .Labels.severity }})
+                    {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
+                    {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
+                    <b>Namespace:</b> {{ .Labels.namespace }}
+                    <b>Pod:</b> {{ .Labels.pod }}
+                    {{ end }}
+          inhibit_rules:
+            - source_matchers:
+                - severity = "critical"
+              target_matchers:
+                - severity = "warning"
+              equal: ['namespace', 'alertname']
+            - source_matchers:
+                - alertname = "InfoInhibitor"
+              target_matchers:
+                - severity = "info"
+              equal: ['namespace']
       grafana:
         deploymentStrategy:
           type: Recreate
