@@ -114,3 +114,124 @@ spec:
           annotations:
             summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
             description: "Application health is {{ $labels.health_status }} for 15 minutes"
+
+    - name: homelab-longhorn
+      rules:
+        - alert: LonghornVolumedegraded
+          expr: longhorn_volume_robustness == 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is degraded"
+            description: "Volume has lost replica redundancy"
+        - alert: LonghornVolumeFaulted
+          expr: longhorn_volume_robustness == 3
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is faulted"
+            description: "Volume is faulted and may be unavailable"
+        - alert: LonghornNodeStorageHigh
+          expr: (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn storage high on {{ $labels.node }}"
+            description: "Node storage usage is {{ $value | printf \"%.1f\" }}%"
+        - alert: LonghornNodeStorageCritical
+          expr: (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn storage critical on {{ $labels.node }}"
+            description: "Node storage usage is {{ $value | printf \"%.1f\" }}%"
+        - alert: LonghornDiskUnhealthy
+          expr: longhorn_disk_status == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk unhealthy on {{ $labels.node }}"
+            description: "Disk {{ $labels.disk }} is not schedulable or unhealthy"
+        - alert: LonghornVolumeHighLatency
+          expr: longhorn_volume_write_latency > 5000000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} has high write latency"
+            description: "Write latency is {{ $value | humanize }}ns"
+
+    - name: homelab-traefik
+      rules:
+        - alert: TraefikHighErrorRate
+          expr: sum(rate(traefik_service_requests_total{code=~"5.."}[5m])) / sum(rate(traefik_service_requests_total[5m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Traefik high 5xx error rate"
+            description: "{{ $value | printf \"%.1f\" }}% of requests are returning 5xx errors"
+        - alert: TraefikServiceHighErrorRate
+          expr: sum by (service) (rate(traefik_service_requests_total{code=~"5.."}[5m])) / sum by (service) (rate(traefik_service_requests_total[5m])) * 100 > 10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Traefik service {{ $labels.service }} high error rate"
+            description: "{{ $value | printf \"%.1f\" }}% of requests to {{ $labels.service }} are 5xx"
+        - alert: TraefikConfigReloadFailure
+          expr: traefik_config_last_reload_success == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Traefik config reload failed"
+            description: "Traefik's last configuration reload was not successful"
+        - alert: TraefikHighRequestLatency
+          expr: histogram_quantile(0.95, sum(rate(traefik_service_request_duration_seconds_bucket[5m])) by (le, service)) > 3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Traefik service {{ $labels.service }} high latency"
+            description: "P95 latency is {{ $value | printf \"%.2f\" }}s"
+
+    - name: homelab-synology-csi
+      rules:
+        - alert: SynologyCSIControllerDown
+          expr: absent(kube_pod_container_status_running{namespace="synology-csi", pod=~"synology-csi-controller.*", container="csi-plugin"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Synology CSI controller is down"
+            description: "The CSI controller pod is not running"
+        - alert: SynologyCSINodePluginDown
+          expr: count(kube_pod_container_status_running{namespace="synology-csi", pod=~"synology-csi-node.*", container="csi-plugin"} == 1) < count(kube_node_info)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Synology CSI node plugin not running on all nodes"
+            description: "Only {{ $value }} node plugins running, expected {{ with query \"count(kube_node_info)\" }}{{ . | first | value }}{{ end }}"
+        - alert: SynologyCSIPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="synology-csi"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Synology CSI pod {{ $labels.pod }} is restarting"
+            description: "Container {{ $labels.container }} has restarted {{ $value | printf \"%.0f\" }} times in the last hour"
+        - alert: SynologyISCSIPVFailed
+          expr: kube_persistentvolume_status_phase{phase="Failed", storageclass="synology-iscsi"} == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Synology iSCSI PV {{ $labels.persistentvolume }} failed"
+            description: "A Synology iSCSI persistent volume has entered Failed state"
