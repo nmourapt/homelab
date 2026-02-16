@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-ml
+  namespace: immich-ml
+  labels:
+    app: immich-ml
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: immich-ml
+  template:
+    metadata:
+      labels:
+        app: immich-ml
+    spec:
+      containers:
+        - name: immich-ml
+          image: ghcr.io/immich-app/immich-machine-learning:v2.5.6-openvino
+          ports:
+            - containerPort: 3003
+              protocol: TCP
+          resources:
+            requests:
+              gpu.intel.com/i915: 1
+            limits:
+              gpu.intel.com/i915: 1
+          volumeMounts:
+            - mountPath: /cache
+              name: immich-ml-cache
+      volumes:
+        - name: immich-ml-cache
+          persistentVolumeClaim:
+            claimName: immich-ml-cache
