@@ -335,3 +335,30 @@ spec:
           annotations:
             summary: "Sealed Secrets controller unseal errors"
             description: "{{ $value | printf \"%.0f\" }} unseal error(s) in the last hour"
+
+    - name: homelab-immich-ml
+      rules:
+        - alert: ImmichMLDown
+          expr: kube_deployment_status_available_replicas{namespace="immich-ml", deployment="immich-ml"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Immich ML is down"
+            description: "No available replicas for Immich ML — Smart Search and Face Detection will fail"
+        - alert: ImmichMLCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="immich-ml"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Immich ML pod {{ $labels.pod }} is crash looping"
+            description: "Container {{ $labels.container }} has restarted {{ $value | printf \"%.0f\" }} times in the last hour"
+        - alert: ImmichMLHighMemory
+          expr: container_memory_working_set_bytes{namespace="immich-ml", container="immich-ml"} > 4 * 1024^3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Immich ML using excessive memory"
+            description: "Memory usage is {{ $value | humanize1024 }}B (threshold: 4Gi)"
