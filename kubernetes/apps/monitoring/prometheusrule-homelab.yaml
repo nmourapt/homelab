@@ -235,3 +235,103 @@ spec:
           annotations:
             summary: "Synology iSCSI PV {{ $labels.persistentvolume }} failed"
             description: "A Synology iSCSI persistent volume has entered Failed state"
+
+    - name: homelab-cert-manager
+      rules:
+        - alert: CertManagerCertExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 21 * 24 * 3600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expiring soon"
+            description: "Certificate expires in {{ $value | humanizeDuration }}"
+        - alert: CertManagerCertExpiryCritical
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 7 * 24 * 3600
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expiring in less than 7 days"
+            description: "Certificate expires in {{ $value | humanizeDuration }}"
+        - alert: CertManagerCertNotReady
+          expr: certmanager_certificate_ready_status{condition="True"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready"
+            description: "Certificate has been in a not-ready state for 15 minutes"
+        - alert: CertManagerSyncErrors
+          expr: rate(certmanager_controller_sync_error_count[5m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "cert-manager controller sync errors"
+            description: "cert-manager is experiencing sync errors for 10 minutes"
+
+    - name: homelab-cloudflared
+      rules:
+        - alert: CloudflaredTunnelDown
+          expr: cloudflared_tunnel_ha_connections == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Cloudflared tunnel has no active connections"
+            description: "All HA connections to Cloudflare edge are down — external access is broken"
+        - alert: CloudflaredTunnelDegraded
+          expr: cloudflared_tunnel_ha_connections < 2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflared tunnel has reduced HA connections"
+            description: "Only {{ $value }} HA connection(s) active (expected >=2)"
+        - alert: CloudflaredHighErrorRate
+          expr: rate(cloudflared_tunnel_request_errors[5m]) / rate(cloudflared_tunnel_total_requests[5m]) * 100 > 5
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflared tunnel high error rate"
+            description: "{{ $value | printf \"%.1f\" }}% of tunnel requests are failing"
+        - alert: CloudflaredHighConnectLatency
+          expr: histogram_quantile(0.95, rate(cloudflared_proxy_connect_latency_bucket[5m])) > 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflared high proxy connect latency"
+            description: "P95 connect latency is {{ $value | printf \"%.2f\" }}s"
+
+    - name: homelab-external-dns
+      rules:
+        - alert: ExternalDNSSyncErrors
+          expr: increase(external_dns_controller_consecutive_soft_errors[5m]) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "external-dns is experiencing sync errors"
+            description: "Consecutive soft errors detected for 15 minutes"
+        - alert: ExternalDNSStaleSync
+          expr: time() - external_dns_controller_last_sync_timestamp_seconds > 900
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "external-dns has not synced recently"
+            description: "Last sync was {{ $value | humanizeDuration }} ago (threshold: 15m)"
+
+    - name: homelab-sealed-secrets
+      rules:
+        - alert: SealedSecretsUnsealErrors
+          expr: increase(sealed_secrets_controller_unseal_errors_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sealed Secrets controller unseal errors"
+            description: "{{ $value | printf \"%.0f\" }} unseal error(s) in the last hour"
