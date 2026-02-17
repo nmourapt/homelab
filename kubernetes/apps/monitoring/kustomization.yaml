@@ -10,6 +10,7 @@ resources:
   - grafana-oidc.sealedsecret.yaml
   - servicemonitor-cilium.yaml
   - dashboard-cilium.yaml
+  - dashboard-flaresolverr.yaml
   - alertmanager-telegram.sealedsecret.yaml
   - prometheusrule-homelab.yaml
 
