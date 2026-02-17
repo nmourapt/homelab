@@ -6,3 +6,5 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
+  - servicemonitor.yaml
+  - dashboard-flaresolverr.yaml

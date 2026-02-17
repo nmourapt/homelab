@@ -1,0 +1,301 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flaresolverr-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  flaresolverr.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "Overview",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 0.5 }
+                ]
+              },
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "UP", "color": "green" }, "1": { "text": "DOWN", "color": "red" } } }
+              ]
+            }
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+          "id": 1,
+          "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "title": "Status",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "up{job=\"flaresolverr\", namespace=\"flaresolverr\"} == 0",
+              "legendFormat": "Status"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+            }
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+          "id": 2,
+          "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "title": "Total Requests",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(flaresolverr_request_total{namespace=\"flaresolverr\"})",
+              "legendFormat": "Total"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "steps": [{ "color": "green", "value": null }] }
+            }
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+          "id": 3,
+          "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "title": "Solved Requests",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(flaresolverr_request_total{namespace=\"flaresolverr\", result=\"solved\"})",
+              "legendFormat": "Solved"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "steps": [{ "color": "red", "value": null }] }
+            }
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+          "id": 4,
+          "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "title": "Failed Requests",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(flaresolverr_request_total{namespace=\"flaresolverr\", result!=\"solved\"})",
+              "legendFormat": "Failed"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "unit": "s",
+              "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 25 }] }
+            }
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+          "id": 5,
+          "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "title": "Avg Duration",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(flaresolverr_request_duration_sum{namespace=\"flaresolverr\"}) / sum(flaresolverr_request_duration_count{namespace=\"flaresolverr\"})",
+              "legendFormat": "Avg"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "id": 101,
+          "title": "Request Rate",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true },
+              "unit": "reqps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+          "id": 10,
+          "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+          "title": "Request Rate by Domain",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum by (domain) (rate(flaresolverr_request_total{namespace=\"flaresolverr\"}[5m]))",
+              "legendFormat": "{{ domain }}"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true },
+              "unit": "reqps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+          "id": 11,
+          "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+          "title": "Request Rate by Result",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum by (result) (rate(flaresolverr_request_total{namespace=\"flaresolverr\"}[5m]))",
+              "legendFormat": "{{ result }}"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+          "id": 102,
+          "title": "Duration",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 10, "lineWidth": 2, "spanNulls": true },
+              "unit": "s"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+          "id": 20,
+          "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+          "title": "Request Duration by Domain (P50 / P95)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (domain, le) (rate(flaresolverr_request_duration_bucket{namespace=\"flaresolverr\"}[5m])))",
+              "legendFormat": "{{ domain }} P50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (domain, le) (rate(flaresolverr_request_duration_bucket{namespace=\"flaresolverr\"}[5m])))",
+              "legendFormat": "{{ domain }} P95"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "stacking": { "mode": "normal" }, "spanNulls": true },
+              "unit": "short"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "id": 21,
+          "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+          "title": "Requests by Duration Bucket",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum by (le) (increase(flaresolverr_request_duration_bucket{namespace=\"flaresolverr\"}[5m]))",
+              "legendFormat": "<= {{ le }}s"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+          "id": 103,
+          "title": "Resources",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true },
+              "unit": "bytes"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "id": 30,
+          "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+          "title": "Memory Usage",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"flaresolverr\", container=\"flaresolverr\"}",
+              "legendFormat": "Working Set"
+            },
+            {
+              "expr": "container_memory_rss{namespace=\"flaresolverr\", container=\"flaresolverr\"}",
+              "legendFormat": "RSS"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true },
+              "unit": "short"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "id": 31,
+          "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+          "title": "CPU Usage",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"flaresolverr\", container=\"flaresolverr\"}[5m])",
+              "legendFormat": "CPU Cores"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["flaresolverr", "homelab"],
+      "templating": { "list": [] },
+      "time": { "from": "now-6h", "to": "now" },
+      "timepicker": {},
+      "timezone": "",
+      "title": "FlareSolverr",
+      "uid": "flaresolverr",
+      "version": 1
+    }

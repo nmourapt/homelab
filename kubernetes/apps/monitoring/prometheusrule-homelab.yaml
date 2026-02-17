@@ -362,3 +362,30 @@ spec:
           annotations:
             summary: "Immich ML using excessive memory"
             description: "Memory usage is {{ $value | humanize1024 }}B (threshold: 4Gi)"
+
+    - name: homelab-flaresolverr
+      rules:
+        - alert: FlareSolverrDown
+          expr: up{job="flaresolverr", namespace="flaresolverr"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "FlareSolverr is down"
+            description: "FlareSolverr metrics endpoint is unreachable for 5 minutes"
+        - alert: FlareSolverrHighFailureRate
+          expr: sum(rate(flaresolverr_request_total{namespace="flaresolverr", result!="solved"}[15m])) / sum(rate(flaresolverr_request_total{namespace="flaresolverr"}[15m])) * 100 > 50
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "FlareSolverr high failure rate"
+            description: "{{ $value | printf \"%.0f\" }}% of requests are failing (threshold: 50%)"
+        - alert: FlareSolverrSlowRequests
+          expr: histogram_quantile(0.95, sum by (le) (rate(flaresolverr_request_duration_bucket{namespace="flaresolverr"}[15m]))) > 30
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "FlareSolverr requests are slow"
+            description: "P95 request duration is {{ $value | printf \"%.1f\" }}s (threshold: 30s)"

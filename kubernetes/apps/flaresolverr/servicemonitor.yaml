@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flaresolverr
+  namespace: flaresolverr
+  labels:
+    app: flaresolverr
+spec:
+  endpoints:
+    - port: metrics
+      interval: 30s
+  selector:
+    matchLabels:
+      app: flaresolverr
