@@ -25,13 +25,13 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 500m
+              memory: 1536Mi
               gpu.intel.com/i915: 1
             limits:
-              cpu: 1000m
+              cpu: 3000m
               gpu.intel.com/i915: 1
-              memory: 2Gi
+              memory: 4Gi
           volumeMounts:
             - mountPath: /cache
               name: immich-ml-cache
