@@ -23,11 +23,19 @@ spec:
           ports:
             - containerPort: 8191
               protocol: TCP
+              name: http
+            - containerPort: 8192
+              protocol: TCP
+              name: metrics
           env:
             - name: LOG_LEVEL
               value: info
             - name: TZ
               value: Europe/Lisbon
+            - name: PROMETHEUS_ENABLED
+              value: "true"
+            - name: PROMETHEUS_PORT
+              value: "8192"
           resources:
             requests:
               cpu: 250m

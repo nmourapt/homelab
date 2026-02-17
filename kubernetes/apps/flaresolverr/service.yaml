@@ -9,5 +9,10 @@ spec:
     - port: 8191
       targetPort: 8191
       protocol: TCP
+      name: http
+    - port: 8192
+      targetPort: 8192
+      protocol: TCP
+      name: metrics
   selector:
     app: flaresolverr
