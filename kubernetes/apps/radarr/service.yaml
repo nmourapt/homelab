@@ -12,5 +12,9 @@ spec:
       targetPort: 7878
       protocol: TCP
       name: http
+    - port: 9708
+      targetPort: 9708
+      protocol: TCP
+      name: metrics
   selector:
     app: radarr

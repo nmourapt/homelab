@@ -9,4 +9,5 @@ resources:
   - pvc.yaml
   - nfs-pv-pvc.yaml
   - ingressroute.yaml
+  - servicemonitor.yaml
   - sonarr-secrets.sealedsecret.yaml

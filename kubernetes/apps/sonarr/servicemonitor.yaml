@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sonarr
+  namespace: sonarr
+  labels:
+    app: sonarr
+spec:
+  endpoints:
+    - port: metrics
+      interval: 60s
+  selector:
+    matchLabels:
+      app: sonarr

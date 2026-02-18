@@ -12,5 +12,9 @@ spec:
       targetPort: 8989
       protocol: TCP
       name: http
+    - port: 9707
+      targetPort: 9707
+      protocol: TCP
+      name: metrics
   selector:
     app: sonarr
