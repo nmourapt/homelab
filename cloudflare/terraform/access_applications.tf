@@ -526,3 +526,132 @@ resource "cloudflare_zero_trust_access_application" "longhorn" {
     }
   ]
 }
+
+resource "cloudflare_zero_trust_access_application" "seerr" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Seerr"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/overseerr.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "requests.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "sonarr" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Sonarr"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/sonarr.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "tv.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "radarr" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Radarr"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/radarr.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "movies.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "prowlarr" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Prowlarr"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/prowlarr.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "indexer.${var.tld}"
+    }
+  ]
+}
+
