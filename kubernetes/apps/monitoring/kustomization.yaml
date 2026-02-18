@@ -40,6 +40,7 @@ helmCharts:
           podMonitorSelectorNilUsesHelmValues: false
           ruleSelectorNilUsesHelmValues: false
           additionalScrapeConfigsSecret:
+            enabled: true
             name: cf-metrics-scrape
             key: prometheus-additional-scrape-configs.yaml
       alertmanager:
