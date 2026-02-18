@@ -50,23 +50,21 @@ spec:
               name: media
         - name: exportarr
           image: ghcr.io/onedr0p/exportarr:v2.0.1
-          args: ["sonarr"]
+          args:
+            - sonarr
+            - --port=9707
+            - --url=http://localhost:8989
+            - --enable-additional-metrics
           ports:
             - containerPort: 9707
               protocol: TCP
               name: metrics
           env:
-            - name: PORT
-              value: "9707"
-            - name: URL
-              value: "http://localhost:8989"
-            - name: APIKEY
+            - name: API_KEY
               valueFrom:
                 secretKeyRef:
                   name: sonarr-secrets
                   key: SONARR__AUTH__APIKEY
-            - name: ENABLE_ADDITIONAL_METRICS
-              value: "true"
           resources:
             requests:
               cpu: 10m

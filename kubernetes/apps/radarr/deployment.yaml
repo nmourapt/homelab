@@ -56,23 +56,21 @@ spec:
               name: media
         - name: exportarr
           image: ghcr.io/onedr0p/exportarr:v2.0.1
-          args: ["radarr"]
+          args:
+            - radarr
+            - --port=9708
+            - --url=http://localhost:7878
+            - --enable-additional-metrics
           ports:
             - containerPort: 9708
               protocol: TCP
               name: metrics
           env:
-            - name: PORT
-              value: "9708"
-            - name: URL
-              value: "http://localhost:7878"
-            - name: APIKEY
+            - name: API_KEY
               valueFrom:
                 secretKeyRef:
                   name: radarr-secrets
                   key: RADARR__AUTH__APIKEY
-            - name: ENABLE_ADDITIONAL_METRICS
-              value: "true"
           resources:
             requests:
               cpu: 10m
