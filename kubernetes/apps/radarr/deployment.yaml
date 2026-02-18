@@ -60,17 +60,12 @@ spec:
             - radarr
             - --port=9708
             - --url=http://localhost:7878
+            - --config=/config/config.xml
             - --enable-additional-metrics
           ports:
             - containerPort: 9708
               protocol: TCP
               name: metrics
-          env:
-            - name: API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: radarr-secrets
-                  key: RADARR__AUTH__APIKEY
           resources:
             requests:
               cpu: 10m
@@ -78,6 +73,10 @@ spec:
             limits:
               cpu: 100m
               memory: 64Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+              readOnly: true
       volumes:
         - name: config
           persistentVolumeClaim:
