@@ -26,7 +26,7 @@ helmCharts:
               key: api-token
       extraArgs:
         cloudflare-dns-records-per-page: "5000"
-        cloudflare-dns-record-comment: "managed by external-dns"
+        cloudflare-record-comment: "managed by external-dns"
         traefik-disable-legacy: null
       sources:
         - ingress
