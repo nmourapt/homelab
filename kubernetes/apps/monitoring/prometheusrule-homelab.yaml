@@ -363,6 +363,81 @@ spec:
             summary: "Immich ML using excessive memory"
             description: "Memory usage is {{ $value | humanize1024 }}B (threshold: 4Gi)"
 
+    - name: homelab-cloudflare
+      rules:
+        - alert: CloudflareHighErrorRate
+          expr: sum by (zone) (cloudflare_zone_requests_status_total{status=~"4xx|5xx"}) / sum by (zone) (cloudflare_zone_requests_total) * 100 > 20
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} high error rate"
+            description: "{{ $value | printf \"%.1f\" }}% of requests are 4xx/5xx (threshold: 20%)"
+        - alert: CloudflareHigh5xxRate
+          expr: sum by (zone) (cloudflare_zone_requests_status_total{status="5xx"}) / sum by (zone) (cloudflare_zone_requests_total) * 100 > 10
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} high 5xx rate"
+            description: "{{ $value | printf \"%.1f\" }}% of requests are 5xx server errors (threshold: 10%)"
+        - alert: CloudflareFirewallEventsSpike
+          expr: delta(cloudflare_zone_firewall_events_total[10m]) > 50
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} firewall events spike"
+            description: "{{ $value | printf \"%.0f\" }} new firewall events in the last 10 minutes"
+        - alert: CloudflareThreatsSpike
+          expr: delta(cloudflare_zone_threats_total[10m]) > 20
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} threats spike"
+            description: "{{ $value | printf \"%.0f\" }} new threats detected in the last 10 minutes"
+        - alert: CloudflareSlowOriginResponse
+          expr: cloudflare_zone_origin_response_duration_seconds > 2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} slow origin response"
+            description: "Origin response duration is {{ $value | printf \"%.2f\" }}s (threshold: 2s)"
+        - alert: CloudflareHighEdgeErrorRate
+          expr: cloudflare_zone_edge_error_rate > 0.05
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} high edge error rate"
+            description: "Edge error rate is {{ $value | printf \"%.2f\" }} (threshold: 5%)"
+        - alert: CloudflareHighOriginErrorRate
+          expr: cloudflare_zone_origin_error_rate > 0.05
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} high origin error rate"
+            description: "Origin error rate is {{ $value | printf \"%.2f\" }} (threshold: 5%)"
+        - alert: CloudflareExporterDown
+          expr: cloudflare_exporter_up == 0 or absent(cloudflare_exporter_up)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Cloudflare Prometheus exporter is down"
+            description: "The Cloudflare metrics exporter is not reporting metrics"
+        - alert: CloudflareCacheHitRatioLow
+          expr: cloudflare_zone_cache_hit_ratio < 0.3
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare zone {{ $labels.zone }} low cache hit ratio"
+            description: "Cache hit ratio is {{ $value | printf \"%.1f\" }}% (threshold: 30%)"
+
     - name: homelab-flaresolverr
       rules:
         - alert: FlareSolverrDown
