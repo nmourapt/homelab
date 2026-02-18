@@ -366,7 +366,7 @@ spec:
     - name: homelab-cloudflare
       rules:
         - alert: CloudflareHighErrorRate
-          expr: sum by (zone) (cloudflare_zone_requests_status_total{status=~"4xx|5xx"}) / sum by (zone) (cloudflare_zone_requests_total) * 100 > 20
+          expr: sum by (zone) (increase(cloudflare_zone_requests_status_total{status=~"4xx|5xx"}[5m])) / sum by (zone) (increase(cloudflare_zone_requests_total[5m])) * 100 > 20
           for: 10m
           labels:
             severity: warning
@@ -374,7 +374,7 @@ spec:
             summary: "Cloudflare zone {{ $labels.zone }} high error rate"
             description: "{{ $value | printf \"%.1f\" }}% of requests are 4xx/5xx (threshold: 20%)"
         - alert: CloudflareHigh5xxRate
-          expr: sum by (zone) (cloudflare_zone_requests_status_total{status="5xx"}) / sum by (zone) (cloudflare_zone_requests_total) * 100 > 10
+          expr: sum by (zone) (increase(cloudflare_zone_requests_status_total{status="5xx"}[5m])) / sum by (zone) (increase(cloudflare_zone_requests_total[5m])) * 100 > 10
           for: 5m
           labels:
             severity: critical

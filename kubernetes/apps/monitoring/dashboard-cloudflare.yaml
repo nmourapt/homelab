@@ -65,12 +65,12 @@ data:
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
             "textMode": "auto"
           },
-          "title": "Total Requests",
+          "title": "Requests (5m)",
           "type": "stat",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_requests_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_requests_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "",
               "refId": "A"
             }
@@ -97,12 +97,12 @@ data:
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
             "textMode": "auto"
           },
-          "title": "Total Bandwidth",
+          "title": "Bandwidth (5m)",
           "type": "stat",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_bandwidth_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_bandwidth_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "",
               "refId": "A"
             }
@@ -129,12 +129,12 @@ data:
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
             "textMode": "auto"
           },
-          "title": "Cached Requests",
+          "title": "Cached Requests (5m)",
           "type": "stat",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_requests_cached{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_requests_cached{zone=~\"$zone\"}[5m]))",
               "legendFormat": "",
               "refId": "A"
             }
@@ -203,12 +203,12 @@ data:
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
             "textMode": "auto"
           },
-          "title": "Threats",
+          "title": "Threats (5m)",
           "type": "stat",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_threats_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_threats_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "",
               "refId": "A"
             }
@@ -235,12 +235,12 @@ data:
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
             "textMode": "auto"
           },
-          "title": "Unique Visitors",
+          "title": "Unique Visitors (5m)",
           "type": "stat",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_uniques_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_uniques_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "",
               "refId": "A"
             }
@@ -283,7 +283,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_requests_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_requests_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }}",
               "refId": "A"
             }
@@ -323,7 +323,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum by (status) (cloudflare_zone_requests_status_total{zone=~\"$zone\"})",
+              "expr": "sum by (status) (increase(cloudflare_zone_requests_status_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "{{ status }}",
               "refId": "A"
             }
@@ -359,7 +359,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "topk(10, sum by (country) (cloudflare_zone_requests_country_total{zone=~\"$zone\"}))",
+              "expr": "topk(10, sum by (country) (increase(cloudflare_zone_requests_country_total{zone=~\"$zone\"}[5m])))",
               "legendFormat": "{{ country }}",
               "refId": "A"
             }
@@ -394,7 +394,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum by (method) (cloudflare_zone_requests_by_method_total{zone=~\"$zone\"})",
+              "expr": "sum by (method) (increase(cloudflare_zone_requests_by_method_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "{{ method }}",
               "refId": "A"
             }
@@ -437,7 +437,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_bandwidth_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_bandwidth_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }}",
               "refId": "A"
             }
@@ -476,13 +476,13 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_bandwidth_cached_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_bandwidth_cached_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "Cached",
               "refId": "A"
             },
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum(cloudflare_zone_bandwidth_total{zone=~\"$zone\"}) - sum(cloudflare_zone_bandwidth_cached_total{zone=~\"$zone\"})",
+              "expr": "sum(increase(cloudflare_zone_bandwidth_total{zone=~\"$zone\"}[5m])) - sum(increase(cloudflare_zone_bandwidth_cached_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "Uncached",
               "refId": "B"
             }
@@ -517,7 +517,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "topk(8, sum by (content_type) (cloudflare_zone_bandwidth_content_type_total{zone=~\"$zone\"}))",
+              "expr": "topk(8, sum by (content_type) (increase(cloudflare_zone_bandwidth_content_type_total{zone=~\"$zone\"}[5m])))",
               "legendFormat": "{{ content_type }}",
               "refId": "A"
             }
@@ -553,7 +553,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "topk(10, sum by (country) (cloudflare_zone_bandwidth_country_total{zone=~\"$zone\"}))",
+              "expr": "topk(10, sum by (country) (increase(cloudflare_zone_bandwidth_country_total{zone=~\"$zone\"}[5m])))",
               "legendFormat": "{{ country }}",
               "refId": "A"
             }
@@ -596,7 +596,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_threats_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_threats_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }}",
               "refId": "A"
             }
@@ -632,7 +632,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_firewall_events_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_firewall_events_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }}",
               "refId": "A"
             }
@@ -668,7 +668,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "topk(10, sum by (country) (cloudflare_zone_threats_country_total{zone=~\"$zone\"}))",
+              "expr": "topk(10, sum by (country) (increase(cloudflare_zone_threats_country_total{zone=~\"$zone\"}[5m])))",
               "legendFormat": "{{ country }}",
               "refId": "A"
             }
@@ -704,7 +704,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "topk(10, sum by (country) (cloudflare_zone_bot_requests_by_country_total{zone=~\"$zone\"}))",
+              "expr": "topk(10, sum by (country) (increase(cloudflare_zone_bot_requests_by_country_total{zone=~\"$zone\"}[5m])))",
               "legendFormat": "{{ country }}",
               "refId": "A"
             }
@@ -750,13 +750,13 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_customer_error_4xx_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_customer_error_4xx_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }} 4xx",
               "refId": "A"
             },
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_zone_customer_error_5xx_total{zone=~\"$zone\"}",
+              "expr": "increase(cloudflare_zone_customer_error_5xx_total{zone=~\"$zone\"}[5m])",
               "legendFormat": "{{ zone }} 5xx",
               "refId": "B"
             }
@@ -916,7 +916,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_worker_requests_total",
+              "expr": "increase(cloudflare_worker_requests_total[5m])",
               "legendFormat": "{{ script_name }}",
               "refId": "A"
             }
@@ -952,7 +952,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "cloudflare_worker_errors_total",
+              "expr": "increase(cloudflare_worker_errors_total[5m])",
               "legendFormat": "{{ script_name }}",
               "refId": "A"
             }
@@ -1066,7 +1066,7 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "sum by (ssl_protocol) (cloudflare_zone_requests_ssl_protocol_total{zone=~\"$zone\"})",
+              "expr": "sum by (ssl_protocol) (increase(cloudflare_zone_requests_ssl_protocol_total{zone=~\"$zone\"}[5m]))",
               "legendFormat": "{{ ssl_protocol }}",
               "refId": "A"
             }
