@@ -54,29 +54,6 @@ spec:
               name: config
             - mountPath: /synology
               name: media
-        - name: exportarr
-          image: ghcr.io/onedr0p/exportarr:v2.0.1
-          args:
-            - radarr
-            - --port=9708
-            - --url=http://localhost:7878
-            - --config=/config/config.xml
-            - --enable-additional-metrics
-          ports:
-            - containerPort: 9708
-              protocol: TCP
-              name: metrics
-          resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
-            limits:
-              cpu: 100m
-              memory: 64Mi
-          volumeMounts:
-            - mountPath: /config
-              name: config
-              readOnly: true
       volumes:
         - name: config
           persistentVolumeClaim:
