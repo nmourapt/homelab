@@ -65,6 +65,9 @@ helmCharts:
               - receiver: 'null'
                 matchers:
                   - alertname = "InfoInhibitor"
+              - receiver: 'null'
+                matchers:
+                  - alertname = "Watchdog"
               - receiver: telegram
                 matchers:
                   - severity =~ "critical|warning"

@@ -382,10 +382,10 @@ spec:
             summary: "FlareSolverr high failure rate"
             description: "{{ $value | printf \"%.0f\" }}% of requests are failing (threshold: 50%)"
         - alert: FlareSolverrSlowRequests
-          expr: histogram_quantile(0.95, sum by (le) (rate(flaresolverr_request_duration_bucket{namespace="flaresolverr"}[15m]))) > 30
+          expr: histogram_quantile(0.95, sum by (le) (rate(flaresolverr_request_duration_bucket{namespace="flaresolverr"}[15m]))) > 120
           for: 10m
           labels:
             severity: warning
           annotations:
             summary: "FlareSolverr requests are slow"
-            description: "P95 request duration is {{ $value | printf \"%.1f\" }}s (threshold: 30s)"
+            description: "P95 request duration is {{ $value | printf \"%.1f\" }}s (threshold: 120s)"
