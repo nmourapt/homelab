@@ -14,6 +14,7 @@ resources:
   - alertmanager-telegram.sealedsecret.yaml
   - prometheusrule-homelab.yaml
   - cf-metrics-scrape.sealedsecret.yaml
+  - dashboard-cloudflare.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
