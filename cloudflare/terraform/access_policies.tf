@@ -200,3 +200,20 @@ resource "cloudflare_zero_trust_access_policy" "personal_email_list" {
     }
   ]
 }
+
+resource "cloudflare_zero_trust_access_policy" "service_token_prometheus_cf_metrics" {
+  name             = "TF - Prometheus cf-metrics"
+  account_id       = var.cloudflare_account_id
+  decision         = "non_identity"
+  session_duration = "24h"
+
+  include = [
+    {
+      service_token = {
+        token_id = cloudflare_zero_trust_access_service_token.prometheus_cf_metrics.id
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}
