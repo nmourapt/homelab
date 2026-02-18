@@ -85,8 +85,8 @@ helmCharts:
                     <b>{{ .Labels.alertname }}</b> ({{ .Labels.severity }})
                     {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ end }}
                     {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
-                    <b>Namespace:</b> {{ .Labels.namespace }}
-                    <b>Pod:</b> {{ .Labels.pod }}
+                    {{ if .Labels.namespace }}<b>Namespace:</b> {{ .Labels.namespace }}{{ end }}
+                    {{ if .Labels.pod }}<b>Pod:</b> {{ .Labels.pod }}{{ end }}
                     {{ end }}
           inhibit_rules:
             - source_matchers:
