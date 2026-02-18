@@ -389,3 +389,57 @@ spec:
           annotations:
             summary: "FlareSolverr requests are slow"
             description: "P95 request duration is {{ $value | printf \"%.1f\" }}s (threshold: 120s)"
+
+    - name: homelab-sonarr
+      rules:
+        - alert: SonarrDown
+          expr: up{job="sonarr", namespace="sonarr"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Sonarr is down"
+            description: "Sonarr metrics endpoint is unreachable for 5 minutes"
+        - alert: SonarrHealthIssues
+          expr: sonarr_system_health_issues{namespace="sonarr"} > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sonarr has health issues"
+            description: "Sonarr reports {{ $value }} health issue(s)"
+        - alert: SonarrQueueStuck
+          expr: sonarr_queue_total{namespace="sonarr"} > 0
+          for: 6h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sonarr queue is stuck"
+            description: "{{ $value }} item(s) in queue for over 6 hours"
+
+    - name: homelab-radarr
+      rules:
+        - alert: RadarrDown
+          expr: up{job="radarr", namespace="radarr"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Radarr is down"
+            description: "Radarr metrics endpoint is unreachable for 5 minutes"
+        - alert: RadarrHealthIssues
+          expr: radarr_system_health_issues{namespace="radarr"} > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Radarr has health issues"
+            description: "Radarr reports {{ $value }} health issue(s)"
+        - alert: RadarrQueueStuck
+          expr: radarr_queue_total{namespace="radarr"} > 0
+          for: 6h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Radarr queue is stuck"
+            description: "{{ $value }} item(s) in queue for over 6 hours"

@@ -11,6 +11,7 @@ resources:
   - servicemonitor-cilium.yaml
   - dashboard-cilium.yaml
   - dashboard-flaresolverr.yaml
+  - dashboard-arr.yaml
   - alertmanager-telegram.sealedsecret.yaml
   - prometheusrule-homelab.yaml
 
