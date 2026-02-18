@@ -1,41 +1,43 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prowlarr
-  namespace: prowlarr
+  name: seerr
+  namespace: seerr
   labels:
-    app: prowlarr
+    app: seerr
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: prowlarr
+      app: seerr
   template:
     metadata:
       labels:
-        app: prowlarr
+        app: seerr
     spec:
       containers:
-        - name: prowlarr
-          image: ghcr.io/hotio/prowlarr:release-2.3.0.5236
+        - name: seerr
+          image: ghcr.io/seerr-team/seerr:v3.0.1
           ports:
-            - containerPort: 9696
+            - containerPort: 5055
               protocol: TCP
               name: http
           env:
-            - name: PROWLARR__POSTGRES__HOST
+            - name: TZ
+              value: Europe/Lisbon
+            - name: DB_TYPE
+              value: postgres
+            - name: DB_HOST
               value: "192.168.202.1"
-            - name: PROWLARR__POSTGRES__PORT
-              value: "10005"
-            - name: PROWLARR__AUTH__METHOD
-              value: External
-            - name: PROWLARR__AUTH__REQUIRED
-              value: DisabledForLocalAddresses
+            - name: DB_PORT
+              value: "10010"
+            - name: DB_NAME
+              value: seerr
           envFrom:
             - secretRef:
-                name: prowlarr-secrets
+                name: seerr-secrets
           resources:
             requests:
               cpu: 100m
@@ -44,9 +46,9 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            - mountPath: /config
+            - mountPath: /app/config
               name: config
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: prowlarr-config
+            claimName: seerr-config
