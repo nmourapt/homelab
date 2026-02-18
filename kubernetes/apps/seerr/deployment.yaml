@@ -17,6 +17,9 @@ spec:
       labels:
         app: seerr
     spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: seerr
           image: ghcr.io/seerr-team/seerr:v3.0.1
