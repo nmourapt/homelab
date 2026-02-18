@@ -77,11 +77,6 @@ resource "cloudflare_zero_trust_access_policy" "pocketid_admins_row" {
   ]
   require = [
     {
-      geo = {
-        country_code = "PT"
-      }
-    },
-    {
       group = {
         id = cloudflare_zero_trust_access_group.pocket_id_idps.id
       }
