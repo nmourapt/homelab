@@ -13,6 +13,7 @@ resources:
   - dashboard-flaresolverr.yaml
   - alertmanager-telegram.sealedsecret.yaml
   - prometheusrule-homelab.yaml
+  - cf-metrics-scrape.sealedsecret.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -38,6 +39,9 @@ helmCharts:
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
           ruleSelectorNilUsesHelmValues: false
+          additionalScrapeConfigsSecret:
+            name: cf-metrics-scrape
+            key: prometheus-additional-scrape-configs.yaml
       alertmanager:
         alertmanagerSpec:
           retention: 120h
