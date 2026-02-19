@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: cilium
+    repo: https://helm.cilium.io/
+    version: 1.19.0
+    releaseName: hubble
+    namespace: kube-system
+    valuesInline:
+      # Disable all core Cilium components (managed by Omni)
+      agent: false
+      operator:
+        enabled: false
+      envoy:
+        enabled: false
+      cni:
+        install: false
+      # Hubble agent is already enabled in Cilium config via Omni
+      hubble:
+        enabled: true
+        relay:
+          enabled: true
+        ui:
+          enabled: true
+        tls:
+          auto:
+            enabled: true
+            method: cronJob
+            schedule: "0 0 1 */4 *"
