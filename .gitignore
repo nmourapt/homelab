@@ -32,7 +32,8 @@ kubernetes/**/*.secret.yaml
 # Others
 kubernetes/management/**
 
-# Kustomize Helm chart cache (exclude vendored charts like synology-csi)
-kubernetes/apps/hubble/charts/
+# Kustomize Helm chart cache (synology-csi is vendored intentionally)
+kubernetes/apps/**/charts/
+!kubernetes/apps/synology-csi/charts/
 
 # Temp
