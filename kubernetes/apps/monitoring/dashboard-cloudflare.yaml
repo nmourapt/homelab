@@ -611,8 +611,8 @@ data:
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "increase(cloudflare_zone_threats_total{zone=~\"$zone\"}[5m])",
-              "legendFormat": "{{ zone }}",
+              "expr": "sum(increase(cloudflare_zone_threats_total{zone=~\"$zone\"}[5m]))",
+              "legendFormat": "Threats",
               "refId": "A"
             }
           ]
@@ -643,13 +643,13 @@ data:
           "id": 31,
           "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "timeShift": "5m",
-          "title": "Firewall Events",
+          "title": "Requests by IP Class",
           "type": "timeseries",
           "targets": [
             {
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "increase(cloudflare_zone_firewall_events_total{zone=~\"$zone\"}[5m])",
-              "legendFormat": "{{ zone }}",
+              "expr": "sum by (ip_type) (increase(cloudflare_zone_requests_ip_class_total{zone=~\"$zone\"}[5m]))",
+              "legendFormat": "{{ ip_type }}",
               "refId": "A"
             }
           ]
