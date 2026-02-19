@@ -692,3 +692,35 @@ resource "cloudflare_zero_trust_access_application" "cf_metrics" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "hubble" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Hubble"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://raw.githubusercontent.com/cilium/hubble/9429bbf4b5b504a9b0f6752ccfbb16a2878bb51e/Documentation/images/hubble_logo.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "hubble.${var.tld}"
+    }
+  ]
+}
