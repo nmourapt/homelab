@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hubble-ui
+  namespace: kube-system
+  annotations:
+    external-dns.alpha.kubernetes.io/target: <path:cloudflared:tunnel-config#tunnel-target>
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`hubble.<path:cert-manager:domain-config#domain>`)
+      kind: Rule
+      services:
+        - name: hubble-ui
+          port: 80
+  tls: {}

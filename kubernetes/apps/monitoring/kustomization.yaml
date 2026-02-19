@@ -8,13 +8,13 @@ resources:
   - ingressroute-prometheus.yaml
   - ingressroute-alertmanager.yaml
   - grafana-oidc.sealedsecret.yaml
-  - servicemonitor-cilium.yaml
-  - dashboard-cilium.yaml
-  - dashboard-flaresolverr.yaml
   - alertmanager-telegram.sealedsecret.yaml
+  - servicemonitor-cilium.yaml
   - prometheusrule-homelab.yaml
   - cf-metrics-scrape.sealedsecret.yaml
   - dashboard-cloudflare.yaml
+  - dashboard-cilium.yaml
+  - dashboard-flaresolverr.yaml
 
 helmCharts:
   - name: kube-prometheus-stack
