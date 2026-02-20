@@ -1,0 +1,131 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: es-cloudflare-logpush-setup
+  namespace: elastic-system
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: setup
+          image: curlimages/curl:8.12.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              KIBANA="https://kibana-kb-http.elastic-system.svc:5601"
+              AUTH="elastic:${ES_PASSWORD}"
+              BUCKET="logs"
+
+              # Wait for Kibana
+              until curl -sk -u "${AUTH}" "${KIBANA}/api/status" | grep -q '"overall"'; do
+                echo "Waiting for Kibana..."
+                sleep 10
+              done
+              echo "Kibana is ready"
+
+              # Install cloudflare_logpush package
+              echo "Installing cloudflare_logpush package..."
+              curl -sk -u "${AUTH}" -X POST "${KIBANA}/api/fleet/epm/packages/cloudflare_logpush" \
+                -H "kbn-xsrf: true" -H "Content-Type: application/json" \
+                -d '{"force": true}'
+              echo ""
+              sleep 10
+
+              STREAMS="access_request audit_logs device_posture dns firewall_event gateway_dns gateway_http gateway_network http_request network_analytics_logs network_session spectrum_event workers_trace"
+
+              # Build inputs array
+              INPUTS="["
+              for STREAM in ${STREAMS}; do
+                [ "${INPUTS}" != "[" ] && INPUTS="${INPUTS},"
+                INPUTS="${INPUTS}{
+                  \"type\": \"aws-s3\",
+                  \"policy_template\": \"${STREAM}\",
+                  \"enabled\": true,
+                  \"streams\": [{
+                    \"enabled\": true,
+                    \"data_stream\": {
+                      \"type\": \"logs\",
+                      \"dataset\": \"cloudflare_logpush.${STREAM}\"
+                    },
+                    \"vars\": {
+                      \"bucket_list_prefix\": {\"value\": \"${STREAM}/\", \"type\": \"text\"},
+                      \"access_key_id\": {\"value\": \"${R2_ACCESS_KEY_ID}\", \"type\": \"text\"},
+                      \"secret_access_key\": {\"value\": \"${R2_SECRET_ACCESS_KEY}\", \"type\": \"password\"},
+                      \"bucket_arn\": {\"value\": \"arn:aws:s3:::${BUCKET}\", \"type\": \"text\"},
+                      \"endpoint\": {\"value\": \"${R2_ENDPOINT}\", \"type\": \"text\"},
+                      \"region\": {\"value\": \"auto\", \"type\": \"text\"},
+                      \"number_of_workers\": {\"value\": 3, \"type\": \"integer\"},
+                      \"interval\": {\"value\": \"1m\", \"type\": \"text\"},
+                      \"preserve_original_event\": {\"value\": false, \"type\": \"bool\"},
+                      \"preserve_duplicate_custom_fields\": {\"value\": false, \"type\": \"bool\"},
+                      \"tags\": {\"value\": [\"forwarded\", \"cloudflare_logpush-${STREAM}\"], \"type\": \"text\"}
+                    }
+                  }]
+                }"
+              done
+
+              # Disable non-S3 inputs for each stream
+              for STREAM in ${STREAMS}; do
+                for INPUT_TYPE in httpjson gcs azure-blob-storage; do
+                  INPUTS="${INPUTS},{
+                    \"type\": \"${INPUT_TYPE}\",
+                    \"policy_template\": \"${STREAM}\",
+                    \"enabled\": false,
+                    \"streams\": [{
+                      \"enabled\": false,
+                      \"data_stream\": {
+                        \"type\": \"logs\",
+                        \"dataset\": \"cloudflare_logpush.${STREAM}\"
+                      }
+                    }]
+                  }"
+                done
+              done
+              INPUTS="${INPUTS}]"
+
+              echo "Creating package policy with all 13 data streams..."
+              RESULT=$(curl -sk -u "${AUTH}" -X POST "${KIBANA}/api/fleet/package_policies" \
+                -H "kbn-xsrf: true" -H "Content-Type: application/json" \
+                -d "{
+                  \"name\": \"Cloudflare Logpush - R2\",
+                  \"namespace\": \"default\",
+                  \"policy_id\": \"eck-fleet-server\",
+                  \"package\": {
+                    \"name\": \"cloudflare_logpush\",
+                    \"version\": \"1.43.2\"
+                  },
+                  \"inputs\": ${INPUTS}
+                }")
+              echo "${RESULT}" | head -c 500
+              echo ""
+
+              if echo "${RESULT}" | grep -q '"item"'; then
+                echo "SUCCESS: Cloudflare Logpush integration configured"
+              else
+                echo "WARN: Check output above for errors"
+                echo "${RESULT}" | tail -c 500
+              fi
+          env:
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-es-elastic-user
+                  key: elastic
+            - name: R2_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: r2-logpush-credentials
+                  key: R2_ACCESS_KEY_ID
+            - name: R2_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: r2-logpush-credentials
+                  key: R2_SECRET_ACCESS_KEY
+            - name: R2_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: r2-logpush-credentials
+                  key: R2_ENDPOINT
