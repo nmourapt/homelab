@@ -59,6 +59,7 @@ spec:
                       \"region\": {\"value\": \"auto\", \"type\": \"text\"},
                       \"number_of_workers\": {\"value\": 3, \"type\": \"integer\"},
                       \"interval\": {\"value\": \"1m\", \"type\": \"text\"},
+                      \"enable_deduplication\": {\"value\": true, \"type\": \"bool\"},
                       \"preserve_original_event\": {\"value\": false, \"type\": \"bool\"},
                       \"preserve_duplicate_custom_fields\": {\"value\": false, \"type\": \"bool\"},
                       \"tags\": {\"value\": [\"forwarded\", \"cloudflare_logpush-${STREAM}\"], \"type\": \"text\"}
