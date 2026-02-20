@@ -54,6 +54,38 @@ helmCharts:
         count: 1
         config:
           server.publicBaseUrl: "https://kibana.<path:cert-manager:domain-config#domain>"
+          xpack.fleet.agents.elasticsearch.hosts: ["https://elasticsearch-es-http.elastic-system.svc:9200"]
+          xpack.fleet.agents.fleet_server.hosts: ["https://fleet-server-agent-http.elastic-system.svc:8220"]
+          xpack.fleet.packages:
+            - name: system
+              version: latest
+            - name: elastic_agent
+              version: latest
+            - name: fleet_server
+              version: latest
+          xpack.fleet.agentPolicies:
+            - name: Fleet Server on ECK policy
+              id: eck-fleet-server
+              namespace: default
+              monitoring_enabled:
+                - logs
+                - metrics
+              package_policies:
+                - name: fleet_server-1
+                  id: fleet_server-1
+                  package:
+                    name: fleet_server
+            - name: Elastic Agent on ECK policy
+              id: eck-agent
+              namespace: default
+              monitoring_enabled:
+                - logs
+                - metrics
+              package_policies:
+                - name: system-1
+                  id: system-1
+                  package:
+                    name: system
         podTemplate:
           spec:
             containers:
