@@ -134,8 +134,11 @@ helmCharts:
                 - name: agent
                   resources:
                     requests:
-                      memory: 512Mi
+                      memory: 1Gi
                       cpu: 100m
+                    limits:
+                      memory: 3Gi
+                      cpu: 1
       eck-agent:
         enabled: false
       eck-beats:
