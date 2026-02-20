@@ -25,11 +25,9 @@ helmCharts:
             config:
               node.store.allow_mmap: false
               xpack.security.authc.api_key.enabled: true
-              xpack.security.authc.realms.anonymous.anonymous1:
-                order: 0
-                username: anonymous
-                roles: superuser
-                authz_exception: false
+              xpack.security.authc.anonymous.username: anonymous
+              xpack.security.authc.anonymous.roles: superuser
+              xpack.security.authc.anonymous.authz_exception: false
             volumeClaimTemplates:
               - metadata:
                   name: elasticsearch-data
