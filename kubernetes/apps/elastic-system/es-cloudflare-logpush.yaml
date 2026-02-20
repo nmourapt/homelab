@@ -53,7 +53,9 @@ spec:
               workers_trace:workers_trace
               "
 
-              # Build inputs array using cloudflare_r2_<dataset> var (non-AWS S3-compatible bucket)
+              # Build inputs array
+              # Input-level vars: collect_s3_logs, cloudflare_r2, access_key_id, secret_access_key, endpoint
+              # Stream-level vars: cloudflare_r2_<dataset>, bucket_list_prefix, and required bools
               INPUTS="["
               FIRST=true
               for ENTRY in ${STREAM_MAP}; do
@@ -68,6 +70,13 @@ spec:
                   \"type\": \"aws-s3\",
                   \"policy_template\": \"${DATASET}\",
                   \"enabled\": true,
+                  \"vars\": {
+                    \"collect_s3_logs\": {\"value\": true, \"type\": \"bool\"},
+                    \"cloudflare_r2\": {\"value\": \"${BUCKET}\", \"type\": \"text\"},
+                    \"access_key_id\": {\"value\": \"${R2_ACCESS_KEY_ID}\", \"type\": \"password\"},
+                    \"secret_access_key\": {\"value\": \"${R2_SECRET_ACCESS_KEY}\", \"type\": \"password\"},
+                    \"endpoint\": {\"value\": \"${R2_ENDPOINT}\", \"type\": \"text\"}
+                  },
                   \"streams\": [{
                     \"enabled\": true,
                     \"data_stream\": {
@@ -77,9 +86,6 @@ spec:
                     \"vars\": {
                       \"cloudflare_r2_${DATASET}\": {\"value\": \"${BUCKET}\", \"type\": \"text\"},
                       \"bucket_list_prefix\": {\"value\": \"${FOLDER}/\", \"type\": \"text\"},
-                      \"access_key_id\": {\"value\": \"${R2_ACCESS_KEY_ID}\", \"type\": \"text\"},
-                      \"secret_access_key\": {\"value\": \"${R2_SECRET_ACCESS_KEY}\", \"type\": \"password\"},
-                      \"endpoint\": {\"value\": \"${R2_ENDPOINT}\", \"type\": \"text\"},
                       \"number_of_workers\": {\"value\": 3, \"type\": \"integer\"},
                       \"interval\": {\"value\": \"1m\", \"type\": \"text\"},
                       \"enable_deduplication\": {\"value\": true, \"type\": \"bool\"},
