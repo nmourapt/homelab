@@ -62,6 +62,8 @@ helmCharts:
               credentials:
                 username: kibana_anonymous
                 password: "kibana_anonymous_password"
+            basic.basic1:
+              order: 1
           xpack.fleet.agents.elasticsearch.hosts: ["https://elasticsearch-es-http.elastic-system.svc:9200"]
           xpack.fleet.agents.fleet_server.hosts: ["https://fleet-server-agent-http.elastic-system.svc:8220"]
           xpack.fleet.packages:
