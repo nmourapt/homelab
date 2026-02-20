@@ -728,7 +728,7 @@ resource "cloudflare_zero_trust_access_application" "hubble" {
 resource "cloudflare_zero_trust_access_application" "kibana" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Kibana"
-  type                 = "self_hosted"
+  type                 = "saas"
   session_duration     = "24h"
 
   allowed_idps = [
@@ -748,12 +748,23 @@ resource "cloudflare_zero_trust_access_application" "kibana" {
   ]
 
   app_launcher_visible = true
-  logo_url = "https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt36f2da8d650732a0/5d0823c3d8ff351753cbc99f/logo-elastic-search-color-64.svg"
+  logo_url = "https://digital.ai/wp-content/uploads/2023/06/periodic-table-kibana.png"
 
-  destinations = [
-    { 
-      type = "public"
-      uri = "kibana.${var.tld}"
-    }
-  ]
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://kibana.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://kibana.${var.tld}/api/security/oidc/callback"
+    ]
+    grant_types = [
+      "authorization_code",
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+      "groups",
+    ]
+  }
 }
