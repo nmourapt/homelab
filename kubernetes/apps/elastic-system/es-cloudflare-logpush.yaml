@@ -94,7 +94,7 @@ spec:
                     \"vars\": {
                       \"cloudflare_r2_${DATASET}\": {\"value\": \"${BUCKET}\", \"type\": \"text\"},
                       \"bucket_list_prefix\": {\"value\": \"${FOLDER}/\", \"type\": \"text\"},
-                      \"number_of_workers\": {\"value\": 3, \"type\": \"integer\"},
+                      \"number_of_workers\": {\"value\": 1, \"type\": \"integer\"},
                       \"interval\": {\"value\": \"1m\", \"type\": \"text\"},
                       \"enable_deduplication\": {\"value\": true, \"type\": \"bool\"},
                       \"preserve_original_event\": {\"value\": false, \"type\": \"bool\"},
