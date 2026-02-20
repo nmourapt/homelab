@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: es-create-anonymous-user
+  namespace: elastic-system
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-user
+          image: curlimages/curl:8.12.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until curl -sk https://elasticsearch-es-http.elastic-system.svc:9200 -u "elastic:${ES_PASSWORD}"; do
+                echo "Waiting for Elasticsearch..."
+                sleep 10
+              done
+              curl -sk -X POST "https://elasticsearch-es-http.elastic-system.svc:9200/_security/user/kibana_anonymous" \
+                -u "elastic:${ES_PASSWORD}" \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "password": "kibana_anonymous_password",
+                  "roles": ["superuser"],
+                  "full_name": "Anonymous Kibana User"
+                }'
+          env:
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-es-elastic-user
+                  key: elastic
