@@ -5,6 +5,8 @@ namespace: elastic-system
 resources:
   - namespace.yaml
   - ingressroute.yaml
+  - es-oidc-secret.sealedsecret.yaml
+  - es-oidc-role-mapping.yaml
 
 helmCharts:
   - name: eck-stack
@@ -19,12 +21,28 @@ helmCharts:
         version: 8.17.4
         annotations:
           eck.k8s.elastic.co/license: basic
+        secureSettings:
+          - secretName: es-oidc-secret
         nodeSets:
           - name: default
             count: 1
             config:
               node.store.allow_mmap: false
               xpack.security.authc.api_key.enabled: true
+              xpack.security.authc.realms.oidc.oidc1:
+                order: 2
+                rp.client_id: "34c6eb1a085f70d21dc73432f2da027b620840657aa61d5e253fcd062f8f5bba"
+                rp.response_type: code
+                rp.redirect_uri: "https://kibana.<path:cert-manager:domain-config#domain>/api/security/oidc/callback"
+                rp.post_logout_redirect_uri: "https://kibana.<path:cert-manager:domain-config#domain>/security/logged_out"
+                op.issuer: "https://babybites.cloudflareaccess.com"
+                op.authorization_endpoint: "https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/34c6eb1a085f70d21dc73432f2da027b620840657aa61d5e253fcd062f8f5bba/authorization"
+                op.token_endpoint: "https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/34c6eb1a085f70d21dc73432f2da027b620840657aa61d5e253fcd062f8f5bba/token"
+                op.jwkset_path: "https://babybites.cloudflareaccess.com/cdn-cgi/access/certs"
+                op.userinfo_endpoint: "https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/34c6eb1a085f70d21dc73432f2da027b620840657aa61d5e253fcd062f8f5bba/userinfo"
+                claims.principal: email
+                claims.groups: groups
+                populate_user_metadata: true
             volumeClaimTemplates:
               - metadata:
                   name: elasticsearch-data
@@ -55,6 +73,13 @@ helmCharts:
         count: 1
         config:
           server.publicBaseUrl: "https://kibana.<path:cert-manager:domain-config#domain>"
+          xpack.security.authc.providers:
+            oidc.oidc1:
+              order: 0
+              realm: oidc1
+              description: "Log in with Cloudflare Access"
+            basic.basic1:
+              order: 1
           xpack.fleet.agents.elasticsearch.hosts: ["https://elasticsearch-es-http.elastic-system.svc:9200"]
           xpack.fleet.agents.fleet_server.hosts: ["https://fleet-server-agent-http.elastic-system.svc:8220"]
           xpack.fleet.packages:
