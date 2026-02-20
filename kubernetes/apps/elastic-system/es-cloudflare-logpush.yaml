@@ -34,6 +34,14 @@ spec:
               echo ""
               sleep 10
 
+              # Create ILM policy: rollover at 30d/50GB, delete after 60d
+              ES="https://elasticsearch-es-http.elastic-system.svc:9200"
+              echo "Creating ILM policy 'cloudflare-logpush' (60d retention)..."
+              curl -sk -u "${AUTH}" -X PUT "${ES}/_ilm/policy/cloudflare-logpush" \
+                -H "Content-Type: application/json" \
+                -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"30d","max_primary_shard_size":"50gb"}}},"delete":{"min_age":"60d","actions":{"delete":{}}}}}}'
+              echo ""
+
               # Format: dataset_name:r2_folder_name
               # dataset_name = package policy_template + data_stream dataset
               # r2_folder_name = actual folder prefix in the R2 bucket
@@ -139,6 +147,24 @@ spec:
                 echo "WARN: Check output above for errors"
                 echo "${RESULT}" | tail -c 500
               fi
+
+              # Apply ILM policy to all cloudflare_logpush @custom component templates
+              echo "Applying ILM policy to @custom component templates..."
+              for ENTRY in ${STREAM_MAP}; do
+                DATASET=$(echo "${ENTRY}" | cut -d: -f1)
+                curl -sk -u "${AUTH}" -X PUT "${ES}/_component_template/logs-cloudflare_logpush.${DATASET}@custom" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"template\":{\"settings\":{\"index.lifecycle.name\":\"cloudflare-logpush\"}}}"
+              done
+              echo ""
+
+              # Apply ILM to any existing indices
+              echo "Applying ILM policy to existing indices..."
+              curl -sk -u "${AUTH}" -X PUT "${ES}/logs-cloudflare_logpush.*-*/_settings" \
+                -H "Content-Type: application/json" \
+                -d '{"index.lifecycle.name":"cloudflare-logpush"}'
+              echo ""
+              echo "ILM setup complete (60d retention)"
           env:
             - name: ES_PASSWORD
               valueFrom:
