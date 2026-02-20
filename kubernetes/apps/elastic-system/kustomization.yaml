@@ -1,0 +1,99 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: elastic-system
+
+resources:
+  - ingressroute.yaml
+
+helmCharts:
+  - name: eck-stack
+    repo: https://helm.elastic.co
+    version: 0.18.0
+    releaseName: elastic
+    namespace: elastic-system
+    valuesInline:
+      eck-elasticsearch:
+        enabled: true
+        fullnameOverride: elasticsearch
+        version: 8.17.4
+        annotations:
+          eck.k8s.elastic.co/license: basic
+        nodeSets:
+          - name: default
+            count: 1
+            config:
+              node.store.allow_mmap: false
+              xpack.security.authc.api_key.enabled: true
+            volumeClaimTemplates:
+              - metadata:
+                  name: elasticsearch-data
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 50Gi
+                storageClassName: longhorn-single
+            podTemplate:
+              spec:
+                containers:
+                  - name: elasticsearch
+                    resources:
+                      requests:
+                        memory: 2Gi
+                        cpu: 500m
+                      limits:
+                        memory: 4Gi
+                        cpu: 2
+      eck-kibana:
+        enabled: true
+        fullnameOverride: kibana
+        version: 8.17.4
+        elasticsearchRef:
+          name: elasticsearch
+        count: 1
+        config:
+          server.publicBaseUrl: "https://kibana.<path:cert-manager:domain-config#domain>"
+        podTemplate:
+          spec:
+            containers:
+              - name: kibana
+                resources:
+                  requests:
+                    memory: 512Mi
+                    cpu: 250m
+                  limits:
+                    memory: 1Gi
+                    cpu: 1
+      eck-fleet-server:
+        enabled: true
+        fullnameOverride: fleet-server
+        version: 8.17.4
+        kibanaRef:
+          name: kibana
+        elasticsearchRefs:
+          - name: elasticsearch
+        deployment:
+          replicas: 1
+          podTemplate:
+            spec:
+              serviceAccountName: fleet-server
+              automountServiceAccountToken: true
+              containers:
+                - name: agent
+                  resources:
+                    requests:
+                      memory: 256Mi
+                      cpu: 100m
+                    limits:
+                      memory: 512Mi
+                      cpu: 500m
+      eck-agent:
+        enabled: false
+      eck-beats:
+        enabled: false
+      eck-logstash:
+        enabled: false
+      eck-apm-server:
+        enabled: false
+      eck-enterprise-search:
+        enabled: false

@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: eck-operator
+    repo: https://helm.elastic.co
+    version: 3.3.0
+    releaseName: eck-operator
+    namespace: elastic-system
+    valuesInline:
+      installCRDs: true
+      createClusterScopedResources: true
+      webhook:
+        enabled: true
+      managedNamespaces: []
+      resources:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 150Mi
