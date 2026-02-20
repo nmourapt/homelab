@@ -34,24 +34,48 @@ spec:
               echo ""
               sleep 10
 
-              STREAMS="access_request audit_logs device_posture dns firewall_event gateway_dns gateway_http gateway_network http_request network_analytics_logs network_session spectrum_event workers_trace"
+              # Format: dataset_name:r2_folder_name
+              # dataset_name = package policy_template + data_stream dataset
+              # r2_folder_name = actual folder prefix in the R2 bucket
+              STREAM_MAP="
+              access_request:access_request
+              audit:audit_logs
+              device_posture:device_posture
+              dns:dns
+              firewall_event:firewall_event
+              gateway_dns:gateway_dns
+              gateway_http:gateway_http
+              gateway_network:gateway_network
+              http_request:http_request
+              network_analytics:network_analytics_logs
+              network_session:network_session
+              spectrum_event:spectrum_event
+              workers_trace:workers_trace
+              "
 
-              # Build inputs array
+              # Build inputs array with correct dataset-to-folder mapping
               INPUTS="["
-              for STREAM in ${STREAMS}; do
-                [ "${INPUTS}" != "[" ] && INPUTS="${INPUTS},"
+              FIRST=true
+              for ENTRY in ${STREAM_MAP}; do
+                DATASET=$(echo "${ENTRY}" | cut -d: -f1)
+                FOLDER=$(echo "${ENTRY}" | cut -d: -f2)
+                if [ "${FIRST}" = "true" ]; then
+                  FIRST=false
+                else
+                  INPUTS="${INPUTS},"
+                fi
                 INPUTS="${INPUTS}{
                   \"type\": \"aws-s3\",
-                  \"policy_template\": \"${STREAM}\",
+                  \"policy_template\": \"${DATASET}\",
                   \"enabled\": true,
                   \"streams\": [{
                     \"enabled\": true,
                     \"data_stream\": {
                       \"type\": \"logs\",
-                      \"dataset\": \"cloudflare_logpush.${STREAM}\"
+                      \"dataset\": \"cloudflare_logpush.${DATASET}\"
                     },
                     \"vars\": {
-                      \"bucket_list_prefix\": {\"value\": \"${STREAM}/\", \"type\": \"text\"},
+                      \"bucket_list_prefix\": {\"value\": \"${FOLDER}/\", \"type\": \"text\"},
                       \"access_key_id\": {\"value\": \"${R2_ACCESS_KEY_ID}\", \"type\": \"text\"},
                       \"secret_access_key\": {\"value\": \"${R2_SECRET_ACCESS_KEY}\", \"type\": \"password\"},
                       \"bucket_arn\": {\"value\": \"arn:aws:s3:::${BUCKET}\", \"type\": \"text\"},
@@ -62,24 +86,25 @@ spec:
                       \"enable_deduplication\": {\"value\": true, \"type\": \"bool\"},
                       \"preserve_original_event\": {\"value\": false, \"type\": \"bool\"},
                       \"preserve_duplicate_custom_fields\": {\"value\": false, \"type\": \"bool\"},
-                      \"tags\": {\"value\": [\"forwarded\", \"cloudflare_logpush-${STREAM}\"], \"type\": \"text\"}
+                      \"tags\": {\"value\": [\"forwarded\", \"cloudflare_logpush-${DATASET}\"], \"type\": \"text\"}
                     }
                   }]
                 }"
               done
 
               # Disable non-S3 inputs for each stream
-              for STREAM in ${STREAMS}; do
+              for ENTRY in ${STREAM_MAP}; do
+                DATASET=$(echo "${ENTRY}" | cut -d: -f1)
                 for INPUT_TYPE in httpjson gcs azure-blob-storage; do
                   INPUTS="${INPUTS},{
                     \"type\": \"${INPUT_TYPE}\",
-                    \"policy_template\": \"${STREAM}\",
+                    \"policy_template\": \"${DATASET}\",
                     \"enabled\": false,
                     \"streams\": [{
                       \"enabled\": false,
                       \"data_stream\": {
                         \"type\": \"logs\",
-                        \"dataset\": \"cloudflare_logpush.${STREAM}\"
+                        \"dataset\": \"cloudflare_logpush.${DATASET}\"
                       }
                     }]
                   }"
