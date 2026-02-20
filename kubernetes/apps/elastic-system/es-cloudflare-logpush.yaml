@@ -53,7 +53,7 @@ spec:
               workers_trace:workers_trace
               "
 
-              # Build inputs array with correct dataset-to-folder mapping
+              # Build inputs array using cloudflare_r2_<dataset> var (non-AWS S3-compatible bucket)
               INPUTS="["
               FIRST=true
               for ENTRY in ${STREAM_MAP}; do
@@ -75,12 +75,11 @@ spec:
                       \"dataset\": \"cloudflare_logpush.${DATASET}\"
                     },
                     \"vars\": {
+                      \"cloudflare_r2_${DATASET}\": {\"value\": \"${BUCKET}\", \"type\": \"text\"},
                       \"bucket_list_prefix\": {\"value\": \"${FOLDER}/\", \"type\": \"text\"},
                       \"access_key_id\": {\"value\": \"${R2_ACCESS_KEY_ID}\", \"type\": \"text\"},
                       \"secret_access_key\": {\"value\": \"${R2_SECRET_ACCESS_KEY}\", \"type\": \"password\"},
-                      \"bucket_arn\": {\"value\": \"arn:aws:s3:::${BUCKET}\", \"type\": \"text\"},
                       \"endpoint\": {\"value\": \"${R2_ENDPOINT}\", \"type\": \"text\"},
-                      \"region\": {\"value\": \"auto\", \"type\": \"text\"},
                       \"number_of_workers\": {\"value\": 3, \"type\": \"integer\"},
                       \"interval\": {\"value\": \"1m\", \"type\": \"text\"},
                       \"enable_deduplication\": {\"value\": true, \"type\": \"bool\"},
