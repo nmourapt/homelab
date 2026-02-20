@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: elastic-system
 
 resources:
+  - namespace.yaml
   - ingressroute.yaml
 
 helmCharts:
