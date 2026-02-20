@@ -27,12 +27,13 @@ helmCharts:
             volumeClaimTemplates:
               - metadata:
                   name: elasticsearch-data
-                accessModes:
-                  - ReadWriteOnce
-                resources:
-                  requests:
-                    storage: 50Gi
-                storageClassName: longhorn-single
+                spec:
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 50Gi
+                  storageClassName: longhorn-single
             podTemplate:
               spec:
                 containers:
