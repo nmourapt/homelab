@@ -6,6 +6,7 @@ resources:
   - namespace.yaml
   - ingressroute.yaml
   - es-anonymous-user.yaml
+  - es-cloudflare-logpush.yaml
 
 helmCharts:
   - name: eck-stack
