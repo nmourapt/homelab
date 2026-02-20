@@ -136,9 +136,6 @@ helmCharts:
                     requests:
                       memory: 512Mi
                       cpu: 100m
-                    limits:
-                      memory: 3Gi
-                      cpu: 1
       eck-agent:
         enabled: false
       eck-beats:
