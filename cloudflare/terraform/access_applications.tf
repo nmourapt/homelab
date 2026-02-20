@@ -724,3 +724,36 @@ resource "cloudflare_zero_trust_access_application" "hubble" {
     }
   ]
 }
+
+resource "cloudflare_zero_trust_access_application" "kibana" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Kibana"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt36f2da8d650732a0/5d0823c3d8ff351753cbc99f/logo-elastic-search-color-64.svg"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "kibana.${var.tld}"
+    }
+  ]
+}
