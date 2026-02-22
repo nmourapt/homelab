@@ -137,7 +137,7 @@ helmCharts:
                       memory: 1Gi
                       cpu: 100m
                     limits:
-                      memory: 4Gi
+                      memory: 6Gi
                       cpu: 1
       eck-agent:
         enabled: false

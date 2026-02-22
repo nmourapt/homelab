@@ -374,8 +374,8 @@ spec:
             summary: "FlareSolverr is down"
             description: "FlareSolverr metrics endpoint is unreachable for 5 minutes"
         - alert: FlareSolverrHighFailureRate
-          expr: sum(rate(flaresolverr_request_total{namespace="flaresolverr", result!="solved"}[15m])) / sum(rate(flaresolverr_request_total{namespace="flaresolverr"}[15m])) * 100 > 50
-          for: 10m
+          expr: (sum(rate(flaresolverr_request_total{namespace="flaresolverr", result!="solved"}[15m])) / clamp_min(sum(rate(flaresolverr_request_total{namespace="flaresolverr"}[15m])), 1e-10)) * 100 > 50
+          for: 15m
           labels:
             severity: warning
           annotations:
