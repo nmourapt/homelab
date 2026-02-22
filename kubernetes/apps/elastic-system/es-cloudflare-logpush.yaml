@@ -50,6 +50,7 @@ spec:
               audit:audit_logs
               device_posture:device_posture
               dns:dns
+              email_security_alerts:email_security_alerts
               firewall_event:firewall_event
               gateway_dns:gateway_dns
               gateway_http:gateway_http
@@ -164,7 +165,7 @@ spec:
                 -H "Content-Type: application/json" \
                 -d '{"index.lifecycle.name":"cloudflare-logpush"}'
               echo ""
-              echo "ILM setup complete (60d retention)"
+              echo "ILM setup complete (30d retention)"
           env:
             - name: ES_PASSWORD
               valueFrom:
