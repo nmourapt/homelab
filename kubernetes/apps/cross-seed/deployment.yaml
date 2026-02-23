@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cross-seed
+  namespace: cross-seed
+  labels:
+    app: cross-seed
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cross-seed
+  template:
+    metadata:
+      labels:
+        app: cross-seed
+    spec:
+      containers:
+        - name: cross-seed
+          image: ghcr.io/cross-seed/cross-seed:6.13.6
+          args: ["daemon"]
+          ports:
+            - containerPort: 2468
+              protocol: TCP
+              name: http
+          envFrom:
+            - secretRef:
+                name: cross-seed-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /data
+              name: data
+            - mountPath: /config/config.js
+              subPath: config.js
+              name: config-js
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: cross-seed-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-cross-seed-synology
+        - name: config-js
+          configMap:
+            name: cross-seed-config

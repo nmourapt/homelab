@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cross-seed-config
+  namespace: cross-seed
+data:
+  config.js: |
+    module.exports = {
+    	apiKey: process.env.CROSS_SEED_API_KEY,
+    	torznab: [
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/1/api?apikey=${process.env.PROWLARR_API_KEY}`, // TorrentLeech
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/2/api?apikey=${process.env.PROWLARR_API_KEY}`, // Milkie
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/5/api?apikey=${process.env.PROWLARR_API_KEY}`, // upload.cx
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/6/api?apikey=${process.env.PROWLARR_API_KEY}`, // Portugas (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/7/api?apikey=${process.env.PROWLARR_API_KEY}`, // SportsCult
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/8/api?apikey=${process.env.PROWLARR_API_KEY}`, // MyAnonamouse
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/9/api?apikey=${process.env.PROWLARR_API_KEY}`, // DigitalCore
+        // `http://prowlarr.prowlarr.svc.cluster.local:9696/13/api?apikey=${process.env.PROWLARR_API_KEY}`, // RuTracker.org
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/14/api?apikey=${process.env.PROWLARR_API_KEY}`, // CinemaZ
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/15/api?apikey=${process.env.PROWLARR_API_KEY}`, // AvistaZ
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/16/api?apikey=${process.env.PROWLARR_API_KEY}`, // FearNoPeer
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/17/api?apikey=${process.env.PROWLARR_API_KEY}`, // seedpool (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/18/api?apikey=${process.env.PROWLARR_API_KEY}`, // ReelFLiX (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/20/api?apikey=${process.env.PROWLARR_API_KEY}`, // NordicQuality (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/22/api?apikey=${process.env.PROWLARR_API_KEY}`, // Aither (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/23/api?apikey=${process.env.PROWLARR_API_KEY}`, // OnlyEncodes+ (API)
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/24/api?apikey=${process.env.PROWLARR_API_KEY}`, // LST
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/25/api?apikey=${process.env.PROWLARR_API_KEY}`, // HD-Space
+      ],
+    	sonarr: [`http://sonarr.sonarr.svc.cluster.local:8989/?apikey=${process.env.SONARR_API_KEY}`],
+    	radarr: [`http://radarr.radarr.svc.cluster.local:7878/?apikey=${process.env.RADARR_API_KEY}`],
+    	host: "0.0.0.0",
+    	port: 2468,
+    	torrentClients: [`qbittorrent:http://192.168.202.1:10002`],
+    	useClientTorrents: true,
+    	delay: 30,
+    	dataDirs: ["/data/media/movies","/data/media/series","/data/media/cartoons"],
+    	linkCategory: "xseed-link",
+    	linkDirs: ["/data/torrents/xseed-link"],
+    	linkType: "hardlink",
+    	flatLinking: false,
+    	matchMode: "partial",
+    	skipRecheck: true,
+    	autoResumeMaxDownload: 52428800,
+    	maxDataDepth: 2,
+    	outputDir: "/data/torrents/xseed-torrents",
+    	includeSingleEpisodes: false,
+    	includeNonVideos: false,
+    	seasonFromEpisodes: 1,
+    	fuzzySizeThreshold: 0.02,
+    	excludeOlder: "2 weeks",
+    	excludeRecentSearch: "3 days",
+    	action: "inject",
+    	duplicateCategories: true,
+    	rssCadence: "30 minutes",
+    	searchCadence: "1 day",
+    	snatchTimeout: "30 seconds",
+    	searchTimeout: "2 minutes",
+    	searchLimit: 400,
+    	blockList: [
+      	"category:racing-aither",
+      	"category:racing-dcore",
+      	"category:racing-portugas",
+      	"category:racing-tl",
+      ],
+    };

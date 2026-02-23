@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-cross-seed-synology
+spec:
+  capacity:
+    storage: 1Ki
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "192.168.202.1"
+    path: "/volume1/data"
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: cross-seed
+    name: pvc-cross-seed-synology
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-cross-seed-synology
+  namespace: cross-seed
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ki
+  volumeName: pv-cross-seed-synology
+  storageClassName: ""
