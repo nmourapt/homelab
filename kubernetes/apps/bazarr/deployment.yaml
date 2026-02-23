@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: bazarr
-          image: ghcr.io/hotio/bazarr:release-1.5.2
+          image: ghcr.io/hotio/bazarr:release-1.5.5
           ports:
             - containerPort: 6767
               protocol: TCP
