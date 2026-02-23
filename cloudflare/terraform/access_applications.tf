@@ -795,39 +795,6 @@ resource "cloudflare_zero_trust_access_application" "bazarr" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "autobrr" {
-  account_id           = var.cloudflare_account_id
-  name                 = "TF - autobrr"
-  type                 = "self_hosted"
-  session_duration     = "24h"
-
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid.id
-  ]
-  auto_redirect_to_identity = true
-
-  policies = [
-    {
-      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
-      precedence = 1
-    },
-    {
-      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
-      precedence = 2
-    }
-  ]
-
-  app_launcher_visible = true
-  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/autobrr.png"
-
-  destinations = [
-    {
-      type = "public"
-      uri = "autobrr.${var.tld}"
-    }
-  ]
-}
-
 resource "cloudflare_zero_trust_access_application" "autobrr_oidc" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - autobrr OIDC"
@@ -850,7 +817,7 @@ resource "cloudflare_zero_trust_access_application" "autobrr_oidc" {
     }
   ]
 
-  app_launcher_visible = false
+  app_launcher_visible = true
   logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/autobrr.png"
 
   saas_app = {

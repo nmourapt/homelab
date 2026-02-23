@@ -8,3 +8,4 @@ resources:
   - service.yaml
   - pvc.yaml
   - ingressroute.yaml
+  - autobrr-secrets.sealedsecret.yaml
