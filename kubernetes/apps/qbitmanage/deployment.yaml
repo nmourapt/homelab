@@ -23,6 +23,13 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - cp /load/config.yml /config/config.yml;
+              sed -i "s|\${APPRISE_NOTIFY_URL}|${APPRISE_NOTIFY_URL}|g" /config/config.yml;
+          env:
+            - name: APPRISE_NOTIFY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: qbitmanage-secrets
+                  key: APPRISE_NOTIFY_URL
           volumeMounts:
             - mountPath: /load
               name: config-yml

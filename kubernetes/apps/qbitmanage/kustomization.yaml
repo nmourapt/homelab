@@ -8,3 +8,4 @@ resources:
   - pvc.yaml
   - nfs-pv-pvc.yaml
   - configmap.yaml
+  - qbitmanage-secrets.sealedsecret.yaml
