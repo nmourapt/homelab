@@ -125,15 +125,19 @@ data:
         - "**/*_unpackerred"
       max_orphaned_files_to_delete: -1
 
+    apprise:
+      api_url: "http://apprise.apprise.svc.cluster.local:8000"
+      notify_url: "tgram://8549505378:AAEbL_OQwIe62ZEhobzWVQ3h5Vbi8yLL8_k/8283832115"
+
     webhooks:
-      error: "apprise://apprise.apprise.svc.cluster.local:8000"
+      error: "apprise"
       function:
-        recheck: "apprise://apprise.apprise.svc.cluster.local:8000"
-        cat_update: "apprise://apprise.apprise.svc.cluster.local:8000"
-        tag_update: "apprise://apprise.apprise.svc.cluster.local:8000"
-        rem_unregistered: "apprise://apprise.apprise.svc.cluster.local:8000"
-        tag_tracker_error: "apprise://apprise.apprise.svc.cluster.local:8000"
-        rem_orphaned: "apprise://apprise.apprise.svc.cluster.local:8000"
-        tag_nohardlinks: "apprise://apprise.apprise.svc.cluster.local:8000"
-        share_limits: "apprise://apprise.apprise.svc.cluster.local:8000"
-        cleanup_dirs: "apprise://apprise.apprise.svc.cluster.local:8000"
+        recheck: "apprise"
+        cat_update: "apprise"
+        tag_update: "apprise"
+        rem_unregistered: "apprise"
+        tag_tracker_error: "apprise"
+        rem_orphaned: "apprise"
+        tag_nohardlinks: "apprise"
+        share_limits: "apprise"
+        cleanup_dirs: "apprise"
