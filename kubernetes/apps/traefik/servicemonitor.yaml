@@ -13,3 +13,4 @@ spec:
     - port: traefik
       path: /metrics
       interval: 30s
+      honorLabels: true
