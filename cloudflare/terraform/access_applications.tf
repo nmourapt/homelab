@@ -828,6 +828,53 @@ resource "cloudflare_zero_trust_access_application" "autobrr" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "autobrr_oidc" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - autobrr OIDC"
+  type                 = "saas"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    {
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    {
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = false
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/autobrr.png"
+
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://autobrr.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://autobrr.${var.tld}/api/auth/oidc/callback"
+    ]
+    grant_types = [
+      "authorization_code_with_pkce",
+      "refresh_tokens"
+    ]
+    refresh_token_options = {
+      lifetime = "1d"
+    }
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+    ]
+  }
+}
+
 resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Bazarr - Bypass"
