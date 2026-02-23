@@ -31,6 +31,13 @@ helmCharts:
       sources:
         - ingress
         - traefik-proxy
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
       policy: sync
       txtOwnerId: external-dns
       txtPrefix: _externaldns.

@@ -111,10 +111,10 @@ helmCharts:
               - name: kibana
                 resources:
                   requests:
-                    memory: 512Mi
+                    memory: 1Gi
                     cpu: 250m
                   limits:
-                    memory: 1Gi
+                    memory: 2Gi
                     cpu: 1
       eck-fleet-server:
         enabled: true
@@ -134,10 +134,10 @@ helmCharts:
                 - name: agent
                   resources:
                     requests:
-                      memory: 1Gi
+                      memory: 512Mi
                       cpu: 100m
                     limits:
-                      memory: 2Gi
+                      memory: 1Gi
       eck-agent:
         enabled: false
       eck-beats:

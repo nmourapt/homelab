@@ -27,6 +27,13 @@ helmCharts:
         enabled: false
       prometheus:
         prometheusSpec:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 2Gi
+            limits:
+              cpu: 2
+              memory: 3Gi
           retention: 30d
           storageSpec:
             volumeClaimTemplate:
@@ -46,6 +53,13 @@ helmCharts:
             key: prometheus-additional-scrape-configs.yaml
       alertmanager:
         alertmanagerSpec:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
           retention: 120h
           secrets:
             - alertmanager-telegram
@@ -131,6 +145,13 @@ helmCharts:
             api_url: https://babybites.cloudflareaccess.com/cdn-cgi/access/sso/oidc/a98801bb1e8e2a09b4762335b5eb9e94df4de3652adc5e49bb4fd073ca9d0b68/userinfo
             role_attribute_path: contains(groups[*], 'administrators') && 'Admin' || 'Viewer'
             use_pkce: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
         sidecar:
           dashboards:
             enabled: true
@@ -140,6 +161,14 @@ helmCharts:
         enabled: true
       kubeStateMetrics:
         enabled: true
+      prometheusOperator:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
       kubeProxy:
         enabled: false
       kubeScheduler:

@@ -29,3 +29,12 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/name
         value: cloudflared-tunnel-token
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

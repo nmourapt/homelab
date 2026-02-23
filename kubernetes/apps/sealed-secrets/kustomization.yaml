@@ -14,3 +14,11 @@ helmCharts:
     releaseName: sealed-secrets
     namespace: sealed-secrets
     includeCRDs: true
+    valuesInline:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 200m
+          memory: 64Mi
