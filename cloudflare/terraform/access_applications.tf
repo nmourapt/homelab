@@ -795,9 +795,9 @@ resource "cloudflare_zero_trust_access_application" "bazarr" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "autobrr_oidc" {
+resource "cloudflare_zero_trust_access_application" "autobrr" {
   account_id           = var.cloudflare_account_id
-  name                 = "TF - autobrr OIDC"
+  name                 = "TF - autobrr"
   type                 = "saas"
   session_duration     = "24h"
 
