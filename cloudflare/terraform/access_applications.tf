@@ -809,6 +809,7 @@ resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
   ]
 
   app_launcher_visible = false
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/bazarr.png"
 
   destinations = [
     {
