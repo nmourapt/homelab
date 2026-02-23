@@ -14,7 +14,6 @@ data:
         `http://prowlarr.prowlarr.svc.cluster.local:9696/6/api?apikey=${process.env.PROWLARR_API_KEY}`, // Portugas (API)
         `http://prowlarr.prowlarr.svc.cluster.local:9696/7/api?apikey=${process.env.PROWLARR_API_KEY}`, // SportsCult
         `http://prowlarr.prowlarr.svc.cluster.local:9696/8/api?apikey=${process.env.PROWLARR_API_KEY}`, // MyAnonamouse
-        `http://prowlarr.prowlarr.svc.cluster.local:9696/9/api?apikey=${process.env.PROWLARR_API_KEY}`, // DigitalCore
         // `http://prowlarr.prowlarr.svc.cluster.local:9696/13/api?apikey=${process.env.PROWLARR_API_KEY}`, // RuTracker.org
         `http://prowlarr.prowlarr.svc.cluster.local:9696/14/api?apikey=${process.env.PROWLARR_API_KEY}`, // CinemaZ
         `http://prowlarr.prowlarr.svc.cluster.local:9696/15/api?apikey=${process.env.PROWLARR_API_KEY}`, // AvistaZ
@@ -26,6 +25,7 @@ data:
         `http://prowlarr.prowlarr.svc.cluster.local:9696/23/api?apikey=${process.env.PROWLARR_API_KEY}`, // OnlyEncodes+ (API)
         `http://prowlarr.prowlarr.svc.cluster.local:9696/24/api?apikey=${process.env.PROWLARR_API_KEY}`, // LST
         `http://prowlarr.prowlarr.svc.cluster.local:9696/25/api?apikey=${process.env.PROWLARR_API_KEY}`, // HD-Space
+        `http://prowlarr.prowlarr.svc.cluster.local:9696/26/api?apikey=${process.env.PROWLARR_API_KEY}`, // DigitalCore
       ],
     	sonarr: [`http://sonarr.sonarr.svc.cluster.local:8989/?apikey=${process.env.SONARR_API_KEY}`],
     	radarr: [`http://radarr.radarr.svc.cluster.local:7878/?apikey=${process.env.RADARR_API_KEY}`],
