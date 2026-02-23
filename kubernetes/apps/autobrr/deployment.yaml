@@ -40,7 +40,7 @@ spec:
             - name: AUTOBRR__OIDC_ENABLED
               value: "true"
             - name: AUTOBRR__OIDC_REDIRECT_URL
-              value: "https://autobrr.nmoura.pt/api/auth/oidc/callback"
+              value: "https://autobrr.<path:cert-manager:domain-config#domain>/api/auth/oidc/callback"
             - name: AUTOBRR__OIDC_DISABLE_BUILT_IN_LOGIN
               value: "false"
           envFrom:
