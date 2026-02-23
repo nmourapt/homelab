@@ -124,3 +124,16 @@ data:
         - "**/*.!qB"
         - "**/*_unpackerred"
       max_orphaned_files_to_delete: -1
+
+    webhooks:
+      error: "apprise://apprise.apprise.svc.cluster.local:8000"
+      function:
+        recheck: "apprise://apprise.apprise.svc.cluster.local:8000"
+        cat_update: "apprise://apprise.apprise.svc.cluster.local:8000"
+        tag_update: "apprise://apprise.apprise.svc.cluster.local:8000"
+        rem_unregistered: "apprise://apprise.apprise.svc.cluster.local:8000"
+        tag_tracker_error: "apprise://apprise.apprise.svc.cluster.local:8000"
+        rem_orphaned: "apprise://apprise.apprise.svc.cluster.local:8000"
+        tag_nohardlinks: "apprise://apprise.apprise.svc.cluster.local:8000"
+        share_limits: "apprise://apprise.apprise.svc.cluster.local:8000"
+        cleanup_dirs: "apprise://apprise.apprise.svc.cluster.local:8000"
