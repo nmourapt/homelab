@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbitmanage
+  namespace: qbitmanage
+  labels:
+    app: qbitmanage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbitmanage
+  template:
+    metadata:
+      labels:
+        app: qbitmanage
+    spec:
+      initContainers:
+        - name: copy-config
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - cp /load/config.yml /config/config.yml;
+          volumeMounts:
+            - mountPath: /load
+              name: config-yml
+            - mountPath: /config
+              name: config
+      containers:
+        - name: qbitmanage
+          image: ghcr.io/stuffanthings/qbit_manage:v4.6.5
+          env:
+            - name: TZ
+              value: Europe/Lisbon
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: qbitmanage-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-qbitmanage-synology
+        - name: config-yml
+          configMap:
+            name: qbitmanage-config
