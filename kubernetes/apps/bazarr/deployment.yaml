@@ -25,13 +25,15 @@ spec:
               protocol: TCP
               name: http
           env:
-            - name: POSTGRES_ENABLED
-              value: "True"
-            - name: POSTGRES_HOST
+            - name: TZ
+              value: Europe/Lisbon
+            - name: BAZARR_POSTGRESQL__ENABLED
+              value: "true"
+            - name: BAZARR_POSTGRESQL__HOST
               value: "192.168.202.1"
-            - name: POSTGRES_PORT
+            - name: BAZARR_POSTGRESQL__PORT
               value: "10009"
-            - name: POSTGRES_DATABASE
+            - name: BAZARR_POSTGRESQL__DATABASE
               value: bazarr
           envFrom:
             - secretRef:
