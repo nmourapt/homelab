@@ -527,35 +527,6 @@ resource "cloudflare_zero_trust_access_application" "longhorn" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "seerr" {
-  account_id           = var.cloudflare_account_id
-  name                 = "TF - Seerr"
-  type                 = "self_hosted"
-  session_duration     = "24h"
-
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid.id
-  ]
-  auto_redirect_to_identity = true
-
-  policies = [
-    { 
-      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
-      precedence = 1
-    }
-  ]
-
-  app_launcher_visible = true
-  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/overseerr.png"
-
-  destinations = [
-    { 
-      type = "public"
-      uri = "requests.${var.tld}"
-    }
-  ]
-}
-
 resource "cloudflare_zero_trust_access_application" "sonarr" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Sonarr"
@@ -754,6 +725,39 @@ resource "cloudflare_zero_trust_access_application" "kibana" {
     { 
       type = "public"
       uri = "kibana.${var.tld}"
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "profilarr" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Profilarr"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/profilarr.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "profiles.${var.tld}"
     }
   ]
 }
