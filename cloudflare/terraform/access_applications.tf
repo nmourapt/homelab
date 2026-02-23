@@ -828,12 +828,8 @@ resource "cloudflare_zero_trust_access_application" "autobrr_oidc" {
       "https://autobrr.${var.tld}/api/auth/oidc/callback"
     ]
     grant_types = [
-      "authorization_code_with_pkce",
-      "refresh_tokens"
+      "authorization_code"
     ]
-    refresh_token_options = {
-      lifetime = "1d"
-    }
     scopes = [
       "openid",
       "email",
