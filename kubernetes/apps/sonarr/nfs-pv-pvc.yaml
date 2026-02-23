@@ -4,7 +4,7 @@ metadata:
   name: pv-sonarr-synology
 spec:
   capacity:
-    storage: 10Ti
+    storage: 1Ki
   accessModes:
     - ReadWriteMany
   nfs:
@@ -25,6 +25,6 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 10Ti
+      storage: 1Ki
   volumeName: pv-sonarr-synology
   storageClassName: ""

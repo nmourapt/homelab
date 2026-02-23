@@ -27,6 +27,17 @@ spec:
           env:
             - name: TZ
               value: Europe/Lisbon
+            - name: POSTGRES_ENABLED
+              value: "true"
+            - name: POSTGRES_HOST
+              value: "192.168.202.1"
+            - name: POSTGRES_PORT
+              value: "10009"
+            - name: POSTGRES_DATABASE
+              value: bazarr
+          envFrom:
+            - secretRef:
+                name: bazarr-secrets
           resources:
             requests:
               cpu: 100m

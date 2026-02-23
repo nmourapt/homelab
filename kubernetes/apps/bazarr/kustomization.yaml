@@ -9,3 +9,4 @@ resources:
   - pvc.yaml
   - nfs-pv-pvc.yaml
   - ingressroute.yaml
+  - bazarr-secrets.sealedsecret.yaml
