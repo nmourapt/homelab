@@ -794,3 +794,26 @@ resource "cloudflare_zero_trust_access_application" "bazarr" {
     }
   ]
 }
+
+resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Bazarr - Bypass"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  policies = [
+    {
+      id = cloudflare_zero_trust_access_policy.bypass_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  app_launcher_visible = false
+
+  destinations = [
+    {
+      type = "public"
+      uri = "subs.${var.tld}/api/webhooks/plex"
+    }
+  ]
+}
