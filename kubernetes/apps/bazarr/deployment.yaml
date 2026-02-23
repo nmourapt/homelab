@@ -25,10 +25,8 @@ spec:
               protocol: TCP
               name: http
           env:
-            - name: TZ
-              value: Europe/Lisbon
             - name: POSTGRES_ENABLED
-              value: "true"
+              value: "True"
             - name: POSTGRES_HOST
               value: "192.168.202.1"
             - name: POSTGRES_PORT
