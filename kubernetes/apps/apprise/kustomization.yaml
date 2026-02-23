@@ -6,4 +6,5 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
+  - ingressroute.yaml
   - apprise-secrets.sealedsecret.yaml
