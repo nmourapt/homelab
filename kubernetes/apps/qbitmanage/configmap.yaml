@@ -127,7 +127,7 @@ data:
 
     apprise:
       api_url: "http://apprise.apprise.svc.cluster.local:8000"
-      notify_url: "tgram://8549505378:AAEbL_OQwIe62ZEhobzWVQ3h5Vbi8yLL8_k/8283832115"
+      notify_url: "tgram://8389051988:AAHQOskGIdMplC3wC6K9LtXb1gqEFggOEIo/8283832115"
 
     webhooks:
       error: "apprise"
