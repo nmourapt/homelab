@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profilarr
+  namespace: profilarr
+  labels:
+    app: profilarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: profilarr
+  template:
+    metadata:
+      labels:
+        app: profilarr
+    spec:
+      containers:
+        - name: profilarr
+          image: ghcr.io/dictionarry-hub/profilarr:latest
+          ports:
+            - containerPort: 6868
+              protocol: TCP
+              name: http
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Europe/Lisbon
+            - name: AUTH
+              value: "off"
+            - name: PARSER_HOST
+              value: localhost
+            - name: PARSER_PORT
+              value: "5000"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+        - name: parser
+          image: ghcr.io/dictionarry-hub/profilarr-parser:latest
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+              name: parser
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: profilarr-config
