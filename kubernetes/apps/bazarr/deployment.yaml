@@ -27,13 +27,13 @@ spec:
           env:
             - name: TZ
               value: Europe/Lisbon
-            - name: BAZARR_POSTGRESQL__ENABLED
+            - name: POSTGRES_ENABLED
               value: "true"
-            - name: BAZARR_POSTGRESQL__HOST
+            - name: POSTGRES_HOST
               value: "192.168.202.1"
-            - name: BAZARR_POSTGRESQL__PORT
+            - name: POSTGRES_PORT
               value: "10009"
-            - name: BAZARR_POSTGRESQL__DATABASE
+            - name: POSTGRES_DATABASE
               value: bazarr
           envFrom:
             - secretRef:
