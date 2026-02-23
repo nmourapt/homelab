@@ -29,6 +29,8 @@ helmCharts:
       metrics:
         prometheus:
           entryPoint: traefik
+          addServicesLabels: true
+          addRoutersLabels: true
       ports:
         traefik:
           expose:
