@@ -4,6 +4,8 @@ Full-stack homelab infrastructure managed entirely as code. Combines a 3-node Ku
 
 This isn't a tutorial or a deployment guide. It's a living, production-like environment that I use daily and iterate on constantly.
 
+A human review is done before significant changes get pushed (unless Windsurf goes rogue and decides to ignore instructions), but Claude is used for a significant part of the state generation process. Being able to generate barebones YAML files from two input lines only then requiring small adjustments and review speeds things up considerably.
+
 ## Architecture
 
 ```
