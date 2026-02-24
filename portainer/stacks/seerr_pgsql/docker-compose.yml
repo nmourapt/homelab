@@ -1,7 +1,7 @@
 services:
   seerr_pgsql:
     container_name: seerr_pgsql
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
