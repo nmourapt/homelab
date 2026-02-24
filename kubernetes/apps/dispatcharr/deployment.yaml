@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcharr
+  namespace: dispatcharr
+  labels:
+    app: dispatcharr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dispatcharr
+  template:
+    metadata:
+      labels:
+        app: dispatcharr
+    spec:
+      containers:
+        - name: dispatcharr
+          image: ghcr.io/dispatcharr/dispatcharr:v0.19.0
+          ports:
+            - containerPort: 9191
+              protocol: TCP
+              name: http
+          env:
+            - name: TZ
+              value: Europe/Lisbon
+            - name: DISPATCHARR_ENV
+              value: aio
+            - name: REDIS_HOST
+              value: localhost
+            - name: CELERY_BROKER_URL
+              value: redis://localhost:6379/0
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+              gpu.intel.com/i915: 1
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+              gpu.intel.com/i915: 1
+          volumeMounts:
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dispatcharr-data

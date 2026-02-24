@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatcharr
+  namespace: dispatcharr
+  labels:
+    app: dispatcharr
+spec:
+  type: ClusterIP
+  externalIPs:
+    - 192.168.202.159
+  ports:
+    - port: 9191
+      targetPort: 9191
+      protocol: TCP
+      name: http
+  selector:
+    app: dispatcharr
