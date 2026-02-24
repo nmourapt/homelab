@@ -7,48 +7,48 @@ This isn't a tutorial or a deployment guide. It's a living, production-like envi
 ## Architecture
 
 ```
-                          ┌──────────────────────┐
-                          │    Cloudflare Edge    │
-                          │  DNS, Tunnels, Zero   │
-                          │  Trust Access, WAF    │
-                          └──────────┬───────────┘
-                                     │
-                     ┌───────────────┼───────────────┐
-                     ▼                               ▼
-          ┌─────────────────┐             ┌─────────────────┐
-          │  Kubernetes      │             │  Synology NAS    │
+                        ┌──────────────────────┐
+                        │    Cloudflare Edge   │
+                        │  DNS, Tunnels, Zero  │
+                        │  Trust Access, WAF   │
+                        └──────────┬───────────┘
+                                   │
+                     ┌─────────────┼───────────────┐
+                     ▼                             ▼
+          ┌──────────────────┐            ┌──────────────────┐
+          │  Kubernetes      │            │  Synology NAS    │
           │  3x Intel NUC    │◄── NFS ───►│  Docker/Portainer│
           │  Talos Linux     │   iSCSI    │  PostgreSQL DBs  │
-          │  Cilium + Traefik│             │  Media Storage   │
-          └────────┬────────┘             └────────┬────────┘
-                   │                                │
-                   └────────────────────────────────┘
-                                     │
-                          ┌──────────┴───────────┐
-                          │    GitHub Actions     │
-                          │  CI/CD Pipelines      │
-                          │  SOPS Secret Sync     │
-                          └──────────────────────┘
+          │  Cilium + Traefik│            │  Media Storage   │
+          └────────┬─────────┘            └────────┬─────────┘
+                   │                               │
+                   └───────────────────────────────┘
+                                   │
+                        ┌──────────┴───────────┐
+                        │    GitHub Actions    │
+                        │  CI/CD Pipelines     │
+                        │  SOPS Secret Sync    │
+                        └──────────────────────┘
 ```
 
-The environment runs on a single VLAN (`192.168.202.0/24`) with three Intel N100 NUCs forming the Kubernetes cluster and a Synology DS923+ handling persistent storage, databases, and some Docker workloads.
+The environment runs on a single VLAN (`192.168.202.0/24`) with three Intel N100 NUCs forming the Kubernetes cluster and a Synology DS918+ handling persistent storage, databases, and some Docker workloads.
 
 ## Key Design Decisions
 
 ### Why two compute platforms?
 
-Not everything belongs in Kubernetes. Stateful services that benefit from direct disk access (Plex, qBittorrent, Immich server) run on the Synology via Docker/Portainer. Stateless or easily-replicated services (reverse proxies, monitoring, *arr stack UIs, GitOps tooling) run on Kubernetes. The NAS provides NFS and iSCSI storage to both.
+Not everything belongs in Kubernetes. Stateful services that benefit from direct disk access (Plex, Immich) or need to be more robust (i.e. won't be subject to me deciding to tear down and rebuild the cluster) (Vaultwarden, PocketID) run on the Synology via Docker/Portainer. Stateless or easily-replicated services (reverse proxies, monitoring, *arr stack UIs, GitOps tooling) run on Kubernetes. The NAS provides NFS and iSCSI storage to both.
 
 ### Zero exposed ports
 
 No ports are forwarded from the router. All external access flows through **Cloudflare Tunnels** — three of them, each serving a different role:
-- **lis_k8s** — Routes to Kubernetes services via Traefik (wildcard `*.domain`)
-- **lis_prod** — Routes to NAS-hosted services (Vaultwarden, PocketID, Home Assistant)
-- **lis_isp** — Routes to ISP-side network gear (Omada controller on a separate subnet)
+- **lis_k8s** — Routes to Kubernetes services via Traefik (with external-dns creating the necessary records)
+- **lis_prod** — Routes to NAS-hosted services via its' own Traefik (using traefik-cloudflare-companion for DNS)
+- **lis_isp** — Routes to a different, isolated VLAN (ISP)
 
 ### Identity and access control
 
-Every externally-exposed service sits behind **Cloudflare Zero Trust Access**. Authentication goes through a self-hosted **PocketID** (OIDC provider), with geo-fenced policies: 8-hour sessions from Portugal, 15-minute sessions from anywhere else. Some services (like Autobrr) use Cloudflare Access SaaS OIDC for SSO directly into the app.
+Every externally-exposed service sits behind **Cloudflare Zero Trust Access**. Authentication goes through a self-hosted **PocketID** (OIDC provider), with geo-fenced policies: 8-hour sessions from Portugal, 15-minute sessions from anywhere else. Some services (like Immich) use Cloudflare Access OIDC for SSO directly into the app. Additionally, Google can be used as the SSO provider for some tools which are shared with external users.
 
 ### GitOps everywhere
 
@@ -61,7 +61,7 @@ Every externally-exposed service sits behind **Cloudflare Zero Trust Access**. A
 
 Two layers:
 - **SOPS + age** for CI/CD secrets (Terraform variables, API keys). Encrypted in Git, decrypted in GitHub Actions, pushed to GitHub Secrets.
-- **Sealed Secrets** for Kubernetes. Plaintext `.secret.yaml` files are gitignored; only the encrypted `.sealedsecret.yaml` files are committed.
+- **Sealed Secrets** for Kubernetes. 
 
 ## Technology Stack
 
@@ -99,7 +99,7 @@ homelab/
 │   ├── stacks/               # 23 Docker Compose definitions
 │   └── terraform/            # Stack deployment automation
 ├── secrets/                  # SOPS-encrypted secret store
-└── synology/                 # NAS bootstrap automation
+└── synology/                 # NAS bootstrap automation (Ansible - currently gitignored, due for cleanup)
 ```
 
 Each subdirectory has its own README with detailed architectural context.
@@ -113,8 +113,7 @@ The cluster runs 27 applications, each in its own namespace, auto-discovered by 
 | **Platform** | ArgoCD config, cert-manager, sealed-secrets, external-dns, cloudflared, Traefik |
 | **Storage** | Longhorn, Synology CSI, Intel GPU device plugin |
 | **Monitoring** | Prometheus, Grafana, Alertmanager (kube-prometheus-stack), ECK Operator, Elasticsearch, Kibana, Fleet Server, Hubble |
-| **Media Management** | Sonarr, Radarr, Prowlarr, Bazarr, Seerr |
-| **Download Tools** | Cross-seed, qbitmanage, Autobrr, FlareSolverr, Profilarr |
+| **Media Management** | *arr Stack |
 | **Other** | Immich ML (OpenVINO), The Lounge (IRC), Apprise (notifications) |
 
 ## Docker Stacks (Synology NAS)
@@ -123,10 +122,10 @@ The cluster runs 27 applications, each in its own namespace, auto-discovered by 
 
 | Category | Services |
 |----------|---------|
-| **Media** | Plex, qBittorrent, Immich server |
+| **Media** | Plex, Immich server |
 | **Identity** | PocketID (OIDC), Vaultwarden |
 | **Infrastructure** | Cloudflare Tunnels (2x), Certbot, Postfix, Netboot, Omni |
-| **Databases** | PostgreSQL instances for Sonarr, Radarr, Prowlarr, Bazarr, Lidarr, Readarr, Seerr, Autobrr |
+| **Databases** | Various PostgreSQL instances |
 | **Home** | Home Assistant |
 
 ## Monitoring and Alerting

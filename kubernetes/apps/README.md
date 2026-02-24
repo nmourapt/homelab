@@ -1,6 +1,6 @@
 # Kubernetes Applications
 
-27 applications deployed to a 3-node Talos Linux cluster, fully managed by ArgoCD with zero manual intervention after `git push`.
+Applications deployed to a 3-node Talos Linux cluster, fully managed by ArgoCD with zero manual intervention after `git push`.
 
 ## GitOps Model
 
@@ -17,7 +17,7 @@ Adding a new service is just creating a directory with a `kustomization.yaml` an
 
 Apps in this cluster follow two main patterns:
 
-**Plain Kustomize** — Most apps (Sonarr, Radarr, Autobrr, etc.) use raw manifests: a Namespace, Deployment, Service, PVC, ConfigMap, SealedSecret, and IngressRoute. The NAS provides shared storage via NFS PV/PVCs, and each app gets its own Longhorn PVC for config persistence.
+**Plain Kustomize** — Some apps use raw manifests: a Namespace, Deployment, Service, PVC, ConfigMap, SealedSecret, and IngressRoute. The NAS provides shared storage via NFS PV/PVCs, and each app gets its own Longhorn PVC for config persistence.
 
 **Kustomize + Helm** — Platform components (Traefik, cert-manager, Longhorn, kube-prometheus-stack, Sealed Secrets, ECK) are deployed as Helm charts rendered through Kustomize, with value overrides and patches applied declaratively.
 
@@ -46,7 +46,7 @@ Apps in this cluster follow two main patterns:
 
 | App | Role |
 |-----|------|
-| **monitoring** | kube-prometheus-stack (Prometheus, Grafana, Alertmanager) with custom dashboards and 13+ alert groups routed to Telegram |
+| **monitoring** | kube-prometheus-stack (Prometheus, Grafana, Alertmanager) with custom dashboards and alert groups routed to Telegram |
 | **eck-operator** | Elastic Cloud on Kubernetes operator |
 | **elastic-system** | Elasticsearch + Kibana + Fleet Server — ingests 14 Cloudflare log streams from R2 |
 | **hubble** | Cilium network observability UI |
@@ -56,20 +56,7 @@ Apps in this cluster follow two main patterns:
 
 | App | Role |
 |-----|------|
-| **sonarr** | TV show management — PostgreSQL on NAS, NFS media storage |
-| **radarr** | Movie management — same pattern as Sonarr |
-| **prowlarr** | Indexer management — feeds Sonarr/Radarr |
-| **bazarr** | Subtitle management |
-| **seerr** | Media request portal |
-
-### Download Automation
-
-| App | Role |
-|-----|------|
-| **autobrr** | IRC announce monitoring and automated downloads (custom image with qBitrace, OIDC via Cloudflare Access SaaS) |
-| **cross-seed** | Cross-seeding daemon — matches existing media across trackers |
-| **qbitmanage** | qBittorrent management — tagging, share limits, orphan cleanup, with Telegram notifications via Apprise |
-| **profilarr** | Quality profile sync across Sonarr/Radarr instances |
+| ***arr stack** | PostgreSQL on NAS, NFS media storage |
 
 ### Other
 
@@ -77,15 +64,15 @@ Apps in this cluster follow two main patterns:
 |-----|------|
 | **immich-ml** | Immich machine learning backend with OpenVINO on Intel iGPU, exposed via externalIP to NAS-hosted Immich server |
 | **thelounge** | Self-hosted IRC client |
-| **apprise** | Internal notification gateway — receives webhooks from apps and forwards to Telegram |
+| **apprise** | Internal notification gateway — for apps with no native Telegram integration |
 
 ## Storage Architecture
 
 Three storage backends coexist:
 
-- **Longhorn** — Default for app config PVCs. Replicated across nodes for HA, with a single-replica class for large/non-critical volumes (Elasticsearch, Grafana).
+- **Longhorn** — Default storage class. Replicated across nodes for HA, with a single-replica class for large/non-critical volumes (Elasticsearch, Grafana).
 - **Synology CSI (iSCSI)** — For workloads that need raw block storage on the NAS.
-- **NFS** — Shared `/volume1/data` mount for media files. Each app that needs access to torrents/media gets a dedicated NFS PV/PVC pair bound to the same export.
+- **NFS** — Shared mount for media files. Each app that needs access to media gets a dedicated NFS PV/PVC pair bound to the same export.
 
 ## Secrets
 

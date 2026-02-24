@@ -2,6 +2,8 @@
 
 Terraform-managed Cloudflare infrastructure covering the full networking and security layer for the homelab. Everything external — DNS, tunnels, access control, TCP proxying — is defined here and applied automatically via GitHub Actions.
 
+**Disclaimer**: I am a Cloudflare employee, with access to certain products (e.g. Spectrum) which might be too costly prohibitive to use for a homelab.
+
 ## Architecture
 
 ### Tunnels
@@ -11,8 +13,8 @@ Three Cloudflare Tunnels provide secure ingress without exposing any ports on th
 | Tunnel | Purpose | Routing |
 |--------|---------|---------|
 | **lis_k8s** | Kubernetes services | `*.domain` → Traefik, plus direct routes for ArgoCD and Traefik dashboard |
-| **lis_prod** | NAS-hosted services | Vaultwarden, PocketID, Home Assistant, JetKVM |
-| **lis_isp** | ISP-side network | Omada controller (separate subnet `192.168.1.x`) |
+| **lis_prod** | NAS-hosted services | Vaultwarden, PocketID, Home Assistant |
+| **lis_isp** | ISP-side network | Separate subnet (`192.168.1.x`) |
 
 The K8s tunnel routes wildcard traffic to Traefik, which handles TLS termination and per-service routing via IngressRoutes. ArgoCD and the Traefik dashboard have dedicated tunnel routes since they bypass Traefik's ingress.
 
@@ -24,7 +26,7 @@ Every externally-accessible service is protected by a Cloudflare Access applicat
 - **PocketID Admins (Rest of World)** — Same OIDC group, no geo-fence, 15-minute sessions
 - **PocketID Everyone** — OIDC group `everyone`, for shared services
 - **Bypass (Egress IPs)** — Allows service-to-service calls from known egress IPs without auth
-- **Bypass (Everyone)** — For specific API endpoints that need to be publicly reachable (e.g., Bazarr webhook)
+- **Bypass (Everyone)** — For specific API endpoints that need to be publicly reachable (e.g., webhooks)
 - **Service Token** — Non-identity policy for Prometheus scraping Cloudflare metrics
 
 PocketID (self-hosted OIDC) is the primary identity provider, with Google and Google Workspace as secondary options. SCIM provisioning is enabled for automatic user sync.
@@ -33,10 +35,10 @@ PocketID (self-hosted OIDC) is the primary identity provider, with Google and Go
 
 Cloudflare Spectrum proxies raw TCP traffic for services that can't use HTTP tunnels:
 
-- **Squid proxy** (port 36334) — TCP proxy with Argo Smart Routing
-- **Email relay** (port 1588) — Postfix SMTP relay
+- **Squid proxy** — TCP proxy with Argo Smart Routing
+- **Email relay** — Postfix SMTP relay
 
-These use a dedicated child zone (`spectrum.domain`) with NS delegation, since Spectrum requires its own zone.
+These use a dedicated child zone (`spectrum.domain`) with NS delegation, in order to make IP Access Rules feasible.
 
 ### DNS
 

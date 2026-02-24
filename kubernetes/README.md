@@ -11,8 +11,8 @@ The core compute platform — a 3-node Talos Linux cluster managed declaratively
  │  machines   │     │ template    │     │ via extra   │     │ via extra   │
  │             │     │ sync        │     │ Manifests   │     │ Manifests   │
  └─────────────┘     └─────────────┘     └─────────────┘     └──────┬──────┘
-                                                                     │
-                                                                     ▼
+                                                                    │
+                                                                    ▼
                                                               ┌─────────────┐
                                                               │ Application │
                                                               │ Set scans   │
@@ -33,10 +33,10 @@ The entire bootstrap is hands-off after initial machine registration. Pushing a 
 
 ```
 kubernetes/
-├── apps/                    # 27 ArgoCD-managed applications
+├── apps/                    # ArgoCD-managed applications
 │   ├── _applicationset.yaml # Git directory generator (excluded from app discovery)
 │   ├── monitoring/          # kube-prometheus-stack (Helm via Kustomize)
-│   ├── sonarr/              # Plain Kustomize (Deployment, Service, PVC, IngressRoute)
+│   ├── traefik/             # Plain Kustomize (Deployment, Service, PVC, IngressRoute)
 │   └── ...                  # Each directory = one ArgoCD Application
 ├── management/              # Kubeconfig, Talosconfig (gitignored)
 └── omni/

@@ -10,7 +10,7 @@ Talos Linux is an immutable, API-only Kubernetes OS with no SSH, no shell, and n
 
 Three Intel N100 NUCs, all running as control plane nodes with scheduling enabled (no dedicated workers). Each node has:
 
-- **Boot disk** — `/dev/sda` (eMMC/SSD) for Talos OS
+- **Boot disk** — `/dev/sda` (SSD) for Talos OS
 - **NVMe drive** — `/dev/nvme0n1` partitioned and mounted at `/var/lib/longhorn` for distributed storage
 - **Static IP** — `192.168.202.11-13` with a shared VIP at `192.168.202.10`
 - **System extensions** — iSCSI tools (Longhorn/Synology CSI), util-linux (storage management), i915 (Intel GPU drivers)
