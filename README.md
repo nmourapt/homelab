@@ -123,7 +123,7 @@ The cluster runs several applications, each in its own namespace, auto-discovere
 
 ## Docker Stacks (Synology NAS)
 
-23 services managed via Portainer + Terraform, including:
+Multiple services managed via Portainer + Terraform, including:
 
 | Category | Services |
 |----------|---------|
@@ -135,9 +135,9 @@ The cluster runs several applications, each in its own namespace, auto-discovere
 
 ## Monitoring and Alerting
 
-Full observability stack with Prometheus scraping all services, custom Grafana dashboards (including per-service Traefik metrics), and Alertmanager routing warnings and critical alerts to Telegram. 13+ alert groups covering nodes, pods, storage, ArgoCD sync status, Longhorn health, Traefik error rates, and Synology CSI.
+Full observability stack with Prometheus scraping all services, custom Grafana dashboards (including per-service Traefik metrics), and Alertmanager routing warnings and critical alerts to Telegram. Key alert groups covering nodes, pods, storage, ArgoCD sync status, Longhorn health, Traefik error rates, and Synology CSI.
 
-Cloudflare logs (14 data streams including HTTP requests, DNS, firewall events, and Gateway traffic) are pushed to R2 and ingested into Elasticsearch via Fleet Server for centralized analysis in Kibana.
+Cloudflare logs (data streams including HTTP requests, DNS, firewall events, and Gateway traffic) are pushed to R2 and ingested into Elasticsearch via Fleet Server for centralized analysis in Kibana.
 
 ## Networking
 
