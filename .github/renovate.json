@@ -5,11 +5,11 @@
     ".github/workflows/*"
   ],
 
-  "enabledManagers": ["terraform", "docker-compose"],
+  "enabledManagers": ["terraform", "docker-compose", "kubernetes", "kustomize"],
 
   "packageRules": [
     {
-      "matchManagers": ["docker-compose"],
+      "matchManagers": ["docker-compose", "kubernetes", "kustomize"],
       "description": "Automatically merge minor and patch-level updates",
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": true
