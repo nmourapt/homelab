@@ -84,6 +84,11 @@ Two layers:
 | **Secrets** | Sealed Secrets + SOPS | Encrypted secrets in Git for both Kubernetes and CI/CD |
 | **IaC** | Terraform | Manages Cloudflare, Portainer stacks, and state in R2 |
 | **CI/CD** | GitHub Actions | Four workflows covering secrets, stacks, Cloudflare, and cluster templates |
+| **Dependency Management** | Renovate | Automated PRs for container images, Helm charts, Terraform providers, and Docker Compose images |
+
+## Dependency Management
+
+[Renovate](https://docs.renovatebot.com/) continuously scans the repo for outdated dependencies across all layers — Kubernetes manifests (container image tags), Kustomize Helm charts (version fields), Docker Compose images, and Terraform providers. Minor and patch updates are automerged during non-office hours; major version bumps open PRs for manual review.
 
 ## Repository Structure
 
