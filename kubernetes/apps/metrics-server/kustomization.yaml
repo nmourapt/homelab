@@ -11,6 +11,8 @@ helmCharts:
     releaseName: metrics-server
     namespace: kube-system
     valuesInline:
+      args:
+        - --kubelet-insecure-tls
       resources:
         requests:
           cpu: 50m
