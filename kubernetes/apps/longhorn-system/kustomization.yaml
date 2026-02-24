@@ -21,6 +21,7 @@ helmCharts:
       defaultSettings:
         defaultDataPath: /var/lib/longhorn
         storageMinimalAvailablePercentage: 10
+        guaranteedInstanceManagerCPU: 6
       persistence:
         reclaimPolicy: Retain
       longhornUI:
