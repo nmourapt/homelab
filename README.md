@@ -111,7 +111,7 @@ Each subdirectory has its own README with detailed architectural context.
 
 ## Kubernetes Applications
 
-The cluster runs 27 applications, each in its own namespace, auto-discovered by ArgoCD:
+The cluster runs several applications, each in its own namespace, auto-discovered by ArgoCD:
 
 | Category | Applications |
 |----------|-------------|
