@@ -135,7 +135,7 @@ Multiple services managed via Portainer + Terraform, including:
 
 ## Monitoring and Alerting
 
-Full observability stack with Prometheus scraping all services, custom Grafana dashboards (including per-service Traefik metrics), and Alertmanager routing warnings and critical alerts to Telegram. Key alert groups covering nodes, pods, storage, ArgoCD sync status, Longhorn health, Traefik error rates, and Synology CSI.
+Full observability stack with Prometheus scraping all services, custom Grafana dashboards (including per-service Traefik metrics), and Alertmanager routing warnings and critical alerts to Telegram. Key alert groups including nodes, pods, storage, ArgoCD sync status, Longhorn health, Traefik error rates, and Synology CSI.
 
 Cloudflare logs (data streams including HTTP requests, DNS, firewall events, and Gateway traffic) are pushed to R2 and ingested into Elasticsearch via Fleet Server for centralized analysis in Kibana.
 
