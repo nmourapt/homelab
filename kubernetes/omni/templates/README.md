@@ -1,126 +1,55 @@
-# Omni Cluster Templates
+# Cluster Templates
 
-Cluster templates for managing Talos Linux clusters via [Omni](https://docs.siderolabs.com/omni/).
+Declarative configuration for the Kubernetes cluster, managed through [Sidero Omni](https://docs.siderolabs.com/omni/). A single cluster template defines the entire cluster — nodes, networking, storage mounts, CNI, and the GitOps bootstrap — and is synced to Omni automatically via CI/CD.
 
-## Directory Structure
+## Why Talos + Omni
+
+Talos Linux is an immutable, API-only Kubernetes OS with no SSH, no shell, and no package manager. Combined with Omni for lifecycle management, the cluster can be fully reproduced from this template alone — there's no configuration drift, no snowflake nodes, and upgrades are a version bump in YAML.
+
+## Cluster Topology
+
+Three Intel N100 NUCs, all running as control plane nodes with scheduling enabled (no dedicated workers). Each node has:
+
+- **Boot disk** — `/dev/sda` (eMMC/SSD) for Talos OS
+- **NVMe drive** — `/dev/nvme0n1` partitioned and mounted at `/var/lib/longhorn` for distributed storage
+- **Static IP** — `192.168.202.11-13` with a shared VIP at `192.168.202.10`
+- **System extensions** — iSCSI tools (Longhorn/Synology CSI), util-linux (storage management), i915 (Intel GPU drivers)
+
+Etcd backups run every 12 hours.
+
+## Bootstrapping
+
+Two critical components are deployed as Talos `extraManifests` (applied before ArgoCD exists):
+
+### Cilium
+
+Pre-rendered Helm manifests deployed at cluster bootstrap. This is necessary because Talos disables the default CNI and kube-proxy — pods can't schedule until Cilium is running.
+
+Key configuration choices:
+- **kube-proxy replacement** — Cilium handles all service routing (eBPF-based, lower latency)
+- **VXLAN tunneling** — Overlay networking to avoid L2 adjacency requirements
+- **MTU 1450** — Explicitly set to avoid Siderolink MTU detection issues during Omni management
+- **L2 Announcements** — Cilium responds to ARP requests for LoadBalancer IPs, eliminating the need for MetalLB
+- **IP Pool** — `192.168.202.101-199` reserved for LoadBalancer services
+
+### ArgoCD
+
+Also deployed via `extraManifests` so GitOps is available from first boot. Once running, ArgoCD takes over and manages everything else (including its own configuration via `argocd-config/`). Kustomize Helm rendering is enabled so apps can use Helm charts without Tiller.
+
+## Template Structure
 
 ```
 templates/
-├── homelab-cluster.yaml      # Main cluster template
+├── homelab-cluster.yaml        # Cluster definition: nodes, patches, versions
 ├── patches/
-│   ├── ciliumPatch.yaml      # Patch for Cilium manifests
-│   └── argoPatch.yaml        # Patch for ArgoCD manifests
+│   ├── ciliumPatch.yaml        # extraManifests patch for Cilium
+│   └── argoPatch.yaml          # extraManifests patch for ArgoCD
 └── manifests/
-    ├── cilium-helm/
-    │   └── values.yaml       # Helm values used to generate Cilium manifests
-    ├── cilium_manifests.yaml # Pre-rendered Cilium Helm chart manifests
-    ├── argo_manifests.yaml   # ArgoCD installation manifests
-    ├── l2_announcements.yaml # CiliumL2AnnouncementPolicy for LB IPs
-    └── ip_pool.yaml          # CiliumLoadBalancerIPPool (192.168.202.101-199)
+    ├── cilium-helm/values.yaml # Helm values used to generate Cilium manifests
+    ├── cilium_manifests.yaml   # Pre-rendered Cilium Helm output
+    ├── argo_manifests.yaml     # ArgoCD installation manifests
+    ├── l2_announcements.yaml   # CiliumL2AnnouncementPolicy
+    └── ip_pool.yaml            # CiliumLoadBalancerIPPool
 ```
 
-## Clusters
-
-| Template | Description |
-|----------|-------------|
-| `homelab-cluster.yaml` | Homelab cluster - 3x NUC nodes (control plane with scheduling enabled) |
-
-## Template Variables
-
-Templates use `${TLD}` placeholder for the domain, which is substituted by the CI/CD pipeline using the `TLD` GitHub secret.
-
-## Homelab Cluster Configuration
-
-- **Kubernetes**: v1.34.2
-- **Talos**: v1.12.2
-- **CNI**: Cilium (native CNI disabled, kube-proxy disabled)
-- **Storage**: Longhorn (NVMe drives mounted at `/var/lib/longhorn`)
-- **Nodes**: 3x NUC with VIP at 192.168.202.10
-- **Features**: 12h etcd backups, scheduling on control plane enabled
-- **GitOps**: ArgoCD deployed via extraManifests
-
-### System Extensions
-
-- `siderolabs/iscsi-tools` - iSCSI support for Longhorn
-- `siderolabs/util-linux-tools` - Utilities for storage management
-- `siderolabs/i915` - Intel GPU drivers
-
-### Cilium Configuration
-
-Cilium is deployed via `extraManifests` using pre-rendered Helm chart manifests. Key features:
-
-- **kube-proxy replacement**: Enabled
-- **Routing Mode**: VXLAN tunnel
-- **MTU**: 1450 (explicit, to avoid Siderolink MTU detection issues)
-- **IPAM**: Kubernetes mode
-- **L2 Announcements**: Enabled for LoadBalancer IPs
-- **External IPs**: Enabled
-- **LoadBalancer IP Pool**: 192.168.202.101-199
-
-### ArgoCD Configuration
-
-ArgoCD is deployed via `extraManifests` and manages applications in `kubernetes/apps/`. Key features:
-
-- **Kustomize Helm support**: `--enable-helm` flag enabled in `argocd-cm`
-- **ApplicationSet**: Auto-discovers apps from Git directories
-
-To regenerate Cilium manifests after modifying `cilium-helm/values.yaml`:
-
-```bash
-helm template cilium cilium/cilium \
-  --namespace kube-system \
-  --values manifests/cilium-helm/values.yaml \
-  > manifests/cilium_manifests.yaml
-```
-
-## Usage
-
-### Prerequisites
-
-1. Install `omnictl` CLI (download from your Omni instance)
-2. Authenticate with Omni
-3. Register machines by booting with Omni ISO
-
-### Manual Operations
-
-```bash
-# List clusters
-omnictl get clusters
-
-# List machines
-omnictl get machines
-
-# Validate template
-omnictl cluster template validate -f templates/homelab-cluster.yaml
-
-# Sync template (dry-run)
-omnictl cluster template sync -f templates/homelab-cluster.yaml --dry-run
-
-# Apply template
-omnictl cluster template sync -f templates/homelab-cluster.yaml
-
-# Export existing cluster to template
-omnictl cluster template export -c homelab -o exported.yaml
-```
-
-### GitOps Workflow
-
-Templates are automatically synced when changes are pushed to `main`. The workflow:
-
-1. Substitutes `${TLD}` with the actual domain
-2. Validates templates with `omnictl cluster template validate`
-3. Syncs to Omni with `omnictl cluster template sync`
-
-See `.github/workflows/sync-omni-templates.yml`.
-
-## Adding New Machines
-
-1. Boot the machine with the Omni ISO
-2. Find the machine UUID: `omnictl get machines`
-3. Update the template with the actual UUID
-4. Push changes to trigger sync
-
-## Reference
-
-- [Omni Cluster Templates](https://docs.siderolabs.com/omni/reference/cluster-templates)
-- [omnictl CLI](https://docs.siderolabs.com/omni/reference/cli)
+The `${TLD}` placeholder in the cluster template is substituted by the CI/CD pipeline with the actual domain before syncing to Omni.

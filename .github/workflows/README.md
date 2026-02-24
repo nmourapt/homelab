@@ -1,100 +1,50 @@
-# GitHub Actions Workflows
+# CI/CD Pipelines
 
-CI/CD pipelines for deploying homelab infrastructure.
+Four GitHub Actions workflows that together ensure every part of the infrastructure is deployed automatically on push. No manual `terraform apply`, no `kubectl apply`, no SSH.
+
+## Pipeline Architecture
+
+```
+                    ┌─────────────────┐
+                    │  push-secrets   │  Decrypts SOPS → pushes to GitHub Secrets
+                    └────────┬────────┘
+                             │ triggers
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+   ┌──────────────┐ ┌──────────────┐ ┌─────────────────┐
+   │deploy-stacks │ │deploy-cloud- │ │sync-omni-       │
+   │  (Portainer) │ │flare (Terraform)│ │templates (Talos)│
+   └──────────────┘ └──────────────┘ └─────────────────┘
+```
+
+Secrets flow is the backbone: when SOPS-encrypted secrets change, `push-secrets` decrypts them and updates GitHub Secrets, then triggers all three downstream workflows to pick up the new values.
 
 ## Workflows
 
-### `push-secrets.yml`
+### push-secrets
 
-Syncs SOPS-encrypted secrets to GitHub Secrets.
+The secret distribution layer. Decrypts `secrets/reposecrets.sops.yml` (age-encrypted) and pushes each key-value pair to GitHub Secrets. Then cascades to all other workflows so they always use current credentials.
 
-**Triggers:**
-- Push to `secrets/reposecrets.sops.yml`
-- Manual dispatch
+### deploy-cloudflare
 
-**Flow:**
-1. Decrypts `secrets/reposecrets.sops.yml` using age key
-2. Iterates through all keys and updates GitHub Secrets
-3. Triggers dependent workflows (`deploy-cloudflare`, `deploy-stacks`, `sync-omni-templates`)
+Runs `terraform apply` against Cloudflare for DNS, tunnels, Access apps, Spectrum, and all other Cloudflare resources. Triggers on changes to `cloudflare/terraform/*.tf` or after secrets are updated. State lives in Cloudflare R2.
 
----
+### deploy-stacks
 
-### `deploy-cloudflare.yml`
+The most complex pipeline. Detects which Portainer stacks changed (by diffing Terraform files and Compose files), decrypts SOPS `.env` files, substitutes variables into Compose definitions, and runs Terraform per-service. Includes:
 
-Deploys Cloudflare infrastructure via Terraform.
+- **Selective deployment** — Only changed stacks are applied, not the entire fleet
+- **Stack deletion handling** — Detects removed `.tf` files and destroys the corresponding stacks
+- **Retry logic** — 3 attempts with 30s delay to handle Synology Docker daemon rate limits
+- **Manual targeting** — Can deploy a single service by name via workflow dispatch
 
-**Triggers:**
-- Push to `cloudflare/terraform/*.tf`
-- After `push-secrets` workflow completes
-- Manual dispatch
+### sync-omni-templates
 
-**Flow:**
-1. Configures R2 credentials for state backend
-2. Runs `terraform init`, `plan`, `apply`
+Syncs Talos Linux cluster templates to Sidero Omni. Substitutes `${TLD}` placeholders with the actual domain, validates templates with `omnictl`, and syncs. On pull requests, runs validation only (dry-run) as a gate.
 
----
+## Design Choices
 
-### `deploy-stacks.yml`
-
-Deploys Docker stacks to Portainer via Terraform.
-
-**Triggers:**
-- Push to `portainer/terraform/*.tf`
-- Push to `portainer/stacks/**/*.yml` or `*.env`
-- After `push-secrets` workflow completes
-- Manual dispatch (optionally specify single service)
-
-**Flow:**
-1. Detects which services changed
-2. Decrypts SOPS environment files
-3. Substitutes variables in docker-compose files
-4. Runs Terraform for each changed service
-5. Handles service deletion when `.tf` files are removed
-
----
-
-### `sync-omni-templates.yml`
-
-Syncs Omni cluster templates for Talos Linux clusters.
-
-**Triggers:**
-- Push to `kubernetes/omni/templates/**`
-- Pull request to `main` (validation only)
-- Manual dispatch (with optional dry-run)
-
-**Flow:**
-1. Detects changed template files
-2. Substitutes `${TLD}` placeholder with secret value
-3. Validates templates with `omnictl cluster template validate`
-4. Syncs to Omni with `omnictl cluster template sync`
-
-## Required Secrets
-
-| Secret | Used By | Description |
-|--------|---------|-------------|
-| `SOPS_AGE_KEY` | All | Age private key for SOPS decryption |
-| `FINE_GRAINED_TOKEN` | push-secrets | GitHub token for updating secrets |
-| `CLOUDFLARE_API_TOKEN` | deploy-cloudflare | Cloudflare API token |
-| `CF_ACCOUNT_ID` | deploy-cloudflare | Cloudflare account ID |
-| `CF_TLD_ZONE_ID` | deploy-cloudflare | Zone ID for primary domain |
-| `TLD` | deploy-cloudflare, sync-omni | Primary domain |
-| `PORTAINER_API_KEY` | deploy-stacks | Portainer API key |
-| `R2_TF_*_ACCESS_KEY_ID` | All Terraform | R2 state backend credentials |
-| `R2_TF_*_SECRET_ACCESS_KEY` | All Terraform | R2 state backend credentials |
-| `OMNI_ENDPOINT` | sync-omni | Omni instance URL |
-| `OMNI_SERVICE_ACCOUNT_KEY` | sync-omni | Omni service account key |
-
-## Manual Dispatch
-
-All workflows support manual dispatch via GitHub UI or CLI:
-
-```bash
-# Deploy specific Portainer service
-gh workflow run deploy-stacks.yml -f service=plex
-
-# Sync Omni templates (dry-run)
-gh workflow run sync-omni-templates.yml -f dry_run=true
-
-# Re-deploy Cloudflare config
-gh workflow run deploy-cloudflare.yml
-```
+- **All workflows support manual dispatch** — Any workflow can be re-run from the GitHub UI or CLI, useful for recovery or one-off deploys
+- **Path-filtered triggers** — Each workflow only runs when its relevant files change, avoiding unnecessary deploys
+- **Cascading from secrets** — A single secrets update propagates to all infrastructure layers automatically
+- **Terraform state in R2** — Both Cloudflare and Portainer Terraform configs store state in Cloudflare R2, keeping it cheap and close to the Cloudflare API
