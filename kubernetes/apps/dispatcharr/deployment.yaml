@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: dispatcharr
-          image: ghcr.io/dispatcharr/dispatcharr:latest
+          image: ghcr.io/dispatcharr/dispatcharr:0.19.0-20260221222501
           ports:
             - containerPort: 9191
               protocol: TCP
