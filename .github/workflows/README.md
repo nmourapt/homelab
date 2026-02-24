@@ -11,10 +11,10 @@ Four GitHub Actions workflows that together ensure every part of the infrastruct
                              │ triggers
               ┌──────────────┼──────────────┐
               ▼              ▼              ▼
-   ┌──────────────┐ ┌──────────────┐ ┌─────────────────┐
-   │deploy-stacks │ │deploy-cloud- │ │sync-omni-       │
-   │  (Portainer) │ │flare (Terraform)│ │templates (Talos)│
-   └──────────────┘ └──────────────┘ └─────────────────┘
+   ┌──────────────┐ ┌──────────────────┐ ┌───────────────────┐
+   │deploy-stacks │ │deploy-cloudflare │ │sync-omni-templates│
+   │  (Portainer) │ │   (Terraform)    │ │      (Talos)      │
+   └──────────────┘ └──────────────────┘ └───────────────────┘
 ```
 
 Secrets flow is the backbone: when SOPS-encrypted secrets change, `push-secrets` decrypts them and updates GitHub Secrets, then triggers all three downstream workflows to pick up the new values.
