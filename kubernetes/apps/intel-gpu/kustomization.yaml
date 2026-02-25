@@ -18,7 +18,7 @@ helmCharts:
           gpu: true
   - name: intel-device-plugins-gpu
     repo: https://intel.github.io/helm-charts
-    version: 0.34.1
+    version: 0.35.0
     releaseName: intel-gpu
     namespace: intel-gpu
     valuesInline:
