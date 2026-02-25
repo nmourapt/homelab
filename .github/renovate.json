@@ -7,6 +7,8 @@
 
   "enabledManagers": ["terraform", "docker-compose", "kubernetes", "kustomize"],
 
+  "platformAutomerge": false,
+
   "packageRules": [
     {
       "matchManagers": ["docker-compose", "kubernetes", "kustomize"],
