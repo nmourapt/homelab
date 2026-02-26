@@ -6,18 +6,18 @@ metadata:
 data:
   slskd.yml: |
     soulseek:
-      username: ${SLSKD_SLSK_USERNAME}
-      password: ${SLSKD_SLSK_PASSWORD}
+      username: "${SLSKD_SLSK_USERNAME}"
+      password: "${SLSKD_SLSK_PASSWORD}"
       listen_port: 50300
 
     web:
       port: 5030
       authentication:
-        username: ${SLSKD_USERNAME}
-        password: ${SLSKD_PASSWORD}
+        username: "${SLSKD_USERNAME}"
+        password: "${SLSKD_PASSWORD}"
         api_keys:
           lidarr:
-            key: ${SLSKD_API_KEY}
+            key: "${SLSKD_API_KEY}"
             role: Administrator
 
     directories:
@@ -31,7 +31,7 @@ data:
         - \.ini$
         - Thumbs.db$
         - \.DS_Store$
-        - @eaDir
+        - "@eaDir"
 
     remote_configuration: true
     remote_file_management: true
