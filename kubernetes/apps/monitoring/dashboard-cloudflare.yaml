@@ -1174,7 +1174,7 @@ data:
       "tags": ["cloudflare"],
       "time": { "from": "now-24h", "to": "now" },
       "timepicker": {},
-      "timezone": "Europe/Lisbon",
+      "timezone": "Europe/London",
       "description": "Note: Data is delayed ~5-7 minutes from real-time due to Cloudflare analytics API propagation and scrape delay.",
       "title": "Cloudflare",
       "uid": "cloudflare-overview",

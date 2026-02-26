@@ -73,12 +73,6 @@ spec:
               protocol: TCP
               name: soulseek
           env:
-            - name: PUID
-              value: "1026"
-            - name: PGID
-              value: "100"
-            - name: TZ
-              value: Europe/Lisbon
             - name: SLSKD_APP_DIR
               value: /config
             - name: SLSKD_REMOTE_CONFIGURATION

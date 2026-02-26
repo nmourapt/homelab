@@ -25,8 +25,6 @@ spec:
               protocol: TCP
               name: http
           env:
-            - name: TZ
-              value: Europe/Lisbon
             - name: DISPATCHARR_ENV
               value: aio
             - name: REDIS_HOST

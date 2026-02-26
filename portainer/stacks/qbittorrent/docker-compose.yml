@@ -3,8 +3,6 @@ services:
   qbittorrent:
     container_name: qbittorrent
     image: ghcr.io/hotio/qbittorrent:release-5.1.0
-    environment:
-      - TZ=Europe/Lisbon
     volumes:
       - /volume2/docker/qbittorrent/volumes/config:/config:rw
       - /volume1/data:/data:rw

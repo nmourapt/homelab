@@ -24,9 +24,6 @@ spec:
             - containerPort: 6868
               protocol: TCP
               name: http
-          env:
-            - name: TZ
-              value: Europe/Lisbon
           resources:
             requests:
               cpu: 100m

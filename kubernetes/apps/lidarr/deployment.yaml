@@ -25,12 +25,6 @@ spec:
               protocol: TCP
               name: http
           env:
-            - name: PUID
-              value: "1026"
-            - name: PGID
-              value: "100"
-            - name: TZ
-              value: Europe/Lisbon
             - name: LIDARR__POSTGRES__HOST
               value: "192.168.202.1"
             - name: LIDARR__POSTGRES__PORT

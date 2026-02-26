@@ -28,8 +28,6 @@ spec:
               protocol: TCP
               name: http
           env:
-            - name: TZ
-              value: Europe/Lisbon
             - name: DB_TYPE
               value: postgres
             - name: DB_HOST

@@ -127,7 +127,7 @@ helmCharts:
           storageClassName: longhorn-single
           size: 10Gi
         defaultDashboardsEnabled: true
-        defaultDashboardsTimezone: Europe/Lisbon
+        defaultDashboardsTimezone: Europe/London
         envFromSecrets:
           - name: grafana-oidc
             optional: false

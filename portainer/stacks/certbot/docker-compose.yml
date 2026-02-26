@@ -8,7 +8,6 @@ services:
       - /volume2/docker/certbot/volumes/lib:/var/lib/letsencrypt
       - /volume2/docker/certbot/volumes/cloudflare.ini:/cloudflare.ini:ro
     environment:
-      TZ: "Europe/Lisbon"
       DOMAIN: ${DOMAIN}
     entrypoint: ["/bin/sh", "-c"]
     command:
