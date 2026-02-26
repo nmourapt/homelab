@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-aurral-synology
+spec:
+  capacity:
+    storage: 1Ki
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "192.168.202.1"
+    path: "/volume1/data"
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: aurral
+    name: pvc-aurral-synology
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-aurral-synology
+  namespace: aurral
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ki
+  volumeName: pv-aurral-synology
+  storageClassName: ""

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aurral
+  namespace: aurral
+  labels:
+    app: aurral
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aurral
+  template:
+    metadata:
+      labels:
+        app: aurral
+    spec:
+      containers:
+        - name: aurral
+          image: ghcr.io/lklynet/aurral:v1.17.0
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+              name: http
+          env:
+            - name: PUID
+              value: "1026"
+            - name: PGID
+              value: "100"
+            - name: DOWNLOAD_FOLDER
+              value: /app/downloads
+            - name: TRUST_PROXY
+              value: "true"
+            - name: SOULSEEK_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: aurral-secrets
+                  key: SOULSEEK_USERNAME
+            - name: SOULSEEK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: aurral-secrets
+                  key: SOULSEEK_PASSWORD
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /app/backend/data
+              name: config
+            - mountPath: /app/downloads
+              name: downloads
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: aurral-config
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: pvc-aurral-synology
