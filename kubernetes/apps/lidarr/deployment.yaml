@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  namespace: lidarr
+  labels:
+    app: lidarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      containers:
+        - name: lidarr
+          image: ghcr.io/hotio/lidarr:nightly-3.1.2.4914
+          ports:
+            - containerPort: 8686
+              protocol: TCP
+              name: http
+          env:
+            - name: PUID
+              value: "1026"
+            - name: PGID
+              value: "100"
+            - name: TZ
+              value: Europe/Lisbon
+            - name: LIDARR__POSTGRES__HOST
+              value: "192.168.202.1"
+            - name: LIDARR__POSTGRES__PORT
+              value: "10007"
+            - name: LIDARR__AUTH__METHOD
+              value: External
+            - name: LIDARR__AUTH__REQUIRED
+              value: DisabledForLocalAddresses
+          envFrom:
+            - secretRef:
+                name: lidarr-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /synology
+              name: media
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: lidarr-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: pvc-lidarr-synology
