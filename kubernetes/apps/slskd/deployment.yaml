@@ -28,7 +28,7 @@ spec:
               sed -i "s|\${SLSKD_USERNAME}|${SLSKD_USERNAME}|g" /config/slskd.yml;
               sed -i "s|\${SLSKD_PASSWORD}|${SLSKD_PASSWORD}|g" /config/slskd.yml;
               sed -i "s|\${SLSKD_API_KEY}|${SLSKD_API_KEY}|g" /config/slskd.yml;
-              mkdir -p /data/media/soulseek/incomplete /data/media/soulseek/complete;
+              mkdir -p /data/soulseek/incomplete /data/soulseek/complete;
           env:
             - name: SLSKD_SLSK_USERNAME
               valueFrom:

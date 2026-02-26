@@ -21,8 +21,8 @@ data:
             role: Administrator
 
     directories:
-      incomplete: /data/media/soulseek/incomplete
-      downloads: /data/media/soulseek/complete
+      incomplete: /data/soulseek/incomplete
+      downloads: /data/soulseek/complete
 
     shares:
       directories:
