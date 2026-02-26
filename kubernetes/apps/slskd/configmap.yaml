@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slskd-config
+  namespace: slskd
+data:
+  slskd.yml: |
+    soulseek:
+      username: ${SLSKD_SLSK_USERNAME}
+      password: ${SLSKD_SLSK_PASSWORD}
+      listen_port: 50300
+
+    web:
+      port: 5030
+      authentication:
+        username: ${SLSKD_USERNAME}
+        password: ${SLSKD_PASSWORD}
+        api_keys:
+          lidarr:
+            key: ${SLSKD_API_KEY}
+            role: Administrator
+
+    directories:
+      incomplete: /data/media/soulseek/incomplete
+      downloads: /data/media/soulseek/complete
+
+    shares:
+      directories:
+        - '[Music]/data/media/music'
+      filters:
+        - \.ini$
+        - Thumbs.db$
+        - \.DS_Store$
+        - @eaDir
+
+    remote_configuration: true
+    remote_file_management: true

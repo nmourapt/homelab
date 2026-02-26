@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-slskd-synology
+spec:
+  capacity:
+    storage: 1Ki
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "192.168.202.1"
+    path: "/volume1/data"
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: slskd
+    name: pvc-slskd-synology
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-slskd-synology
+  namespace: slskd
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ki
+  volumeName: pv-slskd-synology
+  storageClassName: ""

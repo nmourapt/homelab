@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slskd
+  namespace: slskd
+  labels:
+    app: slskd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: slskd
+  template:
+    metadata:
+      labels:
+        app: slskd
+    spec:
+      initContainers:
+        - name: copy-config
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - cp /load/slskd.yml /config/slskd.yml;
+              sed -i "s|\${SLSKD_SLSK_USERNAME}|${SLSKD_SLSK_USERNAME}|g" /config/slskd.yml;
+              sed -i "s|\${SLSKD_SLSK_PASSWORD}|${SLSKD_SLSK_PASSWORD}|g" /config/slskd.yml;
+              sed -i "s|\${SLSKD_USERNAME}|${SLSKD_USERNAME}|g" /config/slskd.yml;
+              sed -i "s|\${SLSKD_PASSWORD}|${SLSKD_PASSWORD}|g" /config/slskd.yml;
+              sed -i "s|\${SLSKD_API_KEY}|${SLSKD_API_KEY}|g" /config/slskd.yml;
+              mkdir -p /data/media/soulseek/incomplete /data/media/soulseek/complete;
+          env:
+            - name: SLSKD_SLSK_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: slskd-secrets
+                  key: SLSKD_SLSK_USERNAME
+            - name: SLSKD_SLSK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: slskd-secrets
+                  key: SLSKD_SLSK_PASSWORD
+            - name: SLSKD_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: slskd-secrets
+                  key: SLSKD_USERNAME
+            - name: SLSKD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: slskd-secrets
+                  key: SLSKD_PASSWORD
+            - name: SLSKD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: slskd-secrets
+                  key: SLSKD_API_KEY
+          volumeMounts:
+            - mountPath: /load
+              name: config-yml
+            - mountPath: /config
+              name: config
+            - mountPath: /data
+              name: data
+      containers:
+        - name: slskd
+          image: ghcr.io/hotio/slskd:release-0.24.4
+          ports:
+            - containerPort: 5030
+              protocol: TCP
+              name: http
+            - containerPort: 50300
+              protocol: TCP
+              name: soulseek
+          env:
+            - name: PUID
+              value: "1026"
+            - name: PGID
+              value: "100"
+            - name: TZ
+              value: Europe/Lisbon
+            - name: SLSKD_APP_DIR
+              value: /config
+            - name: SLSKD_REMOTE_CONFIGURATION
+              value: "true"
+            - name: SLSKD_REMOTE_FILE_MANAGEMENT
+              value: "true"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: slskd-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-slskd-synology
+        - name: config-yml
+          configMap:
+            name: slskd-config
