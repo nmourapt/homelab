@@ -1036,6 +1036,39 @@ resource "cloudflare_zero_trust_access_application" "bookshelf" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "booklore" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - BookLore"
+  type                 = "self_hosted"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/booklore.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "booklore.${var.tld}"
+    }
+  ]
+}
+
 resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Bazarr - Bypass"
