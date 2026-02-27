@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: bookshelf
-          image: ghcr.io/pennydreadful/bookshelf:softcover-v0.4.20.129
+          image: ghcr.io/pennydreadful/bookshelf:hardcover
           ports:
             - containerPort: 8787
               protocol: TCP
