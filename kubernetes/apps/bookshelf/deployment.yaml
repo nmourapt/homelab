@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookshelf
+  namespace: bookshelf
+  labels:
+    app: bookshelf
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bookshelf
+  template:
+    metadata:
+      labels:
+        app: bookshelf
+    spec:
+      containers:
+        - name: bookshelf
+          image: ghcr.io/pennydreadful/bookshelf:softcover
+          ports:
+            - containerPort: 8787
+              protocol: TCP
+              name: http
+          env:
+            - name: READARR__POSTGRES__HOST
+              value: "192.168.202.1"
+            - name: READARR__POSTGRES__PORT
+              value: "10008"
+            - name: READARR__AUTH__METHOD
+              value: External
+            - name: READARR__AUTH__REQUIRED
+              value: DisabledForLocalAddresses
+          envFrom:
+            - secretRef:
+                name: bookshelf-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bookshelf-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-bookshelf-synology
