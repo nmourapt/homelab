@@ -1031,7 +1031,7 @@ resource "cloudflare_zero_trust_access_application" "bookshelf" {
   destinations = [
     { 
       type = "public"
-      uri = "bookshelf.${var.tld}"
+      uri = "books.${var.tld}"
     }
   ]
 }

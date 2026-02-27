@@ -10,7 +10,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`bookshelf.<path:cert-manager:domain-config#domain>`)
+    - match: Host(`books.<path:cert-manager:domain-config#domain>`)
       kind: Rule
       services:
         - name: bookshelf
