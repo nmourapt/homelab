@@ -42,6 +42,8 @@ spec:
                   key: DB_PASSWORD
             - name: DISK_TYPE
               value: "NETWORK"
+            - name: BOOKLORE_PORT
+              value: "6060"
           resources:
             requests:
               cpu: 100m
