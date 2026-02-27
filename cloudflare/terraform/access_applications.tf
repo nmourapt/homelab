@@ -1036,7 +1036,7 @@ resource "cloudflare_zero_trust_access_application" "cf_usage" {
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
   ]
-  auto_redirect_to_identity = false
+  auto_redirect_to_identity = true
 
   policies = [
     { 
