@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid
+  namespace: squid
+  labels:
+    app: squid
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: squid
+  template:
+    metadata:
+      labels:
+        app: squid
+    spec:
+      containers:
+        - name: squid
+          image: ubuntu/squid:6.6-24.04_edge
+          ports:
+            - containerPort: 3128
+              protocol: TCP
+              name: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /etc/squid/squid.conf
+              name: config
+              subPath: squid.conf
+      volumes:
+        - name: config
+          configMap:
+            name: squid-config
