@@ -10,16 +10,3 @@ spec:
   resources:
     requests:
       storage: 5Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: booklore-mariadb
-  namespace: booklore
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: longhorn-single
-  resources:
-    requests:
-      storage: 5Gi

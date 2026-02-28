@@ -1,0 +1,27 @@
+services:
+  booklore_mariadb:
+    container_name: booklore_mariadb
+    image: lscr.io/linuxserver/mariadb:11.4.5
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Europe/Lisbon
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: booklore
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - /volume2/docker/booklore_mariadb/volumes/config:/config
+    ports:
+      - "10012:3306"
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true
