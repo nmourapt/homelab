@@ -1,24 +1,29 @@
 services:
   booklore_mariadb:
     container_name: booklore_mariadb
-    image: lscr.io/linuxserver/mariadb:11.4.5
+    image: mariadb:11.4
     environment:
-      PUID: 1026
-      PGID: 100
-      TZ: Europe/Lisbon
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: booklore
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: booklore
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - /volume2/docker/booklore_mariadb/volumes/config:/config
+      - /volume2/docker/booklore_mariadb/volumes/data:/var/lib/mysql
     ports:
       - "10012:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: 'cat /initialised.txt && mariadb-admin ping -h localhost'
+      interval: "10s"
+      timeout: "5s"
+      retries: "5"
+    entrypoint: >
+      /bin/bash -c '
+      docker-entrypoint.sh mariadbd &
+      rm -f /initialised.txt || true &&
+      until mariadb-admin ping -h localhost --silent; do sleep 3; done &&
+      mariadb -u root -p"${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`booklore\`.* TO '"'"'${MARIADB_USER}'"'"'@'"'"'%'"'"' IDENTIFIED BY '"'"'${MARIADB_PASSWORD}'"'"'; FLUSH PRIVILEGES;" &&
+      echo done > /initialised.txt &&
+      wait'
     networks:
       - prod_net
 
