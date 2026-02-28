@@ -19,11 +19,23 @@ services:
       retries: "5"
     entrypoint: >
       /bin/bash -c '
-      docker-entrypoint.sh mariadbd --bind-address=0.0.0.0 &
-      rm -f /initialised.txt || true &&
-      until mariadb-admin ping -h localhost --silent; do sleep 3; done &&
-      mariadb -u root -p"${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`booklore\`.* TO '"'"'${MARIADB_USER}'"'"'@'"'"'%'"'"' IDENTIFIED BY '"'"'${MARIADB_PASSWORD}'"'"'; FLUSH PRIVILEGES;" &&
-      echo done > /initialised.txt &&
+      if [ ! -d "/var/lib/mysql/mysql" ]; then
+        mariadb-install-db --user=root --datadir=/var/lib/mysql &&
+        mariadbd --user=root --bind-address=0.0.0.0 --datadir=/var/lib/mysql &
+        until mariadb-admin ping -h localhost --silent; do sleep 2; done &&
+        mariadb -u root -e "
+          ALTER USER '"'"'root'"'"'@'"'"'localhost'"'"' IDENTIFIED BY '"'"'${MARIADB_ROOT_PASSWORD}'"'"';
+          CREATE DATABASE IF NOT EXISTS booklore;
+          CREATE USER '"'"'${MARIADB_USER}'"'"'@'"'"'%'"'"' IDENTIFIED BY '"'"'${MARIADB_PASSWORD}'"'"';
+          GRANT ALL PRIVILEGES ON booklore.* TO '"'"'${MARIADB_USER}'"'"'@'"'"'%'"'"';
+          FLUSH PRIVILEGES;
+        " &&
+        echo done > /initialised.txt;
+      else
+        mariadbd --user=root --bind-address=0.0.0.0 --datadir=/var/lib/mysql &
+        until mariadb-admin ping -h localhost --silent; do sleep 2; done &&
+        test -f /initialised.txt || echo done > /initialised.txt;
+      fi &&
       wait'
     networks:
       - prod_net
