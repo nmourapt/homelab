@@ -13,33 +13,16 @@ services:
     ports:
       - "10012:3306"
     healthcheck:
-      test: 'cat /initialised.txt && mariadb-admin ping -h localhost'
-      interval: "10s"
-      timeout: "5s"
-      retries: "5"
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     entrypoint:
       - /bin/bash
       - -c
       - |
-        set -e
-        if [ ! -d "/var/lib/mysql/mysql" ]; then
-          mariadb-install-db --user=root --datadir=/var/lib/mysql
-          mariadbd --user=root --bind-address=0.0.0.0 --datadir=/var/lib/mysql &
-          until mariadb-admin ping -h localhost --silent; do sleep 2; done
-          mariadb -u root <<-SQL
-            ALTER USER 'root'@'localhost' IDENTIFIED BY '$${MARIADB_ROOT_PASSWORD}';
-            CREATE DATABASE IF NOT EXISTS booklore;
-            CREATE USER IF NOT EXISTS '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
-            GRANT ALL PRIVILEGES ON booklore.* TO '$${MARIADB_USER}'@'%';
-            FLUSH PRIVILEGES;
-        SQL
-          echo done > /initialised.txt
-        else
-          mariadbd --user=root --bind-address=0.0.0.0 --datadir=/var/lib/mysql &
-          until mariadb-admin ping -h localhost --silent; do sleep 2; done
-          test -f /initialised.txt || echo done > /initialised.txt
-        fi
-        wait
+        chown -R mysql:mysql /var/lib/mysql
+        exec docker-entrypoint.sh mariadbd
     networks:
       - prod_net
 
