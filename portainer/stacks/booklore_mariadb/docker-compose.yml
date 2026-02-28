@@ -1,14 +1,17 @@
 services:
   booklore_mariadb:
     container_name: booklore_mariadb
-    image: mariadb:11.4
+    image: lscr.io/linuxserver/mariadb:11.4.5
     environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: booklore
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+      PUID: 1026
+      PGID: 100
+      TZ: Europe/Lisbon
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: booklore
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - /volume2/docker/booklore_mariadb/volumes/data:/var/lib/mysql
+      - /volume2/docker/booklore_mariadb/volumes/config:/config
     ports:
       - "10012:3306"
     healthcheck:
