@@ -1,7 +1,7 @@
 services:
   booklore_mariadb:
     container_name: booklore_mariadb
-    image: mariadb:11.4
+    image: mariadb:12.2.2
     user: root
     environment:
       MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
