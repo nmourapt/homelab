@@ -25,11 +25,11 @@ services:
           mariadb-install-db --user=root --datadir=/var/lib/mysql
           mariadbd --user=root --bind-address=0.0.0.0 --skip-ssl --datadir=/var/lib/mysql &
           until mariadb-admin ping -h localhost --silent; do sleep 2; done
-          mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$$MARIADB_ROOT_PASSWORD'"
-          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS booklore"
-          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" -e "CREATE USER IF NOT EXISTS '$$MARIADB_USER'@'%' IDENTIFIED BY '$$MARIADB_PASSWORD'"
-          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON booklore.* TO '$$MARIADB_USER'@'%'"
-          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" -e "FLUSH PRIVILEGES"
+          mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MARIADB_ROOT_PASSWORD'"
+          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS booklore"
+          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "CREATE USER IF NOT EXISTS '$MARIADB_USER'@'%' IDENTIFIED BY '$MARIADB_PASSWORD'"
+          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON booklore.* TO '$MARIADB_USER'@'%'"
+          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "FLUSH PRIVILEGES"
         else
           mariadbd --user=root --bind-address=0.0.0.0 --skip-ssl --datadir=/var/lib/mysql &
           until mariadb-admin ping -h localhost --silent; do sleep 2; done
