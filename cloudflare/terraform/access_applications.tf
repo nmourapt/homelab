@@ -993,7 +993,7 @@ resource "cloudflare_zero_trust_access_application" "aurral" {
   ]
 
   app_launcher_visible = true
-  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/aurral.png"
+  logo_url = "https://github.com/homarr-labs/dashboard-icons/tree/master/png/aurral.png"
 
   destinations = [
     { 
