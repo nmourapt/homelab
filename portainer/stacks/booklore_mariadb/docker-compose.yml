@@ -13,7 +13,7 @@ services:
     ports:
       - "10012:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "--silent"]
+      test: ["CMD", "mariadb-admin", "--skip-ssl", "ping", "-h", "localhost", "--silent"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,15 +24,15 @@ services:
         if [ ! -d "/var/lib/mysql/mysql" ]; then
           mariadb-install-db --user=root --datadir=/var/lib/mysql
           mariadbd --user=root --bind-address=0.0.0.0 --skip-ssl --datadir=/var/lib/mysql &
-          until mariadb-admin ping -h localhost --silent; do sleep 2; done
-          mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MARIADB_ROOT_PASSWORD'"
-          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS booklore"
-          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "CREATE USER IF NOT EXISTS '$MARIADB_USER'@'%' IDENTIFIED BY '$MARIADB_PASSWORD'"
-          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON booklore.* TO '$MARIADB_USER'@'%'"
-          mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e "FLUSH PRIVILEGES"
+          until mariadb-admin --skip-ssl ping -h localhost --silent; do sleep 2; done
+          mariadb -u root --skip-ssl -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$$MARIADB_ROOT_PASSWORD'; FLUSH PRIVILEGES;"
+          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" --skip-ssl -e "CREATE DATABASE IF NOT EXISTS booklore;"
+          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" --skip-ssl -e "CREATE USER IF NOT EXISTS '$$MARIADB_USER'@'%' IDENTIFIED BY '$$MARIADB_PASSWORD';"
+          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" --skip-ssl -e "GRANT ALL PRIVILEGES ON booklore.* TO '$$MARIADB_USER'@'%';"
+          mariadb -u root -p"$$MARIADB_ROOT_PASSWORD" --skip-ssl -e "FLUSH PRIVILEGES;"
         else
           mariadbd --user=root --bind-address=0.0.0.0 --skip-ssl --datadir=/var/lib/mysql &
-          until mariadb-admin ping -h localhost --silent; do sleep 2; done
+          until mariadb-admin --skip-ssl ping -h localhost --silent; do sleep 2; done
         fi
         wait
     networks:
