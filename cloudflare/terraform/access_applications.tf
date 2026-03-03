@@ -993,7 +993,7 @@ resource "cloudflare_zero_trust_access_application" "aurral" {
   ]
 
   app_launcher_visible = true
-  logo_url = "https://github.com/homarr-labs/dashboard-icons/tree/master/png/aurral.png"
+  logo_url = "https://raw.githubusercontent.com/lklynet/aurral/b477bc4cc20b020f9880f82b2a29d738ce1fa88d/frontend/public/arralogo.svg"
 
   destinations = [
     { 
@@ -1039,7 +1039,7 @@ resource "cloudflare_zero_trust_access_application" "bookshelf" {
 resource "cloudflare_zero_trust_access_application" "booklore" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - BookLore"
-  type                 = "saas"
+  type                 = "self_hosted"
   session_duration     = "24h"
 
   allowed_idps = [
@@ -1061,26 +1061,12 @@ resource "cloudflare_zero_trust_access_application" "booklore" {
   app_launcher_visible = true
   logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/booklore.png"
 
-  saas_app = {
-    auth_type = "oidc"
-    app_launcher_url = "https://booklore.${var.tld}"
-    access_token_lifetime = "24h"
-    redirect_uris = [
-      "https://booklore.${var.tld}/api/oidc"
-    ]
-    grant_types = [
-      "authorization_code",
-      "refresh_tokens"
-    ]
-    scopes = [
-      "openid",
-      "email",
-      "profile",
-    ]
-    refresh_token_options = {
-      lifetime = "30d"
+  destinations = [
+    { 
+      type = "public"
+      uri = "booklore.${var.tld}"
     }
-  }
+  ]
 }
 
 resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
