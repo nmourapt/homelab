@@ -47,10 +47,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
             limits:
               cpu: 1000m
-              memory: 512Mi
+              memory: 1536Mi
           volumeMounts:
             - mountPath: /app/data
               name: data
@@ -64,7 +64,7 @@ spec:
             claimName: booklore-data
         - name: books
           persistentVolumeClaim:
-            claimName: pvc-booklore-synology
+            claimName: pvc-booklore-library
         - name: bookdrop
           persistentVolumeClaim:
-            claimName: pvc-booklore-synology
+            claimName: pvc-booklore-bookdrop

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: pv-booklore-synology
+  name: pv-booklore-bookdrop
 spec:
   capacity:
     storage: 1Ki
@@ -9,16 +9,16 @@ spec:
     - ReadWriteMany
   nfs:
     server: "192.168.202.1"
-    path: "/volume1/data"
+    path: "/volume1/data/media/books"
   persistentVolumeReclaimPolicy: Retain
   claimRef:
     namespace: booklore
-    name: pvc-booklore-synology
+    name: pvc-booklore-bookdrop
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-booklore-synology
+  name: pvc-booklore-bookdrop
   namespace: booklore
 spec:
   accessModes:
@@ -26,5 +26,36 @@ spec:
   resources:
     requests:
       storage: 1Ki
-  volumeName: pv-booklore-synology
+  volumeName: pv-booklore-bookdrop
+  storageClassName: ""
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-booklore-library
+spec:
+  capacity:
+    storage: 1Ki
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "192.168.202.1"
+    path: "/volume1/data/media/bookdrop_library"
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: booklore
+    name: pvc-booklore-library
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-booklore-library
+  namespace: booklore
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ki
+  volumeName: pv-booklore-library
   storageClassName: ""
