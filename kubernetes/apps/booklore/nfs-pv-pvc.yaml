@@ -9,7 +9,7 @@ spec:
     - ReadWriteMany
   nfs:
     server: "192.168.202.1"
-    path: "/volume1/data/media/books"
+    path: "/volume1/data/bookdrop"
   persistentVolumeReclaimPolicy: Retain
   claimRef:
     namespace: booklore
