@@ -28,22 +28,26 @@ data:
     echo "$LOG_PREFIX Book: $readarr_book_title"
     echo "$LOG_PREFIX Author path: $readarr_author_path"
 
-    # Copy the entire author/book directory structure into bookdrop
-    # preserving the relative path under the root folder
-    # e.g. /data/media/books/Author Name/Book Title/file.epub
-    #   -> /data/bookdrop/Author Name/Book Title/file.epub
-    ROOT_FOLDER="/data/media/books"
-    RELATIVE_PATH="${readarr_author_path#$ROOT_FOLDER/}"
+    AUTHOR_NAME="$(basename "$readarr_author_path")"
 
-    if [ "$RELATIVE_PATH" = "$readarr_author_path" ]; then
-      echo "$LOG_PREFIX Author path is not under $ROOT_FOLDER, copying flat."
-      RELATIVE_PATH="$(basename "$readarr_author_path")"
+    # Try to copy just the specific book folder if title is available
+    if [ -n "$readarr_book_title" ]; then
+      BOOK_DIR="$readarr_author_path/$readarr_book_title"
+      if [ -d "$BOOK_DIR" ]; then
+        DEST="$BOOKDROP_DIR/$AUTHOR_NAME/$readarr_book_title"
+        mkdir -p "$DEST"
+        echo "$LOG_PREFIX Copying book: $BOOK_DIR/ -> $DEST/"
+        cp -rn "$BOOK_DIR/." "$DEST/"
+        echo "$LOG_PREFIX Done."
+        exit 0
+      fi
+      echo "$LOG_PREFIX Book dir not found at $BOOK_DIR, falling back to author path."
     fi
 
-    DEST="$BOOKDROP_DIR/$RELATIVE_PATH"
+    # Fallback: copy the entire author directory
+    DEST="$BOOKDROP_DIR/$AUTHOR_NAME"
     mkdir -p "$DEST"
-
-    echo "$LOG_PREFIX Copying from $readarr_author_path/ to $DEST/"
+    echo "$LOG_PREFIX Copying author: $readarr_author_path/ -> $DEST/"
     cp -rn "$readarr_author_path/." "$DEST/"
 
     echo "$LOG_PREFIX Done."
