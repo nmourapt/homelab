@@ -44,6 +44,8 @@ spec:
               value: "NETWORK"
             - name: BOOKLORE_PORT
               value: "6060"
+            - name: JAVA_OPTS
+              value: "-Dmail.smtp.ssl.trust=* -Dmail.smtp.starttls.enable=true -Dmail.smtp.ssl.checkserveridentity=false"
           resources:
             requests:
               cpu: 100m
