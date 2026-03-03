@@ -29,26 +29,27 @@ data:
     echo "$LOG_PREFIX Author path: $readarr_author_path"
 
     AUTHOR_NAME="$(basename "$readarr_author_path")"
-
-    # Try to copy just the specific book folder if title is available
-    if [ -n "$readarr_book_title" ]; then
-      BOOK_DIR="$readarr_author_path/$readarr_book_title"
-      if [ -d "$BOOK_DIR" ]; then
-        DEST="$BOOKDROP_DIR/$AUTHOR_NAME/$readarr_book_title"
-        mkdir -p "$DEST"
-        echo "$LOG_PREFIX Copying book: $BOOK_DIR/ -> $DEST/"
-        cp -rn "$BOOK_DIR/." "$DEST/"
-        echo "$LOG_PREFIX Done."
-        exit 0
-      fi
-      echo "$LOG_PREFIX Book dir not found at $BOOK_DIR, falling back to author path."
-    fi
-
-    # Fallback: copy the entire author directory
     DEST="$BOOKDROP_DIR/$AUTHOR_NAME"
     mkdir -p "$DEST"
-    echo "$LOG_PREFIX Copying author: $readarr_author_path/ -> $DEST/"
-    cp -rn "$readarr_author_path/." "$DEST/"
 
-    echo "$LOG_PREFIX Done."
+    # Find files modified in the last 60 seconds (just imported)
+    COPIED=0
+    while IFS= read -r -d '' file; do
+      FILENAME="$(basename "$file")"
+      echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
+      cp -n "$file" "$DEST/$FILENAME"
+      COPIED=$((COPIED + 1))
+    done < <(find "$readarr_author_path" -maxdepth 1 -type f -mmin -1 -print0)
+
+    if [ "$COPIED" -eq 0 ]; then
+      echo "$LOG_PREFIX No recently modified files found, copying all files."
+      while IFS= read -r -d '' file; do
+        FILENAME="$(basename "$file")"
+        echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
+        cp -n "$file" "$DEST/$FILENAME"
+        COPIED=$((COPIED + 1))
+      done < <(find "$readarr_author_path" -maxdepth 1 -type f -print0)
+    fi
+
+    echo "$LOG_PREFIX Done. Copied $COPIED file(s)."
     exit 0
