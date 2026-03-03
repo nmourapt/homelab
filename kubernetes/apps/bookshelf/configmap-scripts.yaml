@@ -32,23 +32,33 @@ data:
     DEST="$BOOKDROP_DIR/$AUTHOR_NAME"
     mkdir -p "$DEST"
 
-    # Find files modified in the last 60 seconds (just imported)
     COPIED=0
-    while IFS= read -r -d '' file; do
-      FILENAME="$(basename "$file")"
-      echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
-      cp -n "$file" "$DEST/$FILENAME"
-      COPIED=$((COPIED + 1))
-    done < <(find "$readarr_author_path" -maxdepth 1 -type f -mmin -1 -print0)
 
-    if [ "$COPIED" -eq 0 ]; then
-      echo "$LOG_PREFIX No recently modified files found, copying all files."
+    # Match files containing the book title in their filename
+    if [ -n "$readarr_book_title" ]; then
+      echo "$LOG_PREFIX Searching for files matching book title: $readarr_book_title"
       while IFS= read -r -d '' file; do
         FILENAME="$(basename "$file")"
-        echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
-        cp -n "$file" "$DEST/$FILENAME"
-        COPIED=$((COPIED + 1))
+        LOWER_FILENAME="$(echo "$FILENAME" | tr '[:upper:]' '[:lower:]')"
+        LOWER_TITLE="$(echo "$readarr_book_title" | tr '[:upper:]' '[:lower:]')"
+        if echo "$LOWER_FILENAME" | grep -qF "$LOWER_TITLE"; then
+          echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
+          cp -n "$file" "$DEST/$FILENAME"
+          COPIED=$((COPIED + 1))
+        fi
       done < <(find "$readarr_author_path" -maxdepth 1 -type f -print0)
+    fi
+
+    # Fallback: copy the newest file if no title match
+    if [ "$COPIED" -eq 0 ]; then
+      echo "$LOG_PREFIX No title match found, copying newest file."
+      NEWEST=$(find "$readarr_author_path" -maxdepth 1 -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+      if [ -n "$NEWEST" ]; then
+        FILENAME="$(basename "$NEWEST")"
+        echo "$LOG_PREFIX Copying: $NEWEST -> $DEST/$FILENAME"
+        cp -n "$NEWEST" "$DEST/$FILENAME"
+        COPIED=1
+      fi
     fi
 
     echo "$LOG_PREFIX Done. Copied $COPIED file(s)."
