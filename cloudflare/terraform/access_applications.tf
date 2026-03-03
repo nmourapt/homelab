@@ -1039,7 +1039,7 @@ resource "cloudflare_zero_trust_access_application" "bookshelf" {
 resource "cloudflare_zero_trust_access_application" "booklore" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - BookLore"
-  type                 = "self_hosted"
+  type                 = "saas"
   session_duration     = "24h"
 
   allowed_idps = [
@@ -1061,12 +1061,26 @@ resource "cloudflare_zero_trust_access_application" "booklore" {
   app_launcher_visible = true
   logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/booklore.png"
 
-  destinations = [
-    { 
-      type = "public"
-      uri = "booklore.${var.tld}"
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://booklore.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://booklore.${var.tld}/api/oidc"
+    ]
+    grant_types = [
+      "authorization_code",
+      "refresh_tokens"
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile",
+    ]
+    refresh_token_options = {
+      lifetime = "30d"
     }
-  ]
+  }
 }
 
 resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
