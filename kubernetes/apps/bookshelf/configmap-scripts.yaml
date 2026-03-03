@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookshelf-scripts
+  namespace: bookshelf
+data:
+  copy-to-bookdrop.sh: |
+    #!/bin/bash
+    # Bookshelf custom script: copy imported books to BookLore's bookdrop
+    # Triggered on: On Release Import, On Upgrade
+
+    BOOKDROP_DIR="/data/bookdrop"
+    LOG_PREFIX="[bookdrop-copy]"
+
+    # Gracefully handle Test events
+    if [ "$readarr_eventtype" = "Test" ]; then
+      echo "$LOG_PREFIX Test event received, nothing to do."
+      exit 0
+    fi
+
+    if [ -z "$readarr_author_path" ]; then
+      echo "$LOG_PREFIX No author_path provided, skipping."
+      exit 0
+    fi
+
+    echo "$LOG_PREFIX Event: $readarr_eventtype"
+    echo "$LOG_PREFIX Author: $readarr_author_name"
+    echo "$LOG_PREFIX Book: $readarr_book_title"
+    echo "$LOG_PREFIX Author path: $readarr_author_path"
+
+    # Copy the entire author/book directory structure into bookdrop
+    # preserving the relative path under the root folder
+    # e.g. /data/media/books/Author Name/Book Title/file.epub
+    #   -> /data/bookdrop/Author Name/Book Title/file.epub
+    ROOT_FOLDER="/data/media/books"
+    RELATIVE_PATH="${readarr_author_path#$ROOT_FOLDER/}"
+
+    if [ "$RELATIVE_PATH" = "$readarr_author_path" ]; then
+      echo "$LOG_PREFIX Author path is not under $ROOT_FOLDER, copying flat."
+      RELATIVE_PATH="$(basename "$readarr_author_path")"
+    fi
+
+    DEST="$BOOKDROP_DIR/$RELATIVE_PATH"
+    mkdir -p "$DEST"
+
+    echo "$LOG_PREFIX Copying from $readarr_author_path/ to $DEST/"
+    cp -rn "$readarr_author_path/." "$DEST/"
+
+    echo "$LOG_PREFIX Done."
+    exit 0

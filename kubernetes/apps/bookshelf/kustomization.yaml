@@ -9,4 +9,5 @@ resources:
   - pvc.yaml
   - nfs-pv-pvc.yaml
   - ingressroute.yaml
+  - configmap-scripts.yaml
   - bookshelf-secrets.sealedsecret.yaml

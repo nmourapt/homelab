@@ -48,6 +48,8 @@ spec:
               name: config
             - mountPath: /data
               name: data
+            - mountPath: /scripts
+              name: scripts
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -55,3 +57,7 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: pvc-bookshelf-synology
+        - name: scripts
+          configMap:
+            name: bookshelf-scripts
+            defaultMode: 0755
