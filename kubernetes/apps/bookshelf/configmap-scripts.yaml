@@ -29,37 +29,39 @@ data:
     echo "$LOG_PREFIX Author path: $readarr_author_path"
 
     AUTHOR_NAME="$(basename "$readarr_author_path")"
-    DEST="$BOOKDROP_DIR/$AUTHOR_NAME"
-    mkdir -p "$DEST"
-
     COPIED=0
+    LOWER_TITLE="$(echo "$readarr_book_title" | tr '[:upper:]' '[:lower:]')"
 
-    # Match files containing the book title in their filename
+    # Find the book subfolder by matching the book title in the folder name
     if [ -n "$readarr_book_title" ]; then
-      echo "$LOG_PREFIX Searching for files matching book title: $readarr_book_title"
-      while IFS= read -r -d '' file; do
-        FILENAME="$(basename "$file")"
-        LOWER_FILENAME="$(echo "$FILENAME" | tr '[:upper:]' '[:lower:]')"
-        LOWER_TITLE="$(echo "$readarr_book_title" | tr '[:upper:]' '[:lower:]')"
-        if echo "$LOWER_FILENAME" | grep -qF "$LOWER_TITLE"; then
-          echo "$LOG_PREFIX Copying: $file -> $DEST/$FILENAME"
-          cp -n "$file" "$DEST/$FILENAME"
+      echo "$LOG_PREFIX Searching for subfolder matching: $readarr_book_title"
+      while IFS= read -r -d '' dir; do
+        DIR_NAME="$(basename "$dir")"
+        LOWER_DIR="$(echo "$DIR_NAME" | tr '[:upper:]' '[:lower:]')"
+        if echo "$LOWER_DIR" | grep -qF "$LOWER_TITLE"; then
+          DEST="$BOOKDROP_DIR/$AUTHOR_NAME/$DIR_NAME"
+          mkdir -p "$DEST"
+          echo "$LOG_PREFIX Copying: $dir/ -> $DEST/"
+          cp -rn "$dir/." "$DEST/"
           COPIED=$((COPIED + 1))
+          break
         fi
-      done < <(find "$readarr_author_path" -maxdepth 1 -type f -print0)
+      done < <(find "$readarr_author_path" -mindepth 1 -maxdepth 1 -type d -print0)
     fi
 
-    # Fallback: copy the newest file if no title match
+    # Fallback: copy the newest subfolder
     if [ "$COPIED" -eq 0 ]; then
-      echo "$LOG_PREFIX No title match found, copying newest file."
-      NEWEST=$(find "$readarr_author_path" -maxdepth 1 -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
-      if [ -n "$NEWEST" ]; then
-        FILENAME="$(basename "$NEWEST")"
-        echo "$LOG_PREFIX Copying: $NEWEST -> $DEST/$FILENAME"
-        cp -n "$NEWEST" "$DEST/$FILENAME"
+      echo "$LOG_PREFIX No title match, copying newest subfolder."
+      NEWEST_DIR=$(find "$readarr_author_path" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+      if [ -n "$NEWEST_DIR" ]; then
+        DIR_NAME="$(basename "$NEWEST_DIR")"
+        DEST="$BOOKDROP_DIR/$AUTHOR_NAME/$DIR_NAME"
+        mkdir -p "$DEST"
+        echo "$LOG_PREFIX Copying: $NEWEST_DIR/ -> $DEST/"
+        cp -rn "$NEWEST_DIR/." "$DEST/"
         COPIED=1
       fi
     fi
 
-    echo "$LOG_PREFIX Done. Copied $COPIED file(s)."
+    echo "$LOG_PREFIX Done. Copied $COPIED folder(s)."
     exit 0
