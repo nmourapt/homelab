@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: aurral
-          image: ghcr.io/lklynet/aurral:1.17.0
+          image: ghcr.io/lklynet/aurral:1.26.1
           ports:
             - containerPort: 3001
               protocol: TCP
