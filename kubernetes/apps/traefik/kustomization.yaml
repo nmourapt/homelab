@@ -22,7 +22,7 @@ resources:
 helmCharts:
   - name: traefik
     repo: https://traefik.github.io/charts
-    version: 39.0.4
+    version: 39.0.5
     releaseName: traefik
     namespace: traefik
     valuesInline:
