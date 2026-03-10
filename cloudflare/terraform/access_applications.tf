@@ -635,7 +635,7 @@ resource "cloudflare_zero_trust_access_application" "cf_metrics" {
   allowed_idps = [
     cloudflare_zero_trust_access_identity_provider.pocketid.id
   ]
-  auto_redirect_to_identity = false
+  auto_redirect_to_identity = true  
 
   policies = [
     {
