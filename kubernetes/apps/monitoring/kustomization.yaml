@@ -43,7 +43,7 @@ helmCharts:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 50Gi
+                    storage: 100Gi
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
           ruleSelectorNilUsesHelmValues: false
