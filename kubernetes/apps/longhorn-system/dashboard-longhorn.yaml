@@ -325,7 +325,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "100 * avg by (volume) (label_replace(kubelet_volume_stats_used_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\")) / avg by (volume) (label_replace(kubelet_volume_stats_capacity_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\"))",
+              "expr": "(100 * avg by (volume) (label_replace(kubelet_volume_stats_used_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\")) / avg by (volume) (label_replace(kubelet_volume_stats_capacity_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\"))) and on(volume) (avg by (volume) (longhorn_volume_capacity_bytes{volume=~\"$volume\"}))",
               "interval": "",
               "legendFormat": "",
               "range": true,
