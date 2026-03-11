@@ -273,7 +273,7 @@ data:
                   "mode": "line+area"
                 }
               },
-              "displayName": "${__field.labels.volume}",
+              "displayName": "${__field.labels.persistentvolumeclaim}",
               "mappings": [],
               "thresholds": {
                 "mode": "absolute",
@@ -325,7 +325,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "(100 * avg by (volume) (label_replace(kubelet_volume_stats_used_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\")) / avg by (volume) (label_replace(kubelet_volume_stats_capacity_bytes, \"volume\", \"$1\", \"persistentvolumeclaim\", \"(.*)\"))) and on(volume) (avg by (volume) (longhorn_volume_capacity_bytes{volume=~\"$volume\"}))",
+              "expr": "100 * sum by (persistentvolumeclaim) (kubelet_volume_stats_used_bytes * on(namespace, persistentvolumeclaim) group_left() (kube_persistentvolumeclaim_info{storageclass=~\"longhorn.*\"})) / sum by (persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes * on(namespace, persistentvolumeclaim) group_left() (kube_persistentvolumeclaim_info{storageclass=~\"longhorn.*\"}))",
               "interval": "",
               "legendFormat": "",
               "range": true,
