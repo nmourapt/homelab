@@ -9,3 +9,9 @@ resource "cloudflare_r2_bucket" "longhorn_backups" {
   name       = "longhorn-backups"
   location   = "WEUR"
 }
+
+resource "cloudflare_r2_bucket" "synology_backups" {
+  account_id = var.cloudflare_account_id
+  name       = "synology-backups"
+  location   = "WEUR"
+}
