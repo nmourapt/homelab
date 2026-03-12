@@ -1,0 +1,11 @@
+metadata:
+  namespace: default
+  type: EtcdBackupS3Configs.omni.sidero.dev
+  id: etcd-backup-s3-conf
+spec:
+  bucket: omni-backups
+  region: auto
+  endpoint: https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
+  accesskeyid: ${R2_ACCESS_KEY_ID}
+  secretaccesskey: ${R2_SECRET_ACCESS_KEY}
+  sessiontoken: ""
