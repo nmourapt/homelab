@@ -1100,7 +1100,7 @@ resource "cloudflare_zero_trust_access_application" "portainer_oidc" {
   session_duration     = "24h"
 
   allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid.id
+    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
   ]
   auto_redirect_to_identity = true
 
@@ -1132,6 +1132,7 @@ resource "cloudflare_zero_trust_access_application" "portainer_oidc" {
       "openid",
       "email",
       "profile",
+      "groups",
     ]
   }
 }
