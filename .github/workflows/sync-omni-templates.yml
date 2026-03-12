@@ -181,9 +181,9 @@ jobs:
       - name: Process and apply etcd backup S3 config
         run: |
           sed \
-            -e 's|${CF_ACCOUNT_ID}|${{ secrets.CF_ACCOUNT_ID }}|g' \
-            -e 's|${OMNI_R2_ACCESS_KEY}|${{ secrets.OMNI_R2_ACCESS_KEY }}|g' \
-            -e 's|${OMNI_R2_ACCESS_SECRET}|${{ secrets.OMNI_R2_ACCESS_SECRET }}|g' \
+            -e 's|\${CF_ACCOUNT_ID}|${{ secrets.CF_ACCOUNT_ID }}|g' \
+            -e 's|\${OMNI_R2_ACCESS_KEY}|${{ secrets.OMNI_R2_ACCESS_KEY }}|g' \
+            -e 's|\${OMNI_R2_ACCESS_SECRET}|${{ secrets.OMNI_R2_ACCESS_SECRET }}|g' \
             kubernetes/omni/etcd-backup-s3-conf.yaml > /tmp/etcd-backup-s3-conf.yaml
 
           echo "Applying etcd backup S3 configuration..."
