@@ -1,7 +1,7 @@
 services:
   certbot:
     container_name: certbot
-    image: certbot/dns-cloudflare:v5.3.1
+    image: certbot/dns-cloudflare:v5.4.0
     restart: unless-stopped
     volumes:
       - /volume2/docker/certbot/volumes/letsencrypt:/etc/letsencrypt
