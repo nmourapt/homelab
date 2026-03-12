@@ -8,6 +8,7 @@ resources:
   - storageclass-single.yaml
   - servicemonitor.yaml
   - dashboard-longhorn.yaml
+  - longhorn-r2-backups.sealedsecret.yaml
 
 helmCharts:
   - name: longhorn
@@ -22,6 +23,8 @@ helmCharts:
         defaultDataPath: /var/lib/longhorn
         storageMinimalAvailablePercentage: 10
         guaranteedInstanceManagerCPU: 6
+        backupTarget: s3://longhorn-backups@auto/
+        backupTargetCredentialSecret: longhorn-r2-backups
       persistence:
         reclaimPolicy: Retain
       longhornUI:
