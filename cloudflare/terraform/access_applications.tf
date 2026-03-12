@@ -1100,9 +1100,10 @@ resource "cloudflare_zero_trust_access_application" "portainer_oidc" {
   session_duration     = "24h"
 
   allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id,
+    cloudflare_zero_trust_access_identity_provider.google.id
   ]
-  auto_redirect_to_identity = true
+  auto_redirect_to_identity = false
 
   policies = [
     { 
@@ -1112,6 +1113,10 @@ resource "cloudflare_zero_trust_access_application" "portainer_oidc" {
     { 
       id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
       precedence = 2
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.personal_email_list.id,
+      precedence = 3
     }
   ]
 
@@ -1144,10 +1149,9 @@ resource "cloudflare_zero_trust_access_application" "cf_usage" {
   session_duration     = "24h"
 
   allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id,
-    cloudflare_zero_trust_access_identity_provider.google.id
+    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
   ]
-  auto_redirect_to_identity = false
+  auto_redirect_to_identity = true
 
   policies = [
     { 
@@ -1157,10 +1161,6 @@ resource "cloudflare_zero_trust_access_application" "cf_usage" {
     { 
       id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
       precedence = 2
-    },
-    { 
-      id = cloudflare_zero_trust_access_policy.personal_email_list.id,
-      precedence = 3
     }
   ]
 
