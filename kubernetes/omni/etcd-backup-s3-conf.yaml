@@ -6,6 +6,6 @@ spec:
   bucket: omni-backups
   region: auto
   endpoint: https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
-  accesskeyid: ${R2_ACCESS_KEY_ID}
-  secretaccesskey: ${R2_SECRET_ACCESS_KEY}
+  accesskeyid: ${OMNI_R2_ACCESS_KEY}
+  secretaccesskey: ${OMNI_R2_ACCESS_SECRET}
   sessiontoken: ""

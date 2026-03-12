@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - 'kubernetes/omni/templates/**'
+      - 'kubernetes/omni/etcd-backup-s3-conf.yaml'
   pull_request:
     branches: [main]
     paths:
       - 'kubernetes/omni/templates/**'
+      - 'kubernetes/omni/etcd-backup-s3-conf.yaml'
   workflow_dispatch:
     inputs:
       template:
@@ -162,3 +164,36 @@ jobs:
       - name: Cleanup
         if: always()
         run: rm -rf /tmp/processed-templates
+
+  deploy-etcd-backup-config:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install omnictl
+        run: |
+          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
+          chmod +x omnictl
+          sudo mv omnictl /usr/local/bin/
+
+      - name: Process and apply etcd backup S3 config
+        run: |
+          sed \
+            -e 's|${CF_ACCOUNT_ID}|${{ secrets.CF_ACCOUNT_ID }}|g' \
+            -e 's|${OMNI_R2_ACCESS_KEY}|${{ secrets.OMNI_R2_ACCESS_KEY }}|g' \
+            -e 's|${OMNI_R2_ACCESS_SECRET}|${{ secrets.OMNI_R2_ACCESS_SECRET }}|g' \
+            kubernetes/omni/etcd-backup-s3-conf.yaml > /tmp/etcd-backup-s3-conf.yaml
+
+          echo "Applying etcd backup S3 configuration..."
+          omnictl apply -f /tmp/etcd-backup-s3-conf.yaml
+
+      - name: Verify backup status
+        run: |
+          sleep 5
+          omnictl get etcdbackupoverallstatus || true
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/etcd-backup-s3-conf.yaml
