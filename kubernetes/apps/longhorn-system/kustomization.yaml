@@ -10,6 +10,7 @@ resources:
   - dashboard-longhorn.yaml
   - longhorn-r2-backups.sealedsecret.yaml
   - backuptarget.yaml
+  - recurring-jobs.yaml
 
 helmCharts:
   - name: longhorn
