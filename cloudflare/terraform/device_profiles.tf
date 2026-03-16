@@ -62,5 +62,5 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
   lan_allow_subnet_size = 24
   register_interface_ip_with_dns = true
   sccm_vpn_boundary_support = false
-  enable_netbt = false
+  # enable_netbt = false
 }
