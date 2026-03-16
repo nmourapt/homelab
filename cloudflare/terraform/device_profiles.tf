@@ -18,9 +18,6 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
   service_mode_v2 = {
     mode = "warp"
   }
-  fallback_domains = [
-    { suffix = "lab" },
-  ]
   exclude = [
     { address = "ff05::/16" },
     { address = "ff04::/16" },
@@ -50,4 +47,26 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
   register_interface_ip_with_dns = true
   sccm_vpn_boundary_support = false
   # enable_netbt = false
+}
+
+resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "admins_mobile_local_domain_fallback" {
+  account_id = var.cloudflare_account_id
+  policy_id = cloudflare_zero_trust_device_custom_profile.admins_mobile.id
+  domains = [
+    { suffix = "intranet" },
+    { suffix = "internal" },
+    { suffix = "private" },
+    { suffix = "localdomain" },
+    { suffix = "domain" },
+    { suffix = "lan" },
+    { suffix = "home" },
+    { suffix = "host" },
+    { suffix = "corp" },
+    { suffix = "local" },
+    { suffix = "localhost" },
+    { suffix = "invalid" },
+    { suffix = "test" },
+    { suffix = "lab" },
+  ]
+  depends_on = [cloudflare_zero_trust_device_custom_profile.admins_mobile]
 }
