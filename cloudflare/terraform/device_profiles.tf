@@ -19,20 +19,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
     mode = "warp"
   }
   fallback_domains = [
-    { suffix = "home.arpa" },
-    { suffix = "intranet" },
-    { suffix = "internal" },
-    { suffix = "private" },
-    { suffix = "localdomain" },
-    { suffix = "domain" },
-    { suffix = "lan" },
-    { suffix = "home" },
-    { suffix = "host" },
-    { suffix = "corp" },
-    { suffix = "local" },
-    { suffix = "localhost" },
-    { suffix = "invalid" },
-    { suffix = "test" },
+    { suffix = "lab" },
   ]
   exclude = [
     { address = "ff05::/16" },
