@@ -3,7 +3,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_home" {
   name = "TF - Admins Home"
   precedence = 10
 
-  match = "any(identity.groups.name[*] in {\"Administrators\"}) and network in {\"home\"}"
+  match = "any(identity.groups.name[*] in {\"administrators\"}) and network in {\"home\"}"
 
   enabled = true
 
@@ -76,7 +76,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
   name = "TF - Admins Mobile"
   precedence = 20
 
-  match = "any(identity.groups.name[*] in {\"Administrators\"}) and os.name in {\"android\" \"ios\"}"
+  match = "any(identity.groups.name[*] in {\"administrators\"}) and os.name in {\"android\" \"ios\"}"
 
   enabled = true
 
@@ -149,7 +149,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_laptops" {
   name = "TF - Admins Laptops"
   precedence = 30
 
-  match = "any(identity.groups.name[*] in {\"Administrators\"}) and os.name in {\"chromeos\" \"windows\" \"mac\" \"linux\"}"
+  match = "any(identity.groups.name[*] in {\"administrators\"}) and os.name in {\"chromeos\" \"windows\" \"mac\" \"linux\"}"
 
   enabled = true
 
