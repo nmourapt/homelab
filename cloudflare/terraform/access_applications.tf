@@ -43,6 +43,31 @@ resource "cloudflare_zero_trust_access_application" "sso_app" {
   }
 }
 
+resource "cloudflare_zero_trust_access_application" "warp_app" {
+  account_id           = var.cloudflare_account_id
+  name                 = "Warp Login App"
+  type                 = "warp"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  domain = "babybites.cloudflareaccess.com/warp"
+
+  lifecycle {
+    ignore_changes = [app_launcher_visible]
+  }
+}
+
 resource "cloudflare_zero_trust_access_application" "vaultwarden_app" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Vaultwarden"
