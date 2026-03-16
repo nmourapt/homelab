@@ -1,7 +1,7 @@
 resource "cloudflare_zero_trust_device_custom_profile" "admins_home" {
   account_id = var.cloudflare_account_id
   name = "TF - Admins Home"
-  precedence = 10
+  precedence = 15
 
   match = "any(identity.groups.name[*] in {\"Administrators\"}) and network in {\"home\"}"
 
@@ -286,7 +286,6 @@ resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "ad
   depends_on = [cloudflare_zero_trust_device_custom_profile.admins_laptops]
 }
 
-
 resource "cloudflare_zero_trust_device_custom_profile" "general_laptops" {
   account_id = var.cloudflare_account_id
   name = "TF - General Laptops"
@@ -354,4 +353,51 @@ resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "ge
     { suffix = "test" },
   ]
   depends_on = [cloudflare_zero_trust_device_custom_profile.general_laptops]
+}
+
+
+
+resource "cloudflare_zero_trust_device_default_profile" "default_profile" {
+  account_id = var.cloudflare_account_id
+
+  captive_portal = 0
+  allow_mode_switch = false
+  tunnel_protocol = "masque"
+  switch_locked = false
+  allowed_to_leave = true
+  allow_updates = false
+  auto_connect = 0
+  support_url = "https://it.babybites.pt/help"
+  service_mode_v2 = {
+    mode = "posture_only"
+  }
+  include = [
+    { address = "8.8.4.4/32" },
+  ]
+  exclude_office_ips = false
+  lan_allow_minutes = 0
+  lan_allow_subnet_size = 24
+  register_interface_ip_with_dns = false
+  sccm_vpn_boundary_support = false
+  # enable_netbt = false
+}
+
+resource "cloudflare_zero_trust_device_default_profile_local_domain_fallback" "default_profile_local_domain_fallback" {
+  account_id = var.cloudflare_account_id
+  domains = [
+    { suffix = "intranet" },
+    { suffix = "internal" },
+    { suffix = "private" },
+    { suffix = "localdomain" },
+    { suffix = "domain" },
+    { suffix = "lan" },
+    { suffix = "home" },
+    { suffix = "host" },
+    { suffix = "corp" },
+    { suffix = "local" },
+    { suffix = "localhost" },
+    { suffix = "invalid" },
+    { suffix = "test" },
+  ]
+  depends_on = [cloudflare_zero_trust_device_default_profile.default_profile]
 }
