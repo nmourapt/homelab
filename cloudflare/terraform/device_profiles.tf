@@ -3,7 +3,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "admins_mobile" {
   name = "TF - Admins Mobile"
   precedence = 10
 
-  match = "any(identity.groups.name[*] in {\"Administrators\"}) and os.name in {\"android\", \"ios\"}"
+  match = "identity.groups.name == \"\\\"Administrators\\\"\" and os.name in {\"android\" \"ios\"}"
 
   enabled = true
 
