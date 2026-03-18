@@ -131,13 +131,7 @@ resource "cloudflare_zero_trust_access_policy" "cloudflare" {
     }
   ]
   exclude = []
-  require = [
-    {
-      login_method = {
-        id = cloudflare_zero_trust_access_identity_provider.google.id
-      }
-    }
-  ]
+  require = []
 }
 
 resource "cloudflare_zero_trust_access_policy" "bypass_everyone" {
