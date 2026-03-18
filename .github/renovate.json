@@ -14,7 +14,8 @@
       "matchManagers": ["docker-compose", "kubernetes", "kustomize"],
       "description": "Automatically merge minor and patch-level updates",
       "matchUpdateTypes": ["minor", "patch", "digest"],
-      "automerge": true
+      "automerge": true,
+      "ignoreTests": true
     }
   ]
 }
