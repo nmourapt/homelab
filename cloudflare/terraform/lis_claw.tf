@@ -37,7 +37,7 @@ resource "cloudflare_dns_record" "sshclaw_record" {
 resource "cloudflare_zero_trust_access_application" "sshclaw_admin" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - SSH OpenClaw"
-  type                 = "self_hosted"
+  type                 = "ssh"
   session_duration     = "8h"
 
   allowed_idps = [
@@ -65,6 +65,4 @@ resource "cloudflare_zero_trust_access_application" "sshclaw_admin" {
       uri = "warden.${var.tld}/admin"
     }
   ]
-
-  type = "ssh"
 }
