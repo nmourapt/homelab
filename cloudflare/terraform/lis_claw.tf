@@ -62,7 +62,7 @@ resource "cloudflare_zero_trust_access_application" "sshclaw_admin" {
   destinations = [
     { 
       type = "public"
-      uri = "warden.${var.tld}/admin"
+      uri = "sshclaw.${var.tld}"
     }
   ]
 }
