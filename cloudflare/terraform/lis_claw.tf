@@ -16,6 +16,10 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_claw_config" {
         service = "ssh://localhost:22"
       },
       {
+        hostname = "gateclaw.${var.tld}"
+        service = "http://localhost:18789"
+      },
+      {
         service = "http_status:404"
       }
     ]
@@ -27,6 +31,18 @@ resource "cloudflare_dns_record" "sshclaw_record" {
   zone_id = var.cloudflare_tld_zone_id
   type = "CNAME"
   name = "sshclaw"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_claw.id}.cfargotunnel.com"
+  ttl = 1
+  comment = "Managed by terraform - do not edit"
+  proxied = true
+  tags = ["terraform", "lis_claw", "cloudflared", "tunnel"]
+}
+
+resource "cloudflare_dns_record" "gateclaw_record" {
+  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_claw]
+  zone_id = var.cloudflare_tld_zone_id
+  type = "CNAME"
+  name = "gatelaw"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_claw.id}.cfargotunnel.com"
   ttl = 1
   comment = "Managed by terraform - do not edit"
