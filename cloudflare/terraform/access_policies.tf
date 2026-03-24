@@ -206,3 +206,21 @@ resource "cloudflare_zero_trust_access_policy" "service_token_prometheus_cf_metr
   exclude = []
   require = []
 }
+
+
+resource "cloudflare_zero_trust_access_policy" "service_token_openclaw_warp" {
+  name             = "TF - Openclaw Service Token"
+  account_id       = var.cloudflare_account_id
+  decision         = "non_identity"
+  session_duration = "24h"
+
+  include = [
+    {
+      service_token = {
+        token_id = cloudflare_zero_trust_access_service_token.openclaw_service_token.id
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}

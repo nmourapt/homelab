@@ -56,8 +56,12 @@ resource "cloudflare_zero_trust_access_application" "warp_app" {
 
   policies = [
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      id = cloudflare_zero_trust_access_policy.service_token_openclaw_warp.id,
       precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 2
     }
   ]
 
