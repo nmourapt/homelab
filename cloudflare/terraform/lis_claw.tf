@@ -42,7 +42,7 @@ resource "cloudflare_dns_record" "gateclaw_record" {
   depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_claw]
   zone_id = var.cloudflare_tld_zone_id
   type = "CNAME"
-  name = "gatelaw"
+  name = "gateclaw"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.lis_claw.id}.cfargotunnel.com"
   ttl = 1
   comment = "Managed by terraform - do not edit"
