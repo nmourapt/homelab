@@ -47,29 +47,6 @@ resource "cloudflare_dns_record" "dummy_cname_record" {
   tags = ["terraform", "lis_isp", "cloudflared", "tunnel"]
 }
 
-resource "cloudflare_spectrum_application" "squid_spectrum_app" {
-  provider = cloudflare.global_key
-  zone_id = cloudflare_zone.spectrum_zone.id
-  dns = {
-    name = "squid.spectrum.${var.tld}"
-    type = "CNAME"
-  }
-  protocol = "tcp/36334"
-  argo_smart_routing = true
-  edge_ips = {
-    connectivity = "ipv4"
-    type = "dynamic"
-  }
-  ip_firewall = true
-  origin_dns = {
-    name = "dummy.spectrum.${var.tld}"
-  }
-  origin_port = 36334
-  proxy_protocol = "off"
-  tls = "off"
-  traffic_type = "direct"
-}
-
 resource "cloudflare_spectrum_application" "oauthmail_spectrum_app" {
   provider = cloudflare.global_key
   zone_id = cloudflare_zone.spectrum_zone.id
@@ -91,14 +68,4 @@ resource "cloudflare_spectrum_application" "oauthmail_spectrum_app" {
   proxy_protocol = "off"
   tls = "off"
   traffic_type = "direct"
-}
-
-resource "cloudflare_access_rule" "allow_cloudflare_rule" {
-  configuration = {
-    target = "asn"
-    value = "AS13335"
-  }
-  mode = "whitelist"
-  zone_id = cloudflare_zone.spectrum_zone.id
-  notes = "Managed by terraform - do not edit"
 }
