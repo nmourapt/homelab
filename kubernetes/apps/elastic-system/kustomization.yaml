@@ -12,7 +12,7 @@ resources:
 helmCharts:
   - name: eck-stack
     repo: https://helm.elastic.co
-    version: 0.18.1
+    version: 0.18.2
     releaseName: elastic
     namespace: elastic-system
     valuesInline:
