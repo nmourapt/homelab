@@ -37,3 +37,4 @@ kubernetes/apps/**/charts/
 !kubernetes/apps/synology-csi/charts/
 
 # Temp
+portainer/terraform/cloudflared_lis_isp.tf
