@@ -73,14 +73,5 @@ resource "portainer_docker_network" "vlan1" {
   name        = "vlan1"
   driver      = "macvlan"
   config_from = "vlan1config"
-  scope       = "local"
-  options = {
-    parent = "eth0.1"
-  }
-  ipam_config {
-    subnet    = "192.168.111.0/24"
-    gateway   = "192.168.111.254"
-    ip_range  = "192.168.111.64/27"
-  }
   depends_on  = [portainer_docker_network.vlan1config]
 }
