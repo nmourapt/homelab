@@ -8,9 +8,9 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}
     command: tunnel run
     networks:
-      vlan1:
-        ipv4_address: "192.168.111.65"
+      vlan101:
+        ipv4_address: "192.168.101.67"
 
 networks:
-  vlan1:
+  vlan101:
     external: true
