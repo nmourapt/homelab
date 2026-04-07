@@ -13,7 +13,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_isp_config" {
     ingress = [
       {
         hostname = "omada.${var.tld}"
-        service = "https://192.168.1.99:443"
+        service = "https://192.168.111.99:443"
         origin_request = {
           http2_origin = true
           no_tls_verify = true

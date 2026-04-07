@@ -64,9 +64,9 @@ resource "portainer_docker_network" "vlan1config" {
   }
   ipam_driver = "default"
   ipam_config {
-    subnet    = "192.168.1.0/24"
-    gateway   = "192.168.1.254"
-    ip_range  = "192.168.1.64/27"
+    subnet    = "192.168.111.0/24"
+    gateway   = "192.168.111.254"
+    ip_range  = "192.168.111.64/27"
   }
 }
 
@@ -80,9 +80,9 @@ resource "portainer_docker_network" "vlan1" {
     parent = "eth0.1"
   }
   ipam_config {
-    subnet    = "192.168.1.0/24"
-    gateway   = "192.168.1.254"
-    ip_range  = "192.168.1.64/27"
+    subnet    = "192.168.111.0/24"
+    gateway   = "192.168.111.254"
+    ip_range  = "192.168.111.64/27"
   }
   depends_on  = [portainer_docker_network.vlan1config]
 }
