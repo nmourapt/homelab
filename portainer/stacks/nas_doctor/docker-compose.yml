@@ -1,0 +1,24 @@
+services:
+  nas_doctor:
+    container_name: nas_doctor
+    privileged: true
+    image: ghcr.io/mcdays94/nas-doctor:0.4.0
+    environment:
+      NAS_DOCTOR_INTERVAL: "8h"
+    volumes:
+      - /volume2/docker/nas_doctor/volumes/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /boot:/host/boot:ro
+      - /var/log:/host/log:ro
+      - /mnt:/host/mnt:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netboot.rule=Host(`nasdoctor.${DOMAIN}`)"
+      - "traefik.http.routers.netboot.entrypoints=web"
+      - "traefik.http.services.netboot.loadbalancer.server.port=8060"
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true
