@@ -9,7 +9,7 @@ services:
     command: tunnel run
     networks:
       vlan1:
-        ipv4_address: "192.168.111.66"
+        ipv4_address: "192.168.111.65"
 
 networks:
   vlan1:
