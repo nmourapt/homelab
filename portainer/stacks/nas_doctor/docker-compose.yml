@@ -13,9 +13,9 @@ services:
       - /mnt:/host/mnt:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.netboot.rule=Host(`nasdoctor.${DOMAIN}`)"
-      - "traefik.http.routers.netboot.entrypoints=web"
-      - "traefik.http.services.netboot.loadbalancer.server.port=8060"
+      - "traefik.http.routers.nasdoctor.rule=Host(`nasdoctor.${DOMAIN}`)"
+      - "traefik.http.routers.nasdoctor.entrypoints=web"
+      - "traefik.http.services.nasdoctor.loadbalancer.server.port=8060"
     networks:
       - prod_net
 
