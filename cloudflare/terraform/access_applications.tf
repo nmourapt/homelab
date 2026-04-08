@@ -1098,6 +1098,39 @@ resource "cloudflare_zero_trust_access_application" "booklore" {
   ]
 }
 
+resource "cloudflare_zero_trust_access_application" "nas_doctor" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - NAS Doctor"
+  type                 = "self_hosted"
+  session_duration     = "30m"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      precedence = 1
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 2
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://github.com/mcdays94/nas-doctor/raw/main/icons/icon3.png"
+
+  destinations = [
+    { 
+      type = "public"
+      uri = "nasdoctor.${var.tld}/admin"
+    }
+  ]
+}
+
 resource "cloudflare_zero_trust_access_application" "bazarr_bypass" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Bazarr - Bypass"
