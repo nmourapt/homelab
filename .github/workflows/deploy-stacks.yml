@@ -341,11 +341,6 @@ jobs:
       run: terraform init -upgrade
       working-directory: ./portainer/terraform
 
-    # TODO: Remove this step after successful run
-    - name: Remove orphaned vlan1config from state
-      run: terraform state rm portainer_docker_network.vlan1config || true
-      working-directory: ./portainer/terraform
-
     - name: Terraform Plan
       run: |
         # Ensure we're using the processed compose files
