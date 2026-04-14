@@ -2,7 +2,7 @@ services:
   nas_doctor:
     container_name: nas_doctor
     privileged: true
-    image: ghcr.io/mcdays94/nas-doctor:0.7.3
+    image: ghcr.io/mcdays94/nas-doctor:0.8.0
     environment:
       NAS_DOCTOR_INTERVAL: "8h"
     volumes:
