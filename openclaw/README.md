@@ -40,7 +40,7 @@ All secrets live in `secrets/reposecrets.sops.yml` and are pushed to GitHub Secr
 | `OCI_REGION` | `eu-frankfurt-1` |
 | `OCI_COMPARTMENT_OCID` | Compartment (root for free tier) |
 | `OCI_SSH_PUBLIC_KEY` | SSH public key for the `nuno` user |
-| `OCI_CLOUDFLARED_TOKEN` | Tunnel token from Cloudflare TF output |
+| `OCI_CLOUDFLARED_TOKEN` | Tunnel token from Cloudflare dashboard |
 | `R2_TF_OPENCLAW_ACCESS_KEY_ID` | R2 credentials for TF state backend |
 | `R2_TF_OPENCLAW_SECRET_ACCESS_KEY` | R2 credentials for TF state backend |
 

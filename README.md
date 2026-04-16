@@ -15,25 +15,25 @@ A human review is done before significant changes get pushed (unless Windsurf go
                         │  Trust Access, WAF   │
                         └──────────┬───────────┘
                                    │
-                     ┌─────────────┼───────────────┐
-                     ▼                             ▼
-          ┌──────────────────┐            ┌──────────────────┐
-          │  Kubernetes      │            │  Synology NAS    │
-          │  3x Intel NUC    │◄── NFS ───►│  Docker/Portainer│
-          │  Talos Linux     │   iSCSI    │  PostgreSQL DBs  │
-          │  Cilium + Traefik│            │  Media Storage   │
-          └────────┬─────────┘            └────────┬─────────┘
-                   │                               │
-                   └───────────────────────────────┘
-                                   │
-                        ┌──────────┴───────────┐
-                        │    GitHub Actions    │
-                        │  CI/CD Pipelines     │
-                        │  SOPS Secret Sync    │
-                        └──────────────────────┘
+              ┌────────────────────┼────────────────────┐
+              ▼                    ▼                    ▼
+   ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+   │  Kubernetes      │ │  Synology NAS    │ │  OCI (Oracle)    │
+   │  3x Intel NUC    │ │  Docker/Portainer│ │  ARM A1.Flex     │
+   │  Talos Linux     │ │  PostgreSQL DBs  │ │  OpenClaw        │
+   │  Cilium + Traefik│ │  Media Storage   │ │  Cloudflare Tun. │
+   └────────┬─────────┘ └────────┬─────────┘ └──────────────────┘
+            │         NFS/iSCSI  │
+            └────────────────────┘
+                        │
+             ┌──────────┴───────────┐
+             │    GitHub Actions    │
+             │  CI/CD Pipelines     │
+             │  SOPS Secret Sync    │
+             └──────────────────────┘
 ```
 
-The environment runs on a single VLAN (`192.168.202.0/24`) with three Intel N100 NUCs forming the Kubernetes cluster and a Synology DS918+ handling persistent storage, databases, and some Docker workloads.
+The local environment runs on a single VLAN (`192.168.202.0/24`) with three Intel N100 NUCs forming the Kubernetes cluster and a Synology DS918+ handling persistent storage, databases, and some Docker workloads. An OCI Always Free ARM instance (Ampere A1.Flex) in Frankfurt runs OpenClaw, accessed exclusively through a Cloudflare Tunnel.
 
 ## Key Design Decisions
 
@@ -43,10 +43,11 @@ Not everything belongs in Kubernetes. Stateful services that benefit from direct
 
 ### Zero exposed ports
 
-No ports are forwarded from the router. All external access flows through **Cloudflare Tunnels** — three of them, each serving a different role:
+No ports are forwarded from the router. All external access flows through **Cloudflare Tunnels** — four of them, each serving a different role:
 - **lis_k8s** — Routes to Kubernetes services via Traefik (with external-dns creating the necessary records)
 - **lis_prod** — Routes to NAS-hosted services via its' own Traefik (using traefik-cloudflare-companion for DNS)
 - **lis_isp** — Routes to a different, isolated VLAN (ISP)
+- **oci_claw** — Routes to the OCI instance (SSH + OpenClaw)
 
 ### Identity and access control
 
@@ -57,6 +58,7 @@ Every externally-exposed service sits behind **Cloudflare Zero Trust Access**. A
 - **Kubernetes** — ArgoCD with an ApplicationSet that auto-discovers any directory under `kubernetes/apps/`. Drop a folder, push, and it's deployed.
 - **Docker stacks** — Terraform applies Docker Compose files to Portainer via API. GitHub Actions triggers on file changes.
 - **Cloudflare** — Terraform manages DNS records, tunnels, Access apps, Access policies, Spectrum apps, and redirect rules. State stored in R2.
+- **OCI** — Terraform provisions the Oracle Cloud instance, networking, and cloud-init. State stored in R2.
 - **Cluster config** — Talos Linux cluster templates synced to Omni via `omnictl` in CI.
 
 ### Secrets at rest
@@ -84,8 +86,8 @@ Two layers:
 | **Logging** | Elastic Stack (ECK) | Elasticsearch + Kibana + Fleet Server with Cloudflare Logpush via R2 |
 | **GPU** | Intel GPU Device Plugin | iGPU passthrough for hardware-accelerated ML inference (Immich) |
 | **Secrets** | Sealed Secrets + SOPS | Encrypted secrets in Git for both Kubernetes and CI/CD |
-| **IaC** | Terraform | Manages Cloudflare, Portainer stacks, and state in R2 |
-| **CI/CD** | GitHub Actions | Four workflows covering secrets, stacks, Cloudflare, and cluster templates |
+| **IaC** | Terraform | Manages Cloudflare, Portainer stacks, OCI infrastructure, and state in R2 |
+| **CI/CD** | GitHub Actions | Five workflows covering secrets, stacks, Cloudflare, OCI, and cluster templates |
 | **Dependency Management** | Renovate | Automated PRs for container images, Helm charts, Terraform providers, and Docker Compose images |
 
 ## Dependency Management
@@ -96,14 +98,15 @@ Two layers:
 
 ```
 homelab/
-├── .github/workflows/        # CI/CD pipelines (4 workflows)
+├── .github/workflows/        # CI/CD pipelines (5 workflows)
 ├── cloudflare/terraform/     # Tunnels, DNS, Zero Trust Access, Spectrum
 ├── kubernetes/
-│   ├── apps/                 # 27 ArgoCD-managed applications
+│   ├── apps/                 # ArgoCD-managed applications
 │   ├── management/           # Kubeconfig, Talosconfig (gitignored)
 │   └── omni/templates/       # Talos cluster templates + Cilium/ArgoCD manifests
+├── openclaw/terraform/       # OCI instance, networking, cloud-init
 ├── portainer/
-│   ├── stacks/               # 23 Docker Compose definitions
+│   ├── stacks/               # Docker Compose definitions
 │   └── terraform/            # Stack deployment automation
 ├── secrets/                  # SOPS-encrypted secret store
 └── synology/                 # NAS bootstrap automation (Ansible - currently gitignored, due for cleanup)
@@ -143,4 +146,4 @@ Cloudflare logs (data streams including HTTP requests, DNS, firewall events, and
 
 ## Networking
 
-All traffic enters through Cloudflare — no open ports on the home network. Cloudflare Spectrum proxies TCP services (squid proxy, email relay) for cases where HTTP tunnels aren't suitable. Inside the cluster, Cilium handles pod networking with VXLAN tunnels and provides LoadBalancer IPs via L2 announcements from a dedicated pool (`192.168.202.101-199`).
+All traffic enters through Cloudflare — no open ports on the home network. Cloudflare Spectrum proxies TCP services (email relay) for cases where HTTP tunnels aren't suitable. Inside the cluster, Cilium handles pod networking with VXLAN tunnels and provides LoadBalancer IPs via L2 announcements from a dedicated pool (`192.168.202.101-199`). The OCI instance in Frankfurt is connected via its own Cloudflare Tunnel with no public IP or open ingress.

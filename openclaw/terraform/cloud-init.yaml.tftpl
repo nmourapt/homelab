@@ -17,6 +17,11 @@ packages:
   - lsb-release
   - apt-transport-https
 
+write_files:
+  - path: /etc/ssh/ca.pub
+    content: ${cloudflare_ca_pubkey}
+    permissions: '0644'
+
 runcmd:
   # Install cloudflared
   - mkdir -p --mode=0755 /usr/share/keyrings
@@ -28,3 +33,6 @@ runcmd:
   - cloudflared service install ${cloudflared_token}
   - systemctl enable cloudflared
   - systemctl start cloudflared
+  # Configure sshd for Cloudflare Access short-lived certificates
+  - sed -i '1i PubkeyAuthentication yes\nTrustedUserCAKeys /etc/ssh/ca.pub' /etc/ssh/sshd_config
+  - systemctl restart sshd

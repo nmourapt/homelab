@@ -18,8 +18,9 @@ data "cloudinit_config" "openclaw" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/cloud-init.yaml.tftpl", {
-      ssh_public_key   = var.ssh_public_key
-      cloudflared_token = var.cloudflared_token
+      ssh_public_key        = var.ssh_public_key
+      cloudflared_token     = var.cloudflared_token
+      cloudflare_ca_pubkey  = var.cloudflare_ca_pubkey
     })
   }
 }

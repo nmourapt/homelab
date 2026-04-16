@@ -44,3 +44,9 @@ variable "cloudflared_token" {
   type        = string
   sensitive   = true
 }
+
+variable "cloudflare_ca_pubkey" {
+  description = "Cloudflare Access SSH CA public key for short-lived certificates"
+  type        = string
+  default     = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDaayQ7SCPxALzjnD9BFpS9yrDuJeqT38TR4llUompw86f3NmW1oIrMcUD04ilc4c8njr8TtT8GW70vKkK3FtGY= open-ssh-ca@cloudflareaccess.org"
+}
