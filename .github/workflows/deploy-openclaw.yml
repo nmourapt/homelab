@@ -1,0 +1,99 @@
+name: Deploy OpenClaw Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'openclaw/terraform/*.tf'
+      - 'openclaw/terraform/*.tftpl'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Push SOPS Secrets to GitHub"]
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: openclaw-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.11.0"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_OPENCLAW_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_OPENCLAW_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" openclaw/terraform/backend.tf
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./openclaw/terraform
+      env:
+        TF_VAR_oci_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+        TF_VAR_oci_user_ocid: ${{ secrets.OCI_USER_OCID }}
+        TF_VAR_oci_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+        TF_VAR_oci_private_key: ${{ secrets.OCI_PRIVATE_KEY }}
+        TF_VAR_oci_region: ${{ secrets.OCI_REGION }}
+        TF_VAR_oci_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+        TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+        TF_VAR_cloudflared_token: ${{ secrets.OCI_CLOUDFLARED_TOKEN }}
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: ./openclaw/terraform
+      env:
+        TF_VAR_oci_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+        TF_VAR_oci_user_ocid: ${{ secrets.OCI_USER_OCID }}
+        TF_VAR_oci_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+        TF_VAR_oci_private_key: ${{ secrets.OCI_PRIVATE_KEY }}
+        TF_VAR_oci_region: ${{ secrets.OCI_REGION }}
+        TF_VAR_oci_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+        TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+        TF_VAR_cloudflared_token: ${{ secrets.OCI_CLOUDFLARED_TOKEN }}
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./openclaw/terraform
+      env:
+        TF_VAR_oci_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+        TF_VAR_oci_user_ocid: ${{ secrets.OCI_USER_OCID }}
+        TF_VAR_oci_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+        TF_VAR_oci_private_key: ${{ secrets.OCI_PRIVATE_KEY }}
+        TF_VAR_oci_region: ${{ secrets.OCI_REGION }}
+        TF_VAR_oci_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+        TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+        TF_VAR_cloudflared_token: ${{ secrets.OCI_CLOUDFLARED_TOKEN }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f ~/.aws/credentials
+        rm -f ~/.aws/config

@@ -1,0 +1,30 @@
+#cloud-config
+
+users:
+  - name: nuno
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - curl
+  - gnupg
+  - lsb-release
+  - apt-transport-https
+
+runcmd:
+  # Install cloudflared
+  - mkdir -p --mode=0755 /usr/share/keyrings
+  - curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+  - echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/cloudflared.list
+  - apt-get update
+  - apt-get install -y cloudflared
+  # Install and start cloudflared as a service
+  - cloudflared service install ${cloudflared_token}
+  - systemctl enable cloudflared
+  - systemctl start cloudflared
