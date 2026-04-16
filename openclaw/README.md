@@ -12,7 +12,7 @@ The instance sits in a private subnet with no inbound internet access. A NAT Gat
 |------|----------------|
 | `compute.tf` | A1.Flex instance, Ubuntu 24.04 aarch64 image lookup, cloud-init |
 | `network.tf` | VCN, private subnet, NAT gateway, internet gateway, route table, security list |
-| `cloud-init.yaml.tftpl` | User creation (`nuno`), cloudflared installation and service registration |
+| `cloud-init.yaml.tftpl` | User creation (`nuno`), cloudflared installation, Cloudflare Access SSH CA setup |
 | `provider.tf` | OCI provider with API key authentication |
 | `backend.tf` | R2 state backend (shared `tf-state` bucket) |
 | `vars.tf` | Input variables |
@@ -26,6 +26,8 @@ The tunnel (`TF-oci_claw`) and its ingress rules, DNS records, and Access applic
 |----------|---------|
 | `clawssh.<tld>` | SSH (Cloudflare Access SSH proxy) |
 | `clawgate.<tld>` | OpenClaw web UI (port 18789) |
+
+SSH access uses [Cloudflare Access short-lived certificates](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/non-http/short-lived-certificates-legacy/). The Cloudflare CA public key is written to `/etc/ssh/ca.pub` by cloud-init and sshd is configured with `TrustedUserCAKeys` — no private key management required for SSH sessions through the browser terminal.
 
 ## Secrets
 
