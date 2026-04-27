@@ -224,3 +224,20 @@ resource "cloudflare_zero_trust_access_policy" "service_token_openclaw_warp" {
   exclude = []
   require = []
 }
+
+resource "cloudflare_zero_trust_access_policy" "service_token_nasdoctor" {
+  name             = "TF - Nasdoctor Service Token"
+  account_id       = var.cloudflare_account_id
+  decision         = "non_identity"
+  session_duration = "24h"
+
+  include = [
+    {
+      service_token = {
+        token_id = cloudflare_zero_trust_access_service_token.nasdoctor_service_token.id
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}

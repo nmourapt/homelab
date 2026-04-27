@@ -1117,6 +1117,10 @@ resource "cloudflare_zero_trust_access_application" "nas_doctor" {
     { 
       id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
       precedence = 2
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.service_token_nasdoctor.id,
+      precedence = 3
     }
   ]
 

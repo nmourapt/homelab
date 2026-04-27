@@ -10,3 +10,9 @@ resource "cloudflare_zero_trust_access_service_token" "openclaw_service_token" {
   name       = "TF - Openclaw WARP"
   duration   = "forever"
 }
+
+resource "cloudflare_zero_trust_access_service_token" "nasdoctor_service_token" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - nasdoctor"
+  duration   = "forever"
+}
