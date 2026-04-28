@@ -2,15 +2,18 @@ services:
   nas_doctor:
     container_name: nas_doctor
     privileged: true
+    pid: host                           # required for Top Processes feature
     image: ghcr.io/mcdays94/nas-doctor:0.9.12
     environment:
       NAS_DOCTOR_INTERVAL: "8h"
     volumes:
       - /volume2/docker/nas_doctor/volumes/data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /boot:/host/boot:ro
       - /var/log:/host/log:ro
-      - /mnt:/host/mnt:ro
+      - /dev:/dev:ro                    # SMART device access (Synology DSM)
+      - /sys:/sys:ro                    # drive topology, hwmon sensors
+      - /volume1:/host/volume1:ro       # /volume1 storage (23 TB)
+      - /volume2:/host/volume2:ro       # /volume2 storage (1.8 TB)
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nasdoctor.rule=Host(`nasdoctor.${DOMAIN}`)"
