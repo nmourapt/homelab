@@ -3,7 +3,7 @@ services:
     container_name: nas_doctor
     privileged: true
     pid: host                           # required for Top Processes feature
-    image: ghcr.io/mcdays94/nas-doctor:0.9.14
+    image: ghcr.io/mcdays94/nas-doctor:0.9.15
     environment:
       NAS_DOCTOR_INTERVAL: "8h"
     volumes:
