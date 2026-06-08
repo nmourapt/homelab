@@ -20,10 +20,6 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lis_opencode_config"
         }
       },
       {
-        hostname = "opencodeoauth.${var.tld}"
-        service  = "http://host.docker.internal:19876"
-      },
-      {
         hostname = "opencodessh.${var.tld}"
         service  = "ssh://host.docker.internal:22"
       },
@@ -58,18 +54,6 @@ resource "cloudflare_dns_record" "opencodessh_record" {
   tags       = ["terraform", "lis_opencode", "cloudflared", "tunnel"]
 }
 
-resource "cloudflare_dns_record" "opencodeoauth_record" {
-  depends_on = [cloudflare_zero_trust_tunnel_cloudflared.lis_opencode]
-  zone_id    = var.cloudflare_tld_zone_id
-  type       = "CNAME"
-  name       = "opencodeoauth"
-  content    = "${cloudflare_zero_trust_tunnel_cloudflared.lis_opencode.id}.cfargotunnel.com"
-  ttl        = 1
-  comment    = "Managed by terraform - do not edit"
-  proxied    = true
-  tags       = ["terraform", "lis_opencode", "cloudflared", "tunnel"]
-}
-
 resource "cloudflare_dns_record" "opencode_rdp_record" {
   zone_id = var.cloudflare_tld_zone_id
   type    = "A"
@@ -80,7 +64,6 @@ resource "cloudflare_dns_record" "opencode_rdp_record" {
   proxied = true
   tags    = ["terraform", "lis_opencode", "rdp"]
 }
-
 
 resource "cloudflare_zero_trust_tunnel_cloudflared_route" "lis_opencode_rdp_route" {
   account_id = var.cloudflare_account_id
