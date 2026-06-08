@@ -1247,7 +1247,7 @@ resource "cloudflare_zero_trust_access_application" "ha_oidc" {
       "https://ha.${var.tld}/auth/oidc/callback"
     ]
     grant_types = [
-      "authorization_code",
+      "authorization_code_with_pkce"
     ]
     scopes = [
       "openid",
