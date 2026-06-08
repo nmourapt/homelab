@@ -83,7 +83,7 @@ spec:
             claimName: pvc-paperless-media
         - name: consume
           persistentVolumeClaim:
-            claimName: pvc-paperless-consume
+            claimName: paperless-consume
         - name: export
           persistentVolumeClaim:
-            claimName: pvc-paperless-export
+            claimName: paperless-export

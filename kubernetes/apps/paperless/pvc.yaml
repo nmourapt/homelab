@@ -23,3 +23,29 @@ spec:
   resources:
     requests:
       storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-consume
+  namespace: paperless
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-single
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-export
+  namespace: paperless
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-single
+  resources:
+    requests:
+      storage: 5Gi
