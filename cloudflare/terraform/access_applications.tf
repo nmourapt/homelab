@@ -1218,6 +1218,45 @@ resource "cloudflare_zero_trust_access_application" "portainer_oidc" {
   }
 }
 
+resource "cloudflare_zero_trust_access_application" "ha_oidc" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Home Assistant"
+  type                 = "saas"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid_reauth.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/home-assistant.png"
+
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://ha.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://ha.${var.tld}/"
+    ]
+    grant_types = [
+      "authorization_code",
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile"
+    ]
+  }
+}
+
 resource "cloudflare_zero_trust_access_application" "cf_usage" {
   account_id           = var.cloudflare_account_id
   name                 = "TF - Cloudflare Usage"
