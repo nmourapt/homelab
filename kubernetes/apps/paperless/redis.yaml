@@ -17,6 +17,8 @@ spec:
       labels:
         app: paperless-redis
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
         - name: redis
           image: redis:8
