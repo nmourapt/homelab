@@ -33,6 +33,8 @@ spec:
               value: "Europe/Lisbon"
             - name: PAPERLESS_OCR_LANGUAGE
               value: "eng+por"
+            - name: PAPERLESS_OCR_LANGUAGES
+              value: "por"
             - name: PAPERLESS_URL
               value: "https://paperless.<path:cert-manager:domain-config#domain>"
             - name: PAPERLESS_REDIS
