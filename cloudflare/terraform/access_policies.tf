@@ -166,6 +166,22 @@ resource "cloudflare_zero_trust_access_policy" "bypass_egress_ips" {
   require = []
 }
 
+resource "cloudflare_zero_trust_access_policy" "bypass_home_ip" {
+  name             = "TF - Home IP"
+  account_id       = var.cloudflare_account_id
+  decision         = "bypass"
+  session_duration = "24h"
+
+  include = [
+    {
+      ip_list = {
+        id = cloudflare_zero_trust_list.home_ip.id
+      }
+    }
+  ]
+  exclude = []
+  require = []
+}
 
 resource "cloudflare_zero_trust_access_policy" "personal_email_list" {
   name             = "TF - Personal Emails"
