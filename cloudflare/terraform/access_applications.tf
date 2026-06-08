@@ -1244,7 +1244,7 @@ resource "cloudflare_zero_trust_access_application" "ha_oidc" {
     app_launcher_url = "https://ha.${var.tld}"
     access_token_lifetime = "24h"
     redirect_uris = [
-      "https://ha.${var.tld}/"
+      "https://ha.${var.tld}/auth/oidc/callback"
     ]
     grant_types = [
       "authorization_code",
