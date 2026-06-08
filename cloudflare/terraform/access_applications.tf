@@ -1254,16 +1254,6 @@ resource "cloudflare_zero_trust_access_application" "ha_oidc" {
       "email",
       "profile"
     ]
-    custom_claims = [
-      {
-        name  = "preferred_username"
-        scope = "profile"
-        source = {
-          name = "preferred_username"
-        }
-        required = true
-      }
-    ]
   }
 }
 
