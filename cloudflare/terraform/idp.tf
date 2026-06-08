@@ -11,7 +11,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "pocketid" {
     certs_url = "https://oidc.${var.tld}/.well-known/jwks.json"
     pkce_enabled = true
     email_claim_name = "email"
-    claims = ["groups"]
+    claims = ["groups", "preferred_username"]
     scopes = ["openid", "email", "profile", "groups"]
   }
   scim_config = {
