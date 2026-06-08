@@ -569,12 +569,16 @@ resource "cloudflare_zero_trust_access_application" "sonarr" {
 
   policies = [
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      id = cloudflare_zero_trust_access_policy.bypass_home_ip.id,
       precedence = 1
     },
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
       precedence = 2
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 3
     }
   ]
 
@@ -602,12 +606,16 @@ resource "cloudflare_zero_trust_access_application" "radarr" {
 
   policies = [
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      id = cloudflare_zero_trust_access_policy.bypass_home_ip.id,
       precedence = 1
     },
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
       precedence = 2
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 3
     }
   ]
 
@@ -946,12 +954,16 @@ resource "cloudflare_zero_trust_access_application" "lidarr" {
 
   policies = [
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      id = cloudflare_zero_trust_access_policy.bypass_home_ip.id,
       precedence = 1
     },
     { 
-      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      id = cloudflare_zero_trust_access_policy.pocketid_admins.id,
       precedence = 2
+    },
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
+      precedence = 3
     }
   ]
 
