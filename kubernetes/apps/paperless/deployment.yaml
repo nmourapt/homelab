@@ -56,6 +56,10 @@ spec:
               value: "allauth.socialaccount.providers.openid_connect"
             - name: PAPERLESS_SOCIAL_AUTO_SIGNUP
               value: "true"
+            - name: PAPERLESS_DISABLE_REGULAR_LOGIN
+              value: "true"
+            - name: PAPERLESS_REDIRECT_LOGIN_TO_SSO
+              value: "true"
             - name: PAPERLESS_ACCOUNT_ALLOW_SIGNUPS
               value: "false"
           envFrom:
