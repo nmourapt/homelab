@@ -65,6 +65,7 @@ Apps in this cluster follow two main patterns:
 | **immich-ml** | Immich machine learning backend with OpenVINO on Intel iGPU, exposed via externalIP to NAS-hosted Immich server |
 | **thelounge** | Self-hosted IRC client |
 | **apprise** | Internal notification gateway — for apps with no native Telegram integration |
+| **forgejo** | Self-hosted Git forge — PostgreSQL on NAS, repositories on NFS, OIDC SSO via Cloudflare Access |
 
 ## Storage Architecture
 

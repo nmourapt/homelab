@@ -1406,3 +1406,42 @@ resource "cloudflare_zero_trust_access_application" "opencode_ssh" {
     }
   ]
 }
+
+resource "cloudflare_zero_trust_access_application" "forgejo" {
+  account_id           = var.cloudflare_account_id
+  name                 = "TF - Forgejo"
+  type                 = "saas"
+  session_duration     = "24h"
+
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.pocketid.id
+  ]
+  auto_redirect_to_identity = true
+
+  policies = [
+    { 
+      id = cloudflare_zero_trust_access_policy.pocketid_everyone.id,
+      precedence = 1
+    }
+  ]
+
+  app_launcher_visible = true
+  logo_url = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/forgejo.png"
+
+  saas_app = {
+    auth_type = "oidc"
+    app_launcher_url = "https://git.${var.tld}"
+    access_token_lifetime = "24h"
+    redirect_uris = [
+      "https://git.${var.tld}/user/oauth2/cloudflare/callback"
+    ]
+    grant_types = [
+      "authorization_code",
+    ]
+    scopes = [
+      "openid",
+      "email",
+      "profile"
+    ]
+  }
+}

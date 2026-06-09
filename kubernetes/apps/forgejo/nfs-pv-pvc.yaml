@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-forgejo-repositories
+spec:
+  capacity:
+    storage: 1Ki
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "192.168.202.1"
+    path: "/volume1/data/forgejo/repositories"
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: forgejo
+    name: pvc-forgejo-repositories
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-forgejo-repositories
+  namespace: forgejo
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ki
+  volumeName: pv-forgejo-repositories
+  storageClassName: ""
