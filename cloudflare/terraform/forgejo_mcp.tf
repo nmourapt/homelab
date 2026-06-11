@@ -33,10 +33,11 @@ resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
 }
 
 resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
+  provider   = cloudflare.global_key
   account_id = var.cloudflare_account_id
   id         = "forgejo-mcp"
   name       = "Forgejo MCP"
-  hostname   = "forgejo-mcp.${var.tld}"
+  hostname   = "https://forgejo-mcp.${var.tld}/mcp"
   auth_type  = "oauth"
 
   depends_on = [cloudflare_zero_trust_access_application.forgejo_mcp]
