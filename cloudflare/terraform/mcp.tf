@@ -95,14 +95,15 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
   updated_prompts = []
   updated_tools   = []
 
-  # auth_credentials is write-only (never returned by the API), so it shows a
-  # perpetual diff. Re-PUTting it triggers a re-sync that momentarily flips
-  # status ready -> waiting, which the provider reports as an "inconsistent
-  # result after apply" error. Ignore it after initial create to keep applies
-  # idempotent; rotate the service token by tainting this resource.
-  lifecycle {
-    ignore_changes = [auth_credentials]
-  }
+  # Do NOT add `lifecycle { ignore_changes = [auth_credentials] }`: the API does a
+  # full-object replace on update, so any update that omits auth_credentials (which
+  # is what ignore_changes causes) wipes the stored headers -> upstream sync fails
+  # with "Bearer credentials missing headers". Keeping auth_credentials in config
+  # means every update re-sends the headers. Steady state is a no-op (the provider
+  # does not null the write-only field on read), so this only matters when the
+  # service token rotates, in which case the update flips status ready -> waiting
+  # and may surface a one-off "inconsistent result after apply" provider error;
+  # the credentials are still applied correctly and the server re-syncs to ready.
 
   depends_on = [
     cloudflare_zero_trust_access_application.forgejo_mcp,
