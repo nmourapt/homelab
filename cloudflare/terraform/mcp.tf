@@ -40,5 +40,8 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
   hostname   = "https://forgejo-mcp.${var.tld}/mcp"
   auth_type  = "oauth"
 
+  updated_prompts = []
+  updated_tools   = []
+
   depends_on = [cloudflare_zero_trust_access_application.forgejo_mcp]
 }
