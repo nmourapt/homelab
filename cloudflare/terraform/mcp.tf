@@ -16,6 +16,22 @@ resource "cloudflare_zero_trust_access_policy" "forgejo_mcp_admins" {
   exclude = []
 }
 
+resource "cloudflare_zero_trust_access_policy" "forgejo_mcp_service_token" {
+  name             = "TF - Forgejo MCP Service Token"
+  account_id       = var.cloudflare_account_id
+  decision         = "non_identity"
+  session_duration = "24h"
+
+  include = [
+    {
+      service_token = {
+        token_id = cloudflare_zero_trust_access_service_token.forgejo_mcp.id
+      }
+    }
+  ]
+  require = []
+}
+
 resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
   account_id       = var.cloudflare_account_id
   name             = "TF - Forgejo MCP"
@@ -29,8 +45,12 @@ resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
 
   policies = [
     {
-      id         = cloudflare_zero_trust_access_policy.forgejo_mcp_admins.id,
+      id         = cloudflare_zero_trust_access_policy.forgejo_mcp_service_token.id,
       precedence = 1
+    },
+    {
+      id         = cloudflare_zero_trust_access_policy.forgejo_mcp_admins.id,
+      precedence = 2
     }
   ]
 

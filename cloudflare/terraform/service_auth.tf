@@ -16,3 +16,9 @@ resource "cloudflare_zero_trust_access_service_token" "nasdoctor_service_token" 
   name       = "TF - nasdoctor"
   duration   = "forever"
 }
+
+resource "cloudflare_zero_trust_access_service_token" "forgejo_mcp" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Forgejo MCP"
+  duration   = "forever"
+}
