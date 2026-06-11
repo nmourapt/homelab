@@ -20,6 +20,21 @@ resource "cloudflare_ruleset" "redirect_rules" {
           preserve_query_string = false
         }
       }
+    },
+    {
+      ref         = "forgejo_sso_redirect"
+      description = "TF - Auto-redirect Forgejo login to Cloudflare SSO"
+      expression  = "(http.host eq \"git.${var.tld}\" and http.request.uri.path eq \"/user/login\")"
+      action      = "redirect"
+      action_parameters = {
+        from_value = {
+          status_code = 302
+          target_url = {
+            value = "https://git.${var.tld}/user/oauth2/cloudflare"
+          }
+          preserve_query_string = false
+        }
+      }
     }
   ]
 }

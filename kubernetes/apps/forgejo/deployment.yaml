@@ -59,6 +59,10 @@ spec:
               value: "true"
             - name: GITEA__service__SHOW_REGISTRATION_BUTTON
               value: "false"
+            - name: GITEA__service__ENABLE_INTERNAL_SIGNIN
+              value: "false"
+            - name: GITEA__service__ENABLE_BASIC_AUTHENTICATION
+              value: "false"
             - name: GITEA__openid__ENABLE_OPENID_SIGNIN
               value: "false"
             - name: GITEA__openid__ENABLE_OPENID_SIGNUP
