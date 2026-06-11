@@ -32,7 +32,8 @@ resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
     dynamic_client_registration = {
       enabled = true
       allowed_uris = [
-        "https://oauth-callbacks.cloudflareaccess.com/cdn-cgi/access/outbound-oauth-callback"
+        "https://oauth-callbacks.cloudflareaccess.com/cdn-cgi/access/outbound-oauth-callback",
+        "https://dash.cloudflare.com/${var.cloudflare_account_id}/one/access-controls/ai-controls/mcp-server/oauth-callback/*"
       ]
     }
   }
