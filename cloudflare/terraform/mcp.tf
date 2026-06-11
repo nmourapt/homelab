@@ -1,21 +1,3 @@
-resource "cloudflare_zero_trust_access_policy" "forgejo_mcp_admins" {
-  name       = "TF - Forgejo MCP Admins"
-  account_id = var.cloudflare_account_id
-  decision   = "allow"
-
-  include = [
-    {
-      oidc = {
-        claim_name           = "groups"
-        claim_value          = "administrators"
-        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid.id
-      }
-    }
-  ]
-  require = []
-  exclude = []
-}
-
 resource "cloudflare_zero_trust_access_policy" "forgejo_mcp_service_token" {
   name             = "TF - Forgejo MCP Service Token"
   account_id       = var.cloudflare_account_id
@@ -47,10 +29,6 @@ resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
     {
       id         = cloudflare_zero_trust_access_policy.forgejo_mcp_service_token.id,
       precedence = 1
-    },
-    {
-      id         = cloudflare_zero_trust_access_policy.forgejo_mcp_admins.id,
-      precedence = 2
     }
   ]
 
@@ -77,7 +55,7 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
   provider   = cloudflare.global_key
   account_id = var.cloudflare_account_id
   id         = "forgejo-mcp"
-  name       = "Forgejo MCP"
+  name       = "TF - Forgejo MCP"
   hostname   = "https://forgejo-mcp.${var.tld}/mcp"
   auth_type  = "bearer"
 
