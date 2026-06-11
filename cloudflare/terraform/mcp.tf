@@ -1,3 +1,21 @@
+resource "cloudflare_zero_trust_access_policy" "forgejo_mcp_admins" {
+  name       = "TF - Forgejo MCP Admins"
+  account_id = var.cloudflare_account_id
+  decision   = "allow"
+
+  include = [
+    {
+      oidc = {
+        claim_name           = "groups"
+        claim_value          = "administrators"
+        identity_provider_id = cloudflare_zero_trust_access_identity_provider.pocketid.id
+      }
+    }
+  ]
+  require = []
+  exclude = []
+}
+
 resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
   account_id       = var.cloudflare_account_id
   name             = "TF - Forgejo MCP"
@@ -11,12 +29,8 @@ resource "cloudflare_zero_trust_access_application" "forgejo_mcp" {
 
   policies = [
     {
-      id         = cloudflare_zero_trust_access_policy.pocketid_admins.id,
+      id         = cloudflare_zero_trust_access_policy.forgejo_mcp_admins.id,
       precedence = 1
-    },
-    {
-      id         = cloudflare_zero_trust_access_policy.pocketid_admins_row.id,
-      precedence = 2
     }
   ]
 
