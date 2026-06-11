@@ -18,6 +18,8 @@ spec:
       containers:
         - name: forgejo-mcp
           image: docker.gitea.com/gitea-mcp-server:1.3.0
+          command:
+            - gitea-mcp
           args:
             - "-t"
             - "http"
