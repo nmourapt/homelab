@@ -79,10 +79,24 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
   id         = "forgejo-mcp"
   name       = "Forgejo MCP"
   hostname   = "https://forgejo-mcp.${var.tld}/mcp"
-  auth_type  = "oauth"
+  auth_type  = "bearer"
+
+  # Cloudflare AI Controls sync is a machine identity, so it authenticates to the
+  # Access-protected upstream using a service token sent as static headers. The
+  # interactive "oauth" auth_type cannot be used here: Access rejects the replayed
+  # admin OAuth token with 401 invalid_token during background sync.
+  auth_credentials = jsonencode({
+    headers = {
+      "CF-Access-Client-Id"     = cloudflare_zero_trust_access_service_token.forgejo_mcp.client_id
+      "CF-Access-Client-Secret" = cloudflare_zero_trust_access_service_token.forgejo_mcp.client_secret
+    }
+  })
 
   updated_prompts = []
   updated_tools   = []
 
-  depends_on = [cloudflare_zero_trust_access_application.forgejo_mcp]
+  depends_on = [
+    cloudflare_zero_trust_access_application.forgejo_mcp,
+    cloudflare_zero_trust_access_policy.forgejo_mcp_service_token,
+  ]
 }
