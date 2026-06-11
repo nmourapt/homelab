@@ -95,6 +95,15 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "forgejo_mcp" {
   updated_prompts = []
   updated_tools   = []
 
+  # auth_credentials is write-only (never returned by the API), so it shows a
+  # perpetual diff. Re-PUTting it triggers a re-sync that momentarily flips
+  # status ready -> waiting, which the provider reports as an "inconsistent
+  # result after apply" error. Ignore it after initial create to keep applies
+  # idempotent; rotate the service token by tainting this resource.
+  lifecycle {
+    ignore_changes = [auth_credentials]
+  }
+
   depends_on = [
     cloudflare_zero_trust_access_application.forgejo_mcp,
     cloudflare_zero_trust_access_policy.forgejo_mcp_service_token,
