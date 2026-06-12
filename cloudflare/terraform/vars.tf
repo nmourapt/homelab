@@ -95,3 +95,9 @@ variable "personal_emails_json" {
   type        = string
   sensitive   = true
 }
+
+variable "homeassistant_mcp_token" {
+  description = "Home Assistant long-lived access token for the MCP server bearer auth"
+  type        = string
+  sensitive   = true
+}

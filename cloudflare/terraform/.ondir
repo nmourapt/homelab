@@ -20,6 +20,7 @@ enter:
   - export TF_VAR_google_workspace_client_secret=$(sops -d --extract '["GOOGLE_WORKSPACE_CLIENT_SECRET"]' ../../secrets/reposecrets.sops.yml)
   - export TF_VAR_egress_ips_json=$(sops -d --extract '["EGRESS_IPS_JSON"]' ../../secrets/reposecrets.sops.yml)
   - export TF_VAR_personal_emails_json=$(sops -d --extract '["PERSONAL_EMAILS_JSON"]' ../../secrets/reposecrets.sops.yml)
+  - export TF_VAR_homeassistant_mcp_token=$(sops -d --extract '["HOMEASSISTANT_MCP_TOKEN"]' ../../secrets/reposecrets.sops.yml)
   - export CF_ACCOUNT_ID=$(sops -d --extract '["CF_ACCOUNT_ID"]' ../../secrets/reposecrets.sops.yml)
   - echo "Done."
 leave:
@@ -29,4 +30,4 @@ leave:
   - unset TF_VAR_tld TF_VAR_tld_alt
   - unset TF_VAR_pocketid_client_id TF_VAR_pocketid_client_secret TF_VAR_pocketid_reauth_client_id TF_VAR_pocketid_reauth_client_secret
   - unset TF_VAR_google_client_id TF_VAR_google_client_secret TF_VAR_google_workspace_client_id TF_VAR_google_workspace_client_secret
-  - unset TF_VAR_egress_ips_json TF_VAR_personal_emails_json
+  - unset TF_VAR_egress_ips_json TF_VAR_personal_emails_json TF_VAR_homeassistant_mcp_token
