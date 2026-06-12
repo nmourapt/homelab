@@ -17,6 +17,8 @@ spec:
       labels:
         app: forgejo-runner
     spec:
+      securityContext:
+        fsGroup: 1000
       containers:
         - name: dind
           image: docker:28-dind
