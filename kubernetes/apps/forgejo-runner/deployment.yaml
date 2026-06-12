@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo-runner
+  namespace: forgejo-runner
+  labels:
+    app: forgejo-runner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: forgejo-runner
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner
+    spec:
+      initContainers:
+        - name: register
+          image: code.forgejo.org/forgejo/runner:12.11.1
+          workingDir: /data
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              if [ -f /data/.runner ]; then
+                echo "Runner already registered, skipping."
+                exit 0
+              fi
+              echo "Registering runner with $FORGEJO_INSTANCE_URL ..."
+              forgejo-runner register --no-interactive \
+                --instance "$FORGEJO_INSTANCE_URL" \
+                --token "$FORGEJO_RUNNER_REGISTRATION_TOKEN" \
+                --name "$RUNNER_NAME" \
+                --labels "$RUNNER_LABELS" \
+                --config /config.yaml
+          env:
+            - name: FORGEJO_INSTANCE_URL
+              value: "http://forgejo.forgejo.svc.cluster.local:3000"
+            - name: RUNNER_NAME
+              value: "k8s-dind-runner"
+            - name: RUNNER_LABELS
+              value: "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:runner-latest,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:runner-22.04,ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:runner-20.04"
+            - name: FORGEJO_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-runner-secrets
+                  key: FORGEJO_RUNNER_REGISTRATION_TOKEN
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config.yaml
+              subPath: config.yaml
+      containers:
+        - name: dind
+          image: docker:28-dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          command:
+            - dockerd
+            - --host=tcp://0.0.0.0:2375
+            - --tls=false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: dind-storage
+              mountPath: /var/lib/docker
+        - name: runner
+          image: code.forgejo.org/forgejo/runner:12.11.1
+          workingDir: /data
+          command:
+            - forgejo-runner
+            - daemon
+            - --config
+            - /config.yaml
+          env:
+            - name: DOCKER_HOST
+              value: "tcp://localhost:2375"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: forgejo-runner-data
+        - name: dind-storage
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: forgejo-runner-config

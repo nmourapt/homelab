@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-runner-config
+  namespace: forgejo-runner
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 2
+      timeout: 3h
+      shutdown_timeout: 3h
+      insecure: false
+      fetch_timeout: 5s
+      fetch_interval: 2s
+      # Labels are set at registration time via RUNNER_LABELS; leave empty here.
+      labels: []
+    cache:
+      enabled: true
+      dir: /data/cache
+    container:
+      network: ""
+      privileged: false
+      options: ""
+      workdir_parent: ""
+      valid_volumes: []
+      docker_host: "tcp://localhost:2375"
+      force_pull: true
+    host:
+      workdir_parent: ""

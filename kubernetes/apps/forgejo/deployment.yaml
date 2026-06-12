@@ -73,6 +73,18 @@ spec:
               value: "email"
             - name: GITEA__oauth2_client__ACCOUNT_LINKING
               value: "auto"
+            - name: GITEA__mailer__ENABLED
+              value: "true"
+            - name: GITEA__mailer__PROTOCOL
+              value: "smtp+starttls"
+            - name: GITEA__mailer__SMTP_ADDR
+              value: "emailrelay.spectrum.<path:cert-manager:domain-config#domain>"
+            - name: GITEA__mailer__SMTP_PORT
+              value: "1588"
+            - name: GITEA__mailer__FORCE_TRUST_SERVER_CERT
+              value: "true"
+            - name: GITEA__actions__ENABLED
+              value: "true"
           envFrom:
             - secretRef:
                 name: forgejo-secrets
