@@ -210,3 +210,128 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_portal" "mcp_portal" {
     cloudflare_zero_trust_access_ai_controls_mcp_server.cloudflare_api,
   ]
 }
+
+# Per-server "mcp" Access applications. Each MCP server exposed through the
+# portal needs a type="mcp" Access app whose destination binds to the server via
+# mcp_server_id. These hold the Allow policies that control whether the server is
+# visible to a user in the portal. Without this app the server is in a broken
+# state ("Access application for this MCP Portal not found").
+resource "cloudflare_zero_trust_access_application" "forgejo_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Forgejo"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.forgejo_mcp.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "home_assistant_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Home Assistant"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.home_assistant.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "cloudflare_docs_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Cloudflare Docs"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.cloudflare_docs.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "cloudflare_radar_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Cloudflare Radar"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.cloudflare_radar.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "cloudflare_graphql_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Cloudflare GraphQL"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.cloudflare_graphql.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
+
+resource "cloudflare_zero_trust_access_application" "cloudflare_api_mcp_app" {
+  account_id = var.cloudflare_account_id
+  name       = "TF - Cloudflare API"
+  type       = "mcp"
+
+  destinations = [
+    {
+      type          = "via_mcp_server_portal"
+      mcp_server_id = cloudflare_zero_trust_access_ai_controls_mcp_server.cloudflare_api.id
+    }
+  ]
+
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.pocketid_everyone.id
+      precedence = 1
+    }
+  ]
+}
