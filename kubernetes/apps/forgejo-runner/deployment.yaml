@@ -17,44 +17,6 @@ spec:
       labels:
         app: forgejo-runner
     spec:
-      initContainers:
-        - name: register
-          image: code.forgejo.org/forgejo/runner:12.11.1
-          workingDir: /data
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-              if [ -f /data/.runner ]; then
-                echo "Runner already registered, skipping."
-                exit 0
-              fi
-              echo "Registering runner with $FORGEJO_INSTANCE_URL ..."
-              forgejo-runner register --no-interactive \
-                --instance "$FORGEJO_INSTANCE_URL" \
-                --token "$FORGEJO_RUNNER_REGISTRATION_TOKEN" \
-                --name "$RUNNER_NAME" \
-                --labels "$RUNNER_LABELS" \
-                --config /config.yaml
-          env:
-            - name: FORGEJO_INSTANCE_URL
-              value: "http://forgejo.forgejo.svc.cluster.local:3000"
-            - name: RUNNER_NAME
-              value: "k8s-dind-runner"
-            - name: RUNNER_LABELS
-              value: "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:runner-latest,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:runner-22.04,ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:runner-20.04"
-            - name: FORGEJO_RUNNER_REGISTRATION_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: forgejo-runner-secrets
-                  key: FORGEJO_RUNNER_REGISTRATION_TOKEN
-          volumeMounts:
-            - name: data
-              mountPath: /data
-            - name: config
-              mountPath: /config.yaml
-              subPath: config.yaml
       containers:
         - name: dind
           image: docker:28-dind
@@ -85,6 +47,12 @@ spec:
             - daemon
             - --config
             - /config.yaml
+            - --url
+            - http://forgejo.forgejo.svc.cluster.local:3000
+            - --uuid
+            - 13b436f5-4f38-4bbf-a3bd-2508bd444092
+            - --token-url
+            - file:///secrets/token
           env:
             - name: DOCKER_HOST
               value: "tcp://localhost:2375"
@@ -101,6 +69,9 @@ spec:
             - name: config
               mountPath: /config.yaml
               subPath: config.yaml
+            - name: token
+              mountPath: /secrets
+              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -110,3 +81,9 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
+        - name: token
+          secret:
+            secretName: forgejo-runner-secrets
+            items:
+              - key: token
+                path: token

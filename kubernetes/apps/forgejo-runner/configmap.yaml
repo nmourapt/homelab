@@ -15,8 +15,10 @@ data:
       insecure: false
       fetch_timeout: 5s
       fetch_interval: 2s
-      # Labels are set at registration time via RUNNER_LABELS; leave empty here.
-      labels: []
+      labels:
+        - "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:runner-latest"
+        - "ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:runner-22.04"
+        - "ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:runner-20.04"
     cache:
       enabled: true
       dir: /data/cache
