@@ -57,8 +57,8 @@ resource "cloudflare_dns_record" "opencodessh_record" {
 resource "cloudflare_dns_record" "opencode_rdp_record" {
   zone_id = var.cloudflare_tld_zone_id
   type    = "A"
-  name    = "opencoderdp"
-  content = "240.0.0.0"
+  name    = "opencode-rdp"
+  content = "192.0.2.0"
   ttl     = 1
   comment = "Managed by terraform - do not edit"
   proxied = true
