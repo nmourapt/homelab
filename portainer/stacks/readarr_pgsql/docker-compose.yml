@@ -1,7 +1,7 @@
 services:
   readarr_pgsql:
     container_name: readarr_pgsql
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
