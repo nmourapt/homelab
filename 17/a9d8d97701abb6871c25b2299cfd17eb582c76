@@ -1,0 +1,21 @@
+kubernetes/apps/prometheus-operator-crds/kustomization.yaml
+  s_495d256ab59192::t_674ebc58aee1d1 1-19
+kubernetes/omni/templates/manifests/argo_manifests.yaml
+  s_495d256ab59192::t_05dd9eb6a94a1b 30068-30071,31257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "17a9d8d97701abb6871c25b2299cfd17eb582c76",
+  "prompts": {},
+  "sessions": {
+    "s_495d256ab59192": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5fdb7adcffehCEk7w1JtQTYtX",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "nmourapt <moura.abt@gmail.com>"
+    }
+  }
+}
