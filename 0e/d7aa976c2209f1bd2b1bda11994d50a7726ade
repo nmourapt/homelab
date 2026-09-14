@@ -1,0 +1,65 @@
+kubernetes/apps/aurral/ingressroute.yaml
+  s_495d256ab59192::t_76cbdf867ba01f 7-8
+kubernetes/apps/autobrr/ingressroute.yaml
+  s_495d256ab59192::t_38d04c4a0cdd8c 7-8
+kubernetes/apps/bazarr/ingressroute.yaml
+  s_495d256ab59192::t_5ece77623bf0ee 7-8
+kubernetes/apps/booklore/ingressroute.yaml
+  s_495d256ab59192::t_f93e6f3eff43ca 7-8
+kubernetes/apps/bookshelf/ingressroute.yaml
+  s_495d256ab59192::t_7afab3c586d652 7-8
+kubernetes/apps/dispatcharr/ingressroute.yaml
+  s_495d256ab59192::t_33a9da80df9c0a 7-8
+kubernetes/apps/elastic-system/ingressroute.yaml
+  s_495d256ab59192::t_61c98cffd49215 15-16
+kubernetes/apps/external-dns/kustomization.yaml
+  s_495d256ab59192::t_1bd21d41adbf22 41
+kubernetes/apps/forgejo-mcp/ingressroute.yaml
+  s_495d256ab59192::t_ebdcd74255bcb8 7-8
+kubernetes/apps/forgejo/ingressroute.yaml
+  s_495d256ab59192::t_2bb88bb78b77ff 7-8
+kubernetes/apps/hubble/ingressroute.yaml
+  s_495d256ab59192::t_5ea20826da286a 7-8
+kubernetes/apps/lidarr/ingressroute.yaml
+  s_495d256ab59192::t_2fc84542ac28e6 7-8
+kubernetes/apps/longhorn-system/ingressroute.yaml
+  s_495d256ab59192::t_b696943f243195 7-8
+kubernetes/apps/monitoring/ingressroute-alertmanager.yaml
+  s_495d256ab59192::t_6abc8755f1182e 7-8
+kubernetes/apps/monitoring/ingressroute-grafana.yaml
+  s_495d256ab59192::t_6cd324e0960a74 7-8
+kubernetes/apps/monitoring/ingressroute-prometheus.yaml
+  s_495d256ab59192::t_d04871fd4aaac9 7-8
+kubernetes/apps/paperless/ingressroute.yaml
+  s_495d256ab59192::t_cd2cde9b4a3a6a 7-8
+kubernetes/apps/profilarr/ingressroute.yaml
+  s_495d256ab59192::t_844ee7806fa834 7-8
+kubernetes/apps/prowlarr/ingressroute.yaml
+  s_495d256ab59192::t_493d624adf0818 7-8
+kubernetes/apps/radarr/ingressroute.yaml
+  s_495d256ab59192::t_a7e6a39f6e4697 7-8
+kubernetes/apps/seerr/ingressroute.yaml
+  s_495d256ab59192::t_7c668a3289a0e9 7-8
+kubernetes/apps/slskd/ingressroute.yaml
+  s_495d256ab59192::t_3d5b933cb32f29 7-8
+kubernetes/apps/sonarr/ingressroute.yaml
+  s_495d256ab59192::t_e0df9d577e3037 7-8
+kubernetes/apps/thelounge/ingressroute.yaml
+  s_495d256ab59192::t_eb87e276e80a9f 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0ed7aa976c2209f1bd2b1bda11994d50a7726ade",
+  "prompts": {},
+  "sessions": {
+    "s_495d256ab59192": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5fdb7adcffehCEk7w1JtQTYtX",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "nmourapt <moura.abt@gmail.com>"
+    }
+  }
+}
