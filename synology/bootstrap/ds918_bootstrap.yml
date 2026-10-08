@@ -1,0 +1,6 @@
+- name: Bootstrap DS918+
+  hosts: synology_nas
+  gather_facts: false
+  roles:
+    - ansible-synology-dsm
+

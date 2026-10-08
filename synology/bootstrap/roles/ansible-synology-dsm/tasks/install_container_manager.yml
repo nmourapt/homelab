@@ -1,0 +1,188 @@
+---
+- name: Check if ContainerManager is already installed
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Package
+    api_method: list
+    api_version: 2
+    request_method: POST
+    api_params:
+      additional: >-
+        ["description","description_enu","dependent_packages","beta","distributor","distributor_url","maintainer",
+        "maintainer_url","dsm_apps","dsm_app_page","dsm_app_launch_name","report_beta_url","support_center",
+        "startable","installed_info","support_url","is_uninstall_pages","install_type","autoupdate",
+        "silent_upgrade","installing_progress","ctl_uninstall","updated_at"]
+  register: existing_packages
+
+- name: Check if ContainerManager exists in installed packages
+  set_fact:
+    container_manager_installed: "{{ 'ContainerManager' in (existing_packages.json.data.packages | map(attribute='id') | list) }}"
+
+- name: Debug installation status
+  debug:
+    msg: "ContainerManager is {{ 'already installed' if container_manager_installed else 'not installed' }}"
+    verbosity: 0
+
+- name: Get list of available packages (only if ContainerManager is not already installed)
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Package.Server
+    api_method: list
+    api_version: 2
+    request_method: POST
+    api_params:
+      blforcereload: "false"
+      blloadothers: "false"
+  register: package_list_response
+  when: not container_manager_installed | bool
+
+- name: Debug package list response
+  debug:
+    var: package_list_response
+    verbosity: 1
+  when: not container_manager_installed | bool
+
+- name: Extract ContainerManager package details
+  set_fact:
+    container_manager: "{{ package_list_response.json.data.packages | selectattr('id', 'equalto', 'ContainerManager') | first }}"
+  when: not container_manager_installed | bool and package_list_response.json is defined and package_list_response.json.data is defined and package_list_response.json.data.packages is defined
+
+- name: Debug ContainerManager details
+  debug:
+    var: container_manager
+    verbosity: 0
+  when: not container_manager_installed | bool and container_manager is defined
+
+- name: Start ContainerManager installation
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Package.Installation
+    api_method: install
+    api_version: 1
+    request_method: POST
+    api_params:
+      name: "\"ContainerManager\""
+      url: "\"{{ container_manager.link }}\""
+      checksum: "\"{{ container_manager.md5 }}\""
+      filesize: "{{ container_manager.size }}"
+      type: "0"
+      blqinst: "false"
+      operation: "\"install\""
+  register: install_start_response
+  when: not container_manager_installed | bool and container_manager is defined and container_manager.link is defined
+
+- name: Debug installation start response
+  debug:
+    var: install_start_response
+    verbosity: 0
+  when: not container_manager_installed | bool and install_start_response is defined
+
+- name: Wait for download to start
+  pause:
+    seconds: 5
+  delegate_to: localhost
+  when: not container_manager_installed | bool and install_start_response is defined and install_start_response.json is defined and install_start_response.json.success
+
+- name: Get installation status and tmp_folder path
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Package.Installation
+    api_method: status
+    api_version: 1
+    request_method: POST
+    api_params:
+      task_id: "\"@SYNOPKG_DOWNLOAD_ContainerManager\""
+  register: installation_status
+  when: not container_manager_installed | bool and install_start_response is defined and install_start_response.json is defined and install_start_response.json.success
+
+- name: Debug installation status
+  debug:
+    var: installation_status
+    verbosity: 0
+  when: not container_manager_installed | bool and installation_status is defined
+
+- name: Extract tmp_folder path
+  set_fact:
+    tmp_folder_path: "{{ installation_status.json.data.tmp_folder }}"
+    download_path: "{{ installation_status.json.data.tmp_folder | regex_replace('/(.*)/@SYNOPKG_DOWNLOAD_ContainerManager', '\\1') }}/@SYNOPKG_DOWNLOAD_ContainerManager"
+  when: not container_manager_installed | bool and installation_status is defined and installation_status.json is defined and installation_status.json.data is defined and installation_status.json.data.tmp_folder is defined
+
+- name: Create quoted path variable
+  set_fact:
+    quoted_path: '"{{ download_path }}"'
+  when: not container_manager_installed | bool and download_path is defined
+
+- name: Debug paths
+  debug:
+    msg: "Using download_path: {{ download_path }} and quoted_path: {{ quoted_path }}"
+  when: not container_manager_installed | bool and download_path is defined and quoted_path is defined
+
+- name: Wait for download to complete
+  pause:
+    seconds: 30  # Increased to 90 seconds to ensure download completes
+  delegate_to: localhost
+  when: not container_manager_installed | bool and download_path is defined
+
+# Fixed compound parameter JSON structure with proper string escaping
+- name: Complete ContainerManager installation
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: "true"
+      mode: "sequential"
+      compound: "{{ compound_json | to_json }}"
+  vars:
+    compound_json:
+      - api: "SYNO.Core.Package.Installation"
+        method: "check"
+        version: 2
+        id: "ContainerManager"
+        install_type: ""
+        install_on_cold_storage: false
+        breakpkgs: null
+        blCheckDep: false
+        replacepkgs: null
+      - api: "SYNO.Core.Package.Installation"
+        method: "install"
+        version: 1
+        volume_path: "/volume2"
+        extra_values: "{}"
+        type: 0
+        check_codesign: true
+        force: true
+        installrunpackage: true
+        path: "{{ download_path }}"
+      - api: "SYNO.Core.Package"
+        method: "get"
+        version: 1
+        id: "ContainerManager"
+        additional: 
+          - "status"
+          - "dsm_apps"
+  async: 120  # Run asynchronously with a timeout of 120 seconds
+  poll: 5    # Check every 5 seconds if the task is complete
+  register: install_complete_response
+  when: not container_manager_installed | bool and install_start_response is defined and install_start_response.json is defined and install_start_response.json.success and download_path is defined
+
+- name: Add check for installation completion
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Package
+    api_method: list
+    api_version: 1
+    request_method: GET
+  register: package_status
+  until: package_status.json is defined and package_status.json.success and ('ContainerManager' in (package_status.json.data.packages | map(attribute='id') | list))
+  retries: 10
+  delay: 5
+  when: not container_manager_installed | bool and install_complete_response is defined
+  
+- name: Debug installed packages
+  debug:
+    msg: "Container Manager is now installed successfully"
+    verbosity: 0
+  when: not container_manager_installed | bool and package_status is defined and ('ContainerManager' in (package_status.json.data.packages | map(attribute='id') | list))
+
+- name: Debug installed packages final status
+  debug:
+    var: package_status
+    verbosity: 0
+  when: package_status is defined

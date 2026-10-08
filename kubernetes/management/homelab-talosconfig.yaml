@@ -1,0 +1,9 @@
+context: omni-prod
+contexts:
+    omni-prod:
+        endpoints:
+            - https://cluster.nmoura.pt
+        auth:
+            siderov1:
+                identity: nuno@babybites.pt
+        cluster: homelab

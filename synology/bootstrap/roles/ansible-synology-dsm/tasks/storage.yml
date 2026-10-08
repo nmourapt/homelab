@@ -1,0 +1,148 @@
+
+
+- name: Get storage information including NVMe disks
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: "false"
+      mode: "\"parallel\""
+      compound: "[{\"api\":\"SYNO.Storage.CGI.Storage\",\"method\":\"load_info\",\"version\":1},{\"api\":\"SYNO.Core.ISCSI.LUN\",\"method\":\"list\",\"version\":1}]"
+  register: storage_info_response
+
+- name: Extract disks in use
+  set_fact:
+    disks_in_use: "{{ [] }}"
+  no_log: true  # Avoid cluttering logs
+
+- name: Populate disks in use list
+  set_fact:
+    disks_in_use: "{{ disks_in_use + item.disks }}"
+  with_items: "{{ storage_info_response.json.data.result[0].data.storagePools | default([]) }}"
+  no_log: true
+
+- name: Debug disks in use
+  debug:
+    var: disks_in_use
+
+- name: Check if all disks are free for each desired Synology storage pool
+  set_fact:
+    all_disks_free: "{{ item.disks | difference(disks_in_use) | length == item.disks | length }}"
+  when: item.disks | length > 0
+  loop: "{{ synology_nfs_pools }}"
+  loop_control:
+    label: "volume {{ item.volume }}"
+  register: pool_disk_check_results
+
+- name: Debug pools that can be created
+  debug:
+    msg: "Pool for volume {{ item.item.volume }} can be created"
+  loop: "{{ pool_disk_check_results.results | selectattr('ansible_facts.all_disks_free', 'defined') | selectattr('ansible_facts.all_disks_free') | list }}"
+  loop_control:
+    label: "volume {{ item.item.volume }}"
+
+- name: Create Synology storage pools where all disks are free
+  when: item.ansible_facts.all_disks_free
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: "false"
+      mode: sequential
+      compound: >-
+        {{
+          [
+            {
+              "api": "SYNO.Storage.CGI.Pool",
+              "method": "create",
+              "version": 1,
+              "disk_id": item.item.disks,
+              "device_type": "shr_with_1_disk_protect",
+              "is_disk_check": False,
+              "is_pool_child": False,
+              "allocate_size": "0",
+              "spare_disk_count": "0",
+              "desc": "",
+              "is_unused": False,
+              "limitNum": "24",
+              "force": False
+            }
+          ] | to_json
+        }}
+  loop: "{{ pool_disk_check_results.results }}"
+  loop_control:
+    label: "volume {{ item.item.volume }}"
+
+- name: Refresh storage info after pool creation
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: "false"
+      mode: "\"parallel\""
+      compound: "[{\"api\":\"SYNO.Storage.CGI.Storage\",\"method\":\"load_info\",\"version\":1},{\"api\":\"SYNO.Core.ISCSI.LUN\",\"method\":\"list\",\"version\":1}]"
+  register: new_storage_info_response
+
+- name: Calculate allocate_size for each new pool
+  set_fact:
+    pool_allocate_sizes: >-
+      {{
+        pool_allocate_sizes | default({}) |
+        combine({
+          item.item.volume: {
+            "allocate_size": (
+              (
+                (new_storage_info_response.json.data.result[0].data.storagePools |
+                 selectattr('disks', 'equalto', item.item.disks) |
+                 first).size.total | int
+              ) -
+              (item.item.disks | length * 314572800)
+            ) // 1048576
+          }
+        })
+      }}
+  loop: "{{ pool_disk_check_results.results }}"
+  loop_control:
+    label: "volume {{ item.item.volume }}"
+
+
+- name: Create volumes on newly created Synology pools
+  synology_dsm_api_request:
+    api_name: SYNO.Storage.CGI.Volume
+    api_method: create_on_existing_pool
+    api_version: 1
+    request_method: POST
+    api_params:
+      pool_path: "\"reuse_{{ item.item.volume }}\""
+      allocate_size: "\"{{ pool_allocate_sizes[item.item.volume].allocate_size }}\""
+      fs_type: "\"btrfs\""
+      vol_attr: "\"generic\""
+      vol_desc: "\"\""
+      atime_opt: "\"relatime\""
+      force: false
+      enable_dedupe: false 
+  loop: "{{ pool_disk_check_results.results | selectattr('ansible_facts.all_disks_free') | list }}"
+  loop_control:
+    label: "{{ item.item.volume }}"
+  register: volume_create_response
+
+- name: Schedule data scrubbing for volumes
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: "true"
+      mode: "\"sequential\""
+      compound: "[{\"api\":\"SYNO.Storage.CGI.Storage\",\"method\":\"set_data_scrubbing_schedule\",\"version\":1,\"schedule_spaces\":[{\"space_path\":\"/dev/vg1000/lv\",\"scheduled\":\"1\"},{\"space_path\":\"/dev/vg1\",\"scheduled\":\"0\"}],\"sche_pool_order\":\"/dev/vg1000/lv\"},{\"api\":\"SYNO.Storage.CGI.Storage\",\"method\":\"set_schedule_plan\",\"version\":1,\"set_new_schedule\":true,\"start_time\":1746745200,\"schedule_plan\":\"011111110000000000000000011111110000000000000000011111110000000000000000011111110000000000000000011111110000000000000000011111110000000000000000011111110000000000000000\",\"interval\":1,\"scheEnabled\":1,\"runTimeOption\":\"run_setting_time\"}]"
+
+
+
+

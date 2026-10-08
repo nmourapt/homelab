@@ -1,0 +1,116 @@
+---
+- name: Enable/Disable NFS service
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.FileServ.NFS",
+            "method": "set",
+            "version": "3",
+            "enable_nfs": synology_dsm_nfs_enable,
+            "nfs_max_protocol": 2,
+            "enable_nfs_v4": synology_dsm_nfs_enable_v4,
+            "enabled_minor_ver": 1 if synology_dsm_nfs_enable_v4_1 else 0
+          }
+        ] | to_json }}
+
+- name: Enable/Disable SMB service
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.FileServ.SMB",
+            "method": "set",
+            "version": "3",
+            "enable_samba": synology_dsm_smb_enable,
+            "workgroup": synology_dsm_smb_workgroup,
+            "disable_shadow_copy": synology_dsm_smb_disable_shadow_copy,
+            "smb_transfer_log_enable": synology_dsm_smb_enable_transfer_log
+          }
+        ] | to_json }}
+
+- name: Enable/Disable AFP service
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.FileServ.AFP",
+            "method": "set",
+            "version": "1",
+            "enable_afp": synology_dsm_afp_enable,
+            "afp_transfer_log_enable": synology_dsm_afp_enable_transfer_log
+          }
+        ] | to_json }}
+
+- name: Enable NFS on shared folders
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'true'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.FileServ.NFS.SharePrivilege",
+            "method": "save",
+            "version": "1",
+            "share_name": item.name,
+            "rule": [
+              {
+                "client": "0.0.0.0/0",
+                "privilege": "rw",
+                "root_squash": "root",
+                "async": True,
+                "insecure": True,
+                "crossmnt": True,
+                "security_flavor": {
+                  "kerberos": False,
+                  "kerberos_integrity": False,
+                  "kerberos_privacy": False,
+                  "sys": True
+                }
+              }
+            ]
+          },
+          {
+            "api": "SYNO.Core.Share",
+            "method": "set",
+            "version": 1,
+            "name": item.name,
+            "shareinfo": {
+              "name": item.name,
+              "vol_path": item.volume,
+              "enable_share_cow": False,
+              "enable_share_compress": False,
+              "encryption": False,
+              "enc_passwd": ""
+            }
+          }
+        ] | to_json }}
+  loop: "{{ synology_nfs_shared_folders }}"
+
+

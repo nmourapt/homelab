@@ -1,0 +1,129 @@
+synology_dsm_host: '{{ inventory_hostname }}'
+synology_dsm_base_url: http://{{ synology_dsm_host }}:5000
+synology_dsm_base_path: webapi
+synology_dsm_cgi_name: entry.cgi
+
+synology_ip: 192.168.202.1
+synology_dsm_username: cronus
+synology_dsm_password: zymgiO9j*jmTg!ec2y$5*I2&n!Vb@noc
+
+synology_dsm_ssh_enable: true
+synology_dsm_ssh_port: 22
+synology_dsm_telnet_enable: false
+
+synology_dsm_user_home_service_enable: true
+synology_dsm_user_home_location: /volume1
+synology_dsm_user_home_enable_recycle_bin: true
+
+synology_dsm_package_sources: []
+
+synology_dsm_nfs_enable: true
+synology_dsm_nfs_enable_v4: true
+synology_dsm_nfs_enable_v4_1: true
+
+synology_dsm_afp_enable: false
+synology_dsm_afp_enable_transfer_log: false
+
+synology_dsm_smb_enable: true
+synology_dsm_smb_workgroup: WORKGROUP
+synology_dsm_smb_disable_shadow_copy: false
+synology_dsm_smb_enable_transfer_log: false
+
+synology_nfs_shared_folders:
+  - name: data
+    volume: /volume1
+  - name: nextcloud
+    volume: /volume1
+
+synology_nfs_pools:
+  - volume: 1
+    disks:
+      - "sda"
+      - "sdb"
+      - "sdc"
+      - "sdd"
+  - volume: 2
+    disks:
+      - "nvme0n1"
+      - "nvme1n1"
+
+synology_shared_folders:
+  - name: docker_backup
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: true 
+  - name: data
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false  
+  - name: Fotos
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false  
+  - name: Nuno
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false  
+  - name: Telma
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false
+  - name: photos
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false
+  - name: nextcloud
+    volume: 1
+    hide_unreadable: true
+    enable_checksum: true
+    enable_compression: false
+
+
+users:
+  - name: nuno
+    password: 'n9$M_synology_0&fM'
+    DSM_access: true
+    Finder_access: true
+    Filestation_access: true
+    SMB_access: true
+    AFP_access: false
+  - name: telma
+    password: 'T8m8.N9m0'
+    DSM_access: true
+    Finder_access: true
+    Filestation_access: true
+    SMB_access: true
+    AFP_access: false
+
+notifications_email:
+  - moura.abt@gmail.com
+
+vault_portainer_username: "admin"
+vault_portainer_password: "mYp0RT4N3rPaSs"
+
+cloudflared:
+  api_token: "Q7H0QJKDWxIIGJIggKjI6H8qWWHyg5Sc9F9MF8XA"
+  account_id: "d94d0ebef658cbd92166d633c8f065c9"
+  zone_id : "c2a432c577a8a054ea5845c9318f4792"
+  tunnel_id: "6bc46432-ca48-450c-94c4-9d3b410f60cd"
+  public_hostnames:
+    - name: nas.nmoura.pt
+      origin: "192.168.202.1"
+      port: "5001"
+      protocol: "https"
+      http2: true
+      tls_verify: false
+    - name: portainer.nmoura.pt
+      origin: "192.168.202.1"
+      port: "9443"
+      protocol: "https"
+      http2: true
+      tls_verify: false
+    
+

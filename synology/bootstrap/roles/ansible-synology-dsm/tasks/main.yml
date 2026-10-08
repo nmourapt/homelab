@@ -1,0 +1,48 @@
+---
+- name: wrapper block
+  module_defaults:
+    synology_dsm_api_request:
+      base_url: '{{ synology_dsm_base_url }}'
+      login_cookie: '{{ synology_dsm_login_cookie | default(omit) }}'
+      syno_token: '{{ synology_dsm_syno_token | default(omit) }}'  # Add this line
+  block:
+    - include_tasks: login.yml
+
+    - name: Query API info
+      synology_dsm_api_request:
+        cgi_name: query.cgi
+        api_name: SYNO.API.Info
+        api_method: query
+        api_params:
+          query: all
+
+    - name: Query system status
+      synology_dsm_api_request:
+        api_name: SYNO.Core.System.Status
+        api_method: get
+
+    - include_tasks: terminal.yml
+
+    - include_tasks: nvme_prep.yml
+
+    - include_tasks: login.yml
+
+    - include_tasks: storage.yml
+
+    - include_tasks: shared_folders.yml
+
+    - include_tasks: file_services.yml
+
+    #- include_tasks: users.yml
+
+    #- include_tasks: notifications.yml
+
+    ##- include_tasks: install_container_manager.yml
+
+    #- include_tasks: enable_docker_swarm.yml
+
+    #- include_tasks: deploy_portainer.yml
+
+    #- include_tasks: create_cfd_stack.yml
+
+    #- include_tasks: create_cfd_tunnel_entries.yml

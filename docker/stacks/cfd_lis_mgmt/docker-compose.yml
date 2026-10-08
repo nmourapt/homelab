@@ -1,0 +1,8 @@
+services:
+  cfd_lis_mgmt:
+    container_name: cfd_lis_mgmt
+    image: cloudflare/cloudflared:2026.10.0
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    command: tunnel run

@@ -1,0 +1,123 @@
+name: Deploy Cloudflare Configuration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/terraform/*.tf'
+      - 'secrets/reposecrets.sops.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.11.0"
+
+    - name: Configure R2 Credentials
+      run: |
+        mkdir -p ~/.aws
+        cat > ~/.aws/credentials << EOL
+        [default]
+        aws_access_key_id = ${{ secrets.R2_TF_CLOUDFLARE_ACCESS_KEY_ID }}
+        aws_secret_access_key = ${{ secrets.R2_TF_CLOUDFLARE_SECRET_ACCESS_KEY }}
+        EOL
+        
+        cat > ~/.aws/config << EOL
+        [default]
+        region = auto
+        s3 =
+          endpoint_url = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          use_path_style_endpoint = true
+        EOL
+
+    - name: Update backend configuration
+      run: |
+        sed -i "s/\${CF_ACCOUNT_ID}/${{ secrets.CF_ACCOUNT_ID }}/" cloudflare/terraform/backend.tf
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
+        TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
+        TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
+        TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}
+        TF_VAR_pocketid_reauth_client_secret: ${{ secrets.POCKETID_REAUTH_CLIENT_SECRET }}
+        TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
+        TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
+        TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
+        TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}
+        TF_VAR_homeassistant_mcp_token: ${{ secrets.HOMEASSISTANT_MCP_TOKEN }}
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
+        TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
+        TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
+        TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}
+        TF_VAR_pocketid_reauth_client_secret: ${{ secrets.POCKETID_REAUTH_CLIENT_SECRET }}
+        TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
+        TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
+        TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
+        TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}
+        TF_VAR_homeassistant_mcp_token: ${{ secrets.HOMEASSISTANT_MCP_TOKEN }}
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./cloudflare/terraform
+      env:
+        TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+        TF_VAR_cloudflare_tld_zone_id: ${{ secrets.CF_TLD_ZONE_ID }}
+        TF_VAR_cloudflare_email: ${{ secrets.CF_EMAIL }}
+        TF_VAR_cloudflare_api_key: ${{ secrets.CF_API_KEY }}
+        TF_VAR_tld: ${{ secrets.TLD }}
+        TF_VAR_tld_alt: ${{ secrets.TLD_ALT }}
+        TF_VAR_pocketid_client_id: ${{ secrets.POCKETID_CLIENT_ID }}
+        TF_VAR_pocketid_client_secret: ${{ secrets.POCKETID_CLIENT_SECRET }}
+        TF_VAR_pocketid_reauth_client_id: ${{ secrets.POCKETID_REAUTH_CLIENT_ID }}
+        TF_VAR_pocketid_reauth_client_secret: ${{ secrets.POCKETID_REAUTH_CLIENT_SECRET }}
+        TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
+        TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        TF_VAR_google_workspace_client_id: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_ID }}
+        TF_VAR_google_workspace_client_secret: ${{ secrets.GOOGLE_WORKSPACE_CLIENT_SECRET }}
+        TF_VAR_egress_ips_json: ${{ secrets.EGRESS_IPS_JSON }}
+        TF_VAR_personal_emails_json: ${{ secrets.PERSONAL_EMAILS_JSON }}
+        TF_VAR_homeassistant_mcp_token: ${{ secrets.HOMEASSISTANT_MCP_TOKEN }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f /tmp/secrets.yml
+        rm -f ~/.config/sops/age/keys.txt 

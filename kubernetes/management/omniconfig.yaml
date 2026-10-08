@@ -1,0 +1,7 @@
+contexts:
+    default:
+        url: https://cluster.nmoura.pt
+        auth:
+            siderov1:
+                identity: nuno@babybites.pt
+context: default

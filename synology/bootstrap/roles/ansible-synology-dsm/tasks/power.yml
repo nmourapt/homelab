@@ -1,0 +1,69 @@
+- name: Power Setup
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.Hardware.ZRAM",
+            "method": "set",
+            "version": "1",
+            "enable_zram": true
+          },
+          {
+            "api": "SYNO.Core.Hardware.PowerRecovery",
+            "method": "set",
+            "version": "1",
+            "rc_power_config": true,
+            "wol1": false,
+            "wol2": false
+          },
+          {
+            "api": "SYNO.Core.Hardware.BeepControl",
+            "method": "set",
+            "version": "1",
+            "fan_fail": true,
+            "volume_or_cache_crash": true,
+            "poweron_beep": true,
+            "poweroff_beep": true
+          },
+          {
+            "api": "SYNO.Core.Hardware.FanSpeed",
+            "method": "set",
+            "version": "1",
+            "dual_fan_speed": "coolfan"
+          },
+          {
+            "api": "SYNO.Core.Hardware.Led.Brightness",
+            "method": "set",
+            "version": "1",
+            "led_brightness": 3,
+            "schedule": "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+          },
+          {
+            "api": "SYNO.Core.Hardware.Hibernation",
+            "method": "set",
+            "version": "1",
+            "internal_hd_idletime": 10,
+            "sata_deep_sleep": true,
+            "ignore_netbios_broadcast": false,
+            "usb_idletime": 0,
+            "enable_log": true
+          },
+          {
+            "api": "SYNO.Core.ExternalDevice.UPS",
+            "method": "set",
+            "version": "1",
+            "enable": false,
+            "mode": "SLAVE",
+            "delay_time": "-1",
+            "snmp_auth_key_dirty": false,
+            "snmp_privacy_key_dirty": false
+          }
+        ] | to_json }}
+

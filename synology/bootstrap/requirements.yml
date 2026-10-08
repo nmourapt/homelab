@@ -1,0 +1,2 @@
+- src: https://github.com/agaffney/ansible-synology-dsm
+  name: ansible-synology-dsm

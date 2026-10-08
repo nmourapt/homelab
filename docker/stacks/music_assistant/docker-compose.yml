@@ -1,0 +1,22 @@
+services:
+  music-assistant-server:
+    image: ghcr.io/music-assistant/server:2.10.5
+    container_name: music-assistant-server
+    restart: unless-stopped    
+    ports:
+      - "8097:8097"
+    networks:
+      - prod_net
+    volumes:
+      - /volume2/docker/musicassistant/volumes/data:/data/
+    environment:
+      - LOG_LEVEL=info
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.musicassistant.rule=Host(`ma.nmoura.pt`)"
+      - "traefik.http.routers.musicassistant.entrypoints=web"
+      - "traefik.http.services.musicassistant.loadbalancer.server.port=8095"
+
+networks:
+  prod_net:
+    external: true

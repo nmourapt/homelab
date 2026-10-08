@@ -1,0 +1,59 @@
+- name: Create or update cloudflared tunnel public hostname entries
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflared.account_id }}/cfd_tunnel/{{ cloudflared.tunnel_id }}/configurations"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ cloudflared.api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: >
+      {
+        "config": {
+          "ingress": [
+            {% for host in cloudflared.public_hostnames %}
+            {
+              "hostname": "{{ host.name }}",
+              "service": "{{ host.protocol }}://{{ host.origin }}:{{ host.port }}",
+              "originRequest": {
+                "noTLSVerify": {{ "false" if host.tls_verify else "true" }},
+                "http2Origin": {{ "true" if host.http2 else "false" }}
+              }
+            }{% if not loop.last %},{% endif %}
+            {% endfor %},
+            {
+              "service": "http_status:404"
+            }
+          ]
+        }
+      }
+    status_code: 200
+  register: result
+
+#- name: Debug response
+#  debug:
+#    var: result.json
+
+- name: Create CNAME DNS records for tunnel public hostnames
+  uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflared.zone_id }}/dns_records"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflared.api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: >
+      {
+        "type": "CNAME",
+        "name": "{{ item.name }}",
+        "content": "{{ cloudflared.tunnel_id }}.cfargotunnel.com",
+        "proxied": true
+      }
+    status_code: 200
+  loop: "{{ cloudflared.public_hostnames }}"
+  register: dns_results
+  no_log: true
+  ignore_errors: true
+
+#- name: Debug DNS creation results
+#  debug:
+#    var: dns_results

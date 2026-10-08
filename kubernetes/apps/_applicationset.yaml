@@ -7,7 +7,7 @@ spec:
   goTemplate: true
   generators:
     - git:
-        repoURL: https://github.com/nmourapt/homelab.git
+        repoURL: https://git.nmoura.pt/nuno/homelab.git
         revision: main
         directories:
           - path: kubernetes/apps/*
@@ -19,7 +19,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/nmourapt/homelab.git
+        repoURL: https://git.nmoura.pt/nuno/homelab.git
         path: '{{.path.path}}'
         targetRevision: main
       destination:

@@ -1,0 +1,28 @@
+- name: Create Synology shared folders
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'true'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.Share",
+            "method": "create",
+            "version": 1,
+            "name": item.name,
+            "shareinfo": {
+              "name": item.name,
+              "vol_path": "/volume" ~ item.volume,
+              "desc": "",
+              "hide_unreadable": item.hide_unreadable,
+              "enable_share_cow": item.enable_checksum,
+              "enable_share_compress": item.enable_compression,
+              "name_org": ""
+            }
+          }
+        ] | to_json }}
+  loop: "{{ synology_shared_folders }}"

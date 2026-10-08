@@ -1,0 +1,15 @@
+- name: Setup email notifications 
+  synology_dsm_api_request:
+    api_name: SYNO.Core.Notification.Push.Mail
+    api_method: set
+    api_version: 2
+    request_method: POST
+    api_params:
+      enable_mail: true
+      template_id: 1
+      mail: '["moura.abt@gmail.com"]'
+
+
+      #mail: '{{ [notifications_email] | to_json }}'
+
+

@@ -1,0 +1,76 @@
+- name: Create users
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.User",
+            "method": "create",
+            "version": "1",
+            "name": item.name,
+            "description": "",
+            "email": "",
+            "cannot_chg_passwd": false,
+            "expired": "normal",
+            "passwd_never_expire": true,
+            "password": item.password,
+            "notify_by_email": false
+          },
+          {
+            "api": "SYNO.Core.AppPriv.Rule",
+            "method": "set",
+            "version": "1",
+            "rules": [
+              {
+                "entity_type": "user",
+                "entity_name": item.name,
+                "app_id": "SYNO.Desktop",
+                "allow_ip": ["0.0.0.0"]
+              } if item.DSM_access | default(false) else None,
+              {
+                "entity_type": "user",
+                "entity_name": item.name,
+                "app_id": "SYNO.AFP",
+                "allow_ip": ["0.0.0.0"]
+              } if item.AFP_access | default(false) else None,
+              {
+                "entity_type": "user",
+                "entity_name": item.name,
+                "app_id": "SYNO.SDS.SMBService.AppPrivilege.Instance",
+                "allow_ip": ["0.0.0.0"]
+              } if item.SMB_access | default(false) else None,
+              {
+                "entity_type": "user",
+                "entity_name": item.name,
+                "app_id": "SYNO.SDS.App.FileStation3.Instance",
+                "allow_ip": ["0.0.0.0"]
+              } if item.Filestation_access | default(false) else None,
+              {
+                "entity_type": "user",
+                "entity_name": item.name,
+                "app_id": "SYNO.Finder.Application",
+                "allow_ip": ["0.0.0.0"]
+              } if item.Finder_access | default(false) else None
+            ] | select('!=', None)
+          }
+        ] | to_json }}
+  loop: "{{ users }}"
+
+
+
+- name: Enable/Disable User Home Service
+  synology_dsm_api_request:
+    api_name: SYNO.Core.User.Home
+    api_method: set
+    request_method: POST
+    api_params:
+      enable: '{{ synology_dsm_user_home_service_enable | to_json }}'
+      location: '{{ synology_dsm_user_home_location }}'
+      enable_recycle_bin: '{{ synology_dsm_user_home_enable_recycle_bin | to_json }}'
+

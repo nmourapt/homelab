@@ -1,0 +1,22 @@
+
+services:
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent:release-5.2.4
+    volumes:
+      - /volume2/docker/qbittorrent/volumes/config:/config:rw
+      - /volume1/data:/data:rw
+    ports:
+      - 10002:8080
+      - 10003:10003
+    networks:
+      - prod_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`down.${DOMAIN}`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+
+networks:
+  prod_net:
+    external: true

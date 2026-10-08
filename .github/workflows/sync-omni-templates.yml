@@ -6,6 +6,7 @@ on:
     paths:
       - 'kubernetes/omni/templates/**'
       - 'kubernetes/omni/etcd-backup-s3-conf.yaml'
+      - 'secrets/reposecrets.sops.yml'
   pull_request:
     branches: [main]
     paths:
@@ -26,6 +27,7 @@ on:
 env:
   OMNI_ENDPOINT: ${{ secrets.OMNI_ENDPOINT }}
   OMNI_SERVICE_ACCOUNT_KEY: ${{ secrets.OMNI_SERVICE_ACCOUNT_KEY }}
+  ARGO_REPO_TOKEN: ${{ secrets.ARGO_REPO_TOKEN }}
 
 jobs:
   validate:
@@ -40,7 +42,9 @@ jobs:
 
       - name: Install omnictl
         run: |
-          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
+          curl -sfL ${OMNI_ENDPOINT}/api/omnictl/omnictl-linux-amd64 -o omnictl
+          # fail fast if we didn't get a binary (e.g. HTML login/404 page)
+          file omnictl | grep -q 'ELF' || { echo "omnictl download is not a binary:"; file omnictl; exit 1; }
           chmod +x omnictl
           sudo mv omnictl /usr/local/bin/
 
@@ -81,12 +85,17 @@ jobs:
 
       - name: Process templates with secrets
         run: |
+          set -euo pipefail
+          if [ -z "$ARGO_REPO_TOKEN" ]; then
+            echo "ARGO_REPO_TOKEN secret is missing or empty (push-secrets workflow must run first)"; exit 1
+          fi
           mkdir -p /tmp/processed-templates/patches
           TEMPLATES='${{ steps.detect.outputs.templates }}'
           
-          # Copy patches directory (these don't need TLD substitution)
+          # Copy patches directory and inject the repo token into raw URLs
           if [ -d "kubernetes/omni/templates/patches" ]; then
             cp -r kubernetes/omni/templates/patches/* /tmp/processed-templates/patches/ 2>/dev/null || true
+            find /tmp/processed-templates/patches -name '*.yaml' -exec sed -i "s/\\\${ARGO_REPO_TOKEN}/$ARGO_REPO_TOKEN/g" {} +
           fi
           
           for template in $(echo "$TEMPLATES" | jq -r '.[]'); do
@@ -119,17 +128,24 @@ jobs:
 
       - name: Install omnictl
         run: |
-          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
+          curl -sfL ${OMNI_ENDPOINT}/api/omnictl/omnictl-linux-amd64 -o omnictl
+          # fail fast if we didn't get a binary (e.g. HTML login/404 page)
+          file omnictl | grep -q 'ELF' || { echo "omnictl download is not a binary:"; file omnictl; exit 1; }
           chmod +x omnictl
           sudo mv omnictl /usr/local/bin/
 
       - name: Process template with secrets
         run: |
+          set -euo pipefail
+          if [ -z "$ARGO_REPO_TOKEN" ]; then
+            echo "ARGO_REPO_TOKEN secret is missing or empty (push-secrets workflow must run first)"; exit 1
+          fi
           mkdir -p /tmp/processed-templates/patches
           
-          # Copy patches directory (these don't need TLD substitution)
+          # Copy patches directory and inject the repo token into raw URLs
           if [ -d "kubernetes/omni/templates/patches" ]; then
             cp -r kubernetes/omni/templates/patches/* /tmp/processed-templates/patches/ 2>/dev/null || true
+            find /tmp/processed-templates/patches -name '*.yaml' -exec sed -i "s/\\\${ARGO_REPO_TOKEN}/$ARGO_REPO_TOKEN/g" {} +
           fi
           
           echo "Processing kubernetes/omni/templates/${{ matrix.template }}..."
@@ -174,7 +190,9 @@ jobs:
 
       - name: Install omnictl
         run: |
-          curl -sL ${OMNI_ENDPOINT}/omnictl/omnictl-linux-amd64 -o omnictl
+          curl -sfL ${OMNI_ENDPOINT}/api/omnictl/omnictl-linux-amd64 -o omnictl
+          # fail fast if we didn't get a binary (e.g. HTML login/404 page)
+          file omnictl | grep -q 'ELF' || { echo "omnictl download is not a binary:"; file omnictl; exit 1; }
           chmod +x omnictl
           sudo mv omnictl /usr/local/bin/
 

@@ -1,0 +1,182 @@
+name: Deploy Dockhand Stacks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/**/*.yml'
+      - 'docker/**/*.env'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Specific service to deploy (optional)'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect changed services
+      id: detect
+      run: |
+        if [ -n "${{ github.event.inputs.service }}" ]; then
+          SERVICES='["${{ github.event.inputs.service }}"]'
+        elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+          SERVICES=$(git diff --name-only "${{ github.event.before }}" HEAD \
+            | { grep -Eo '^docker/stacks/[^/]+/' || true; } \
+            | sort -u \
+            | sed 's|^docker/stacks/||; s|/$||' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        else
+          SERVICES=$(find docker/stacks -mindepth 1 -maxdepth 1 -type d \
+            | xargs -n1 basename \
+            | jq -R -s -c 'split("\n")[:-1]')
+        fi
+        echo "services=$SERVICES" >> "$GITHUB_OUTPUT"
+
+    - name: Install SOPS and Age
+      run: |
+        wget https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+        sudo mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+        sudo chmod +x /usr/local/bin/sops
+        wget https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz
+        tar xzf age-v1.1.1-linux-amd64.tar.gz
+        sudo mv age/age /usr/local/bin/
+        sudo mv age/age-keygen /usr/local/bin/
+
+    - name: Setup Age private key
+      env:
+        SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      run: |
+        mkdir -p ~/.config/sops/age
+        echo "$SOPS_AGE_KEY" > ~/.config/sops/age/keys.txt
+        chmod 600 ~/.config/sops/age/keys.txt
+
+    - name: Reconcile stacks
+      env:
+        DOCKHAND_URL: ${{ secrets.DOCKHAND_URL }}
+        DOCKHAND_API_TOKEN: ${{ secrets.DOCKHAND_API_TOKEN }}
+        DOCKHAND_WEBHOOK_SECRET: ${{ secrets.DOCKHAND_WEBHOOK_SECRET }}
+        DOCKHAND_GIT_TOKEN: ${{ secrets.DOCKHAND_GIT_TOKEN }}
+      run: |
+        set -euo pipefail
+
+        API="Authorization: Bearer $DOCKHAND_API_TOKEN"
+        REPO_URL="${GITHUB_SERVER_URL%/}/${GITHUB_REPOSITORY}.git"
+        REPO_NAME="${GITHUB_REPOSITORY#*/}"
+        GIT_USER="${GITHUB_REPOSITORY%%/*}"
+        BRANCH="${GITHUB_REF_NAME:-main}"
+
+        dh_get()  { curl -sf -H "$API" -H "Accept: application/json" "$DOCKHAND_URL$1"; }
+        dh_send() {
+          local method="$1" path="$2" data="${3:-}"
+          local args=(-sf -X "$method" -H "$API" -H "Accept: application/json")
+          if [ -n "$data" ]; then
+            args+=(-H "Content-Type: application/json" --data "$data")
+          fi
+          curl "${args[@]}" "$DOCKHAND_URL$path"
+        }
+
+        ensure_repo_id() {
+          local id cred
+          # Match by name first - the runner's GITHUB_SERVER_URL may differ from
+          # the URL Dockhand uses to clone, so name is the stable identifier
+          id=$(dh_get /api/git/repositories | jq -r --arg n "$REPO_NAME" '.[] | select(.name == $n) | .id' | head -1)
+          if [ -z "$id" ]; then
+            id=$(dh_get /api/git/repositories | jq -r --arg url "$REPO_URL" '.[] | select(.url == $url) | .id' | head -1)
+          fi
+          if [ -n "$id" ]; then echo "$id"; return; fi
+          echo "repository not registered in dockhand, bootstrapping" >&2
+          cred=$(dh_get /api/git/credentials | jq -r '.[] | select(.name == "forgejo-homelab") | .id' | head -1)
+          if [ -z "$cred" ]; then
+            cred=$(dh_send POST /api/git/credentials \
+              "$(jq -nc --arg u "$GIT_USER" --arg p "$DOCKHAND_GIT_TOKEN" '{name:"forgejo-homelab",authType:"password",username:$u,password:$p}')" \
+              | jq -r '.id')
+          fi
+          dh_send POST /api/git/repositories \
+            "$(jq -nc --arg n "$REPO_NAME" --arg u "$REPO_URL" --arg b "$BRANCH" --argjson c "$cred" '{name:$n,url:$u,branch:$b,credentialId:$c}')" \
+            | jq -r '.id'
+        }
+
+        build_envvars() {
+          local envfile="docker/stacks/${1}/${1}.env"
+          if [ -f "$envfile" ]; then
+            sops -d "$envfile" > "/tmp/${1}.env"
+            jq -R -s \
+              'split("\n")
+               | map(select(length > 0 and (startswith("#") | not)))
+               | map(capture("(?<key>[A-Za-z_][A-Za-z0-9_]*)=(?<value>.*)")
+                   | {key,
+                      value: (.value
+                        | if (startswith("\"") and endswith("\"")) or (startswith("\u0027") and endswith("\u0027"))
+                          then .[1:-1]
+                          else . end),
+                      isSecret: true})' \
+              "/tmp/${1}.env"
+          else
+            echo '[]'
+          fi
+        }
+
+        for SERVICE in $(echo '${{ steps.detect.outputs.services }}' | jq -r '.[]'); do
+          echo "=== ${SERVICE} ==="
+          COMPOSE="docker/stacks/${SERVICE}/docker-compose.yml"
+          STACK=$(dh_get /api/git/stacks | jq -c --arg n "$SERVICE" '[.[] | select((.stackName // .name) == $n)][0] // empty')
+
+          if [ ! -f "$COMPOSE" ]; then
+            if [ -z "$STACK" ]; then
+              echo "Removed from repo and not in dockhand, nothing to do"
+              continue
+            fi
+            STACK_ID=$(echo "$STACK" | jq -r '.id')
+            ENV_ID=$(echo "$STACK" | jq -r '.environmentId // .envId')
+            echo "Removed from repo: taking down and deleting from dockhand"
+            dh_send POST "/api/stacks/${SERVICE}/down?env=${ENV_ID}" '{"removeVolumes":false}' | jq -e '.success' > /dev/null
+            dh_send DELETE "/api/git/stacks/${STACK_ID}" | jq -e '.success' > /dev/null
+            echo "Removed"
+            continue
+          fi
+
+          ENVARS=$(build_envvars "$SERVICE")
+
+          if [ -z "$STACK" ]; then
+            echo "New stack: creating and deploying"
+            REPO_ID=$(ensure_repo_id)
+            ENV_ID=$(dh_get /api/environments | jq -r '.[0].id')
+            dh_send POST /api/git/stacks \
+              "$(jq -nc --arg n "$SERVICE" --arg cp "$COMPOSE" --arg ws "$DOCKHAND_WEBHOOK_SECRET" \
+                --argjson r "$REPO_ID" --argjson e "$ENV_ID" --argjson v "$ENVARS" \
+                '{stackName:$n, environmentId:$e, repositoryId:$r, composePath:$cp, webhookEnabled:true, webhookSecret:$ws, envVars:$v, deployNow:true}')" \
+              | jq -e '.deployResult.success' > /dev/null
+            echo "Created and deployed"
+          else
+            STACK_ID=$(echo "$STACK" | jq -r '.id')
+            ENV_ID=$(echo "$STACK" | jq -r '.environmentId // .envId')
+            dh_send PUT "/api/stacks/${SERVICE}/env?env=${ENV_ID}" \
+              "$(jq -nc --argjson v "$ENVARS" '{variables:$v}')" | jq -e '.success' > /dev/null
+            echo "Pushed $(echo "$ENVARS" | jq 'length') env vars"
+
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              curl -sf -X POST -H "$API" -H "Accept: application/json" \
+                "$DOCKHAND_URL/api/git/stacks/${STACK_ID}/deploy" | jq -e '.success' > /dev/null
+            else
+              curl -sf -X POST -H "$API" -H "Accept: application/json" -H "Content-Type: application/json" \
+                -H "X-Gitlab-Token: $DOCKHAND_WEBHOOK_SECRET" --data '{}' \
+                "$DOCKHAND_URL/api/git/stacks/${STACK_ID}/webhook" | jq -e '.success or .skipped' > /dev/null
+            fi
+            echo "Deploy triggered"
+          fi
+
+          rm -f "/tmp/${SERVICE}.env"
+          echo "=== ${SERVICE} done ==="
+        done
+
+    - name: Cleanup
+      if: always()
+      run: rm -f ~/.config/sops/age/keys.txt

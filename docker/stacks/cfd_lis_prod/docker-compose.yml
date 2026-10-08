@@ -1,0 +1,24 @@
+
+services:
+  cfd_lis_prod1:
+    image: cloudflare/cloudflared:2026.10.0
+    container_name: cfd_lis_prod1
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    command: tunnel run
+    networks:
+      - prod_net
+  cfd_lis_prod2:
+    image: cloudflare/cloudflared:2026.10.0
+    container_name: cfd_lis_prod2
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    command: tunnel run
+    networks:
+      - prod_net
+
+networks:
+  prod_net:
+    external: true

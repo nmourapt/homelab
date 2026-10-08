@@ -1,0 +1,121 @@
+- name: List scheduled tasks with TaskScheduler API
+  synology_dsm_api_request:
+    api_name: SYNO.Core.TaskScheduler
+    api_method: list
+    api_version: 3
+    api_params:
+      sort_by: "\"next_trigger_time\""
+      sort_direction: "\"ASC\""
+      offset: 0
+      limit: 50
+  register: list_tasks_response
+
+- name: Check if 'prep nvme pool' task already exists
+  set_fact:
+    nvme_prep_task_exists: >-
+      {{
+        list_tasks_response.json.data.tasks
+        | selectattr('name', 'equalto', 'prep nvme pool')
+        | list
+        | length > 0
+      }}
+
+- name: Get SynoConfirmPWToken
+  when: not nvme_prep_task_exists
+  synology_dsm_api_request:
+    api_name: SYNO.Core.User.PasswordConfirm
+    api_method: auth
+    api_version: 2
+    request_method: POST
+    api_params:
+      password: "{{ synology_dsm_password }}"
+  register: syno_confirm_pw_response
+
+- name: Set SynoConfirmPWToken fact
+  when: not nvme_prep_task_exists
+  set_fact:
+    synology_dsm_confirm_pw_token: "{{ syno_confirm_pw_response.json.data.SynoConfirmPWToken }}"
+
+
+- name: Set script content
+  when: not nvme_prep_task_exists
+  set_fact:
+    script_content: "/bin/wget https://github.com/007revad/Synology_HDD_db/archive/refs/heads/main.zip -O /var/services/homes/cronus/syno_hdd_db.zip\n/bin/7z x /var/services/homes/cronus/syno_hdd_db.zip -o/var/services/homes/cronus/\n/bin/bash /var/services/homes/cronus/Synology_HDD_db-main/syno_hdd_db.sh -n"
+
+- name: Create nvme pool prep bootup task
+  when: not nvme_prep_task_exists
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_on_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.EventScheduler.Root",
+            "method": "create",
+            "version": "1",
+            "task_name": "prep nvme pool",
+            "owner": {
+              "0": "root"
+            },
+            "enable": true,
+            "depend_on_task": "",
+            "event": "bootup",
+            "notify_enable": true,
+            "notify_mail": "moura.abt@gmail.com",
+            "notify_if_error": true,
+            "operation_type": "script",
+            "operation": script_content,
+            "SynoConfirmPWToken": synology_dsm_confirm_pw_token
+          }
+        ] | to_json }}
+
+
+- name: Run the created nvme pool prep task
+  when: not nvme_prep_task_exists
+  synology_dsm_api_request:
+    api_name: SYNO.Entry.Request
+    api_method: request
+    api_version: 1
+    request_method: POST
+    api_params:
+      stop_when_error: 'false'
+      mode: sequential
+      compound: >-
+        {{ [
+          {
+            "api": "SYNO.Core.EventScheduler",
+            "method": "run",
+            "version": 1,
+            "task_name": "prep nvme pool"
+          }
+        ] | to_json }}
+  register: run_task_response
+
+- name: Reboot 
+  when: not nvme_prep_task_exists
+  synology_dsm_api_request:
+    api_name: SYNO.Core.System
+    api_method: reboot
+    api_version: 1
+    request_method: POST
+
+- name: Wait to come back online
+  when: not nvme_prep_task_exists
+  wait_for:
+    host: "{{ synology_dsm_host }}"
+    port: 5000  # Or whatever port your Synology DSM is using
+    delay: 30
+    timeout: 300
+  delegate_to: localhost
+
+- name: Wait an additional 5 minutes for all services to initialize
+  when: not nvme_prep_task_exists
+  pause:
+    minutes: 5
+  delegate_to: localhost
+

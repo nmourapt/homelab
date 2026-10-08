@@ -1,0 +1,86 @@
+- name: Check if portainer-ce project already exists
+  synology_dsm_api_request:
+    api_name: SYNO.Docker.Project
+    api_method: list
+    request_method: POST
+    api_params:
+      version: 1
+  register: existing_projects
+
+- name: Set portainer_exists fact
+  set_fact:
+    portainer_exists: "{{ existing_projects.json.data.values() | selectattr('name', 'equalto', 'portainer-ce') | list | length > 0 }}"
+
+- name: Display skip message if portainer-ce already exists
+  debug:
+    msg: "Portainer-CE project already exists, skipping deployment tasks"
+  when: portainer_exists
+
+
+- name: Create folder
+  synology_dsm_api_request:
+    api_name: SYNO.FileStation.CreateFolder
+    api_method: create
+    request_method: POST
+    api_params:
+      version: 2
+      folder_path: "/docker/portainer-ce/volumes"
+      name: "data"
+      force_parent: true
+  when: not portainer_exists
+
+- name: Create portainer project using URI module
+  vars:
+    portainer_compose_content: |
+      version: "3"
+      services:
+        portainer:
+          image: portainer/portainer-ce:lts
+          container_name: portainer
+          ports:
+            - 9443:9443
+          volumes:
+            - /volume2/docker/portainer-ce/volumes/data:/data
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+          restart: unless-stopped
+          command: --admin-password='$$2y$$05$$JOSXVyCc0AT/m5GQ0i1TbuvptbQrXiGZzC5N7eWts8XmK0sDBwK.e'
+  uri:
+    url: "{{ synology_dsm_base_url }}/webapi/entry.cgi"
+    method: POST
+    headers:
+      Content-Type: "application/x-www-form-urlencoded; charset=UTF-8"
+      Cookie: "{{ synology_dsm_login_cookie }}"
+      X-SYNO-TOKEN: "{{ synology_dsm_syno_token }}"
+    body_format: form-urlencoded
+    body:
+      api: "SYNO.Docker.Project"
+      method: "create"
+      version: "1"
+      name: "portainer-ce"
+      content: "{{ portainer_compose_content }}"
+      share_path: "/docker/portainer-ce"
+      enable_service_portal: "false"
+      service_portal_name: ""
+      service_portal_port: "0"
+      service_portal_protocol: ""
+    status_code: 200
+    validate_certs: no
+  register: create_result
+  when: not portainer_exists
+
+- name: Wait 20 seconds
+  pause:
+    seconds: 20
+  delegate_to: localhost
+  when: not portainer_exists
+
+- name: Build portainer project
+  synology_dsm_api_request:
+    api_name: SYNO.Docker.Project
+    api_method: build_stream
+    request_method: POST
+    api_params:
+      version: 1
+      id: "{{ create_result.json.data.id }}"
+  register: build_result
+  when: not portainer_exists

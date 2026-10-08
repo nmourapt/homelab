@@ -1,0 +1,26 @@
+---
+- name: Login
+  synology_dsm_api_request:
+    cgi_name: auth.cgi
+    api_name: SYNO.API.Auth
+    api_version: 7
+    api_method: login
+    api_params:
+      account: '{{ synology_dsm_username }}'
+      passwd: '{{ synology_dsm_password }}'
+      enable_syno_token: "yes"
+  register: synology_dsm_login_response
+
+#- name: Debug login response
+#  debug:
+#    var: synology_dsm_login_response
+#    verbosity: 0
+
+- set_fact:
+    synology_dsm_login_cookie: '{{ synology_dsm_login_response.set_cookie }}'
+    synology_dsm_syno_token: '{{ synology_dsm_login_response.json.data.synotoken | default("") }}'
+
+#- name: Debug captured token
+#  debug:
+#    var: synology_dsm_syno_token
+#    verbosity: 0

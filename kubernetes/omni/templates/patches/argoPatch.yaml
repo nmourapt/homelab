@@ -1,4 +1,4 @@
 cluster:
   extraManifests:
-    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/omni/templates/manifests/argo_manifests.yaml
-    - https://raw.githubusercontent.com/nmourapt/homelab/main/kubernetes/apps/_applicationset.yaml
+    - https://git.nmoura.pt/nuno/homelab/raw/branch/main/kubernetes/omni/templates/manifests/argo_manifests.yaml?token=${ARGO_REPO_TOKEN}
+    - https://git.nmoura.pt/nuno/homelab/raw/branch/main/kubernetes/apps/_applicationset.yaml?token=${ARGO_REPO_TOKEN}

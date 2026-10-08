@@ -1,0 +1,194 @@
+---
+- name: Deploy Cloudflared Stack to Portainer
+  block:
+    - name: Get Portainer JWT token
+      uri:
+        url: "https://192.168.202.1:9443/api/auth"
+        method: POST
+        body_format: json
+        body:
+          Username: "{{ portainer_username }}"
+          Password: "{{ portainer_password }}"
+        validate_certs: false
+        status_code: 200
+      register: portainer_auth
+      no_log: true
+      retries: 30
+      delay: 10
+      until: portainer_auth is succeeded
+
+    - name: Get Docker endpoint ID
+      uri:
+        url: "https://192.168.202.1:9443/api/endpoints"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+        validate_certs: false
+        status_code: 200
+      register: portainer_endpoints
+
+    - name: Set endpoint ID (use first Docker endpoint)
+      set_fact:
+        endpoint_id: "{{ (portainer_endpoints.json | selectattr('Type', 'equalto', 1) | list | first).Id }}"
+      when: portainer_endpoints.json | selectattr('Type', 'equalto', 1) | list | length > 0
+
+    - name: Create local Docker endpoint if none exists
+      uri:
+        url: "https://192.168.202.1:9443/api/endpoints"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        body_format: form-urlencoded
+        body:
+          Name: "local"
+          EndpointCreationType: 1
+        validate_certs: false
+        status_code: 200
+      register: created_endpoint
+      when: portainer_endpoints.json | selectattr('Type', 'equalto', 1) | list | length == 0
+
+    - name: Set endpoint ID (use created endpoint)
+      set_fact:
+        endpoint_id: "{{ created_endpoint.json.Id }}"
+      when: 
+        - portainer_endpoints.json | selectattr('Type', 'equalto', 1) | list | length == 0
+        - created_endpoint is defined
+
+    - name: Check if cloudflared stack already exists
+      uri:
+        url: "https://192.168.202.1:9443/api/stacks"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+        validate_certs: false
+        status_code: 200
+      register: existing_stacks
+
+    - name: Set existing stack ID if found
+      set_fact:
+        existing_stack_id: "{{ (existing_stacks.json | selectattr('Name', 'equalto', 'cloudflared-mgmt') | list | first).Id | default('') }}"
+      when: existing_stacks.json | selectattr('Name', 'equalto', 'cloudflared-mgmt') | list | length > 0
+
+    - name: Set empty stack ID if not found
+      set_fact:
+        existing_stack_id: ""
+      when: existing_stacks.json | selectattr('Name', 'equalto', 'cloudflared-mgmt') | list | length == 0
+
+    - name: Deploy cloudflared stack
+      uri:
+        url: "https://192.168.202.1:9443/api/stacks/create/standalone/string?endpointId={{ endpoint_id }}"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          name: "cloudflared-mgmt"
+          stackFileContent: |
+            version: "3.9"
+            services: 
+              cloudflared-mgmt:
+                restart: unless-stopped
+                environment:
+                  - TUNNEL_TOKEN=eyJhIjoiZDk0ZDBlYmVmNjU4Y2JkOTIxNjZkNjMzYzhmMDY1YzkiLCJ0IjoiNmJjNDY0MzItY2E0OC00NTBjLTk0YzQtOWQzYjQxMGY2MGNkIiwicyI6Ik0yRTROVFZpWW1VdE16QTRNUzAwTjJVNExXSTFOV1V0TjJOak1tRTNObVptTWpBMyJ9
+                image: cloudflare/cloudflared:latest
+                container_name: cfd-lis-mgmt
+                command: tunnel run
+          fromAppTemplate: false
+          env: []
+        validate_certs: false
+        status_code: 200
+      register: stack_deployment
+      when: existing_stack_id == ''
+
+    - name: Skip deployment - stack already exists
+      debug:
+        msg: "Cloudflared stack already exists with ID: {{ existing_stack_id }}"
+      when: existing_stack_id != ''
+
+    - name: Display deployment result
+      debug:
+        msg: "Cloudflared stack deployed successfully with ID: {{ stack_deployment.json.Id }}"
+      when: existing_stack_id == '' and stack_deployment is defined
+
+  vars:
+    # Define these variables in your inventory or pass them as extra vars
+    portainer_username: "{{ vault_portainer_username | default('admin') }}"
+    portainer_password: "{{ vault_portainer_password }}"
+
+  rescue:
+    - name: Handle deployment failure
+      debug:
+        msg: "Failed to deploy cloudflared stack: {{ ansible_failed_result.msg | default('Unknown error') }}"
+      failed_when: true
+
+
+- name: Ensure Portainer API Token exists
+  block:
+    - name: Get Portainer JWT token
+      uri:
+        url: "https://192.168.202.1:9443/api/auth"
+        method: POST
+        body_format: json
+        body:
+          Username: "{{ portainer_username }}"
+          Password: "{{ portainer_password }}"
+        validate_certs: false
+        status_code: 200
+      register: portainer_auth
+      no_log: true
+
+    - name: Get current Portainer user info
+      uri:
+        url: "https://192.168.202.1:9443/api/users/me"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+        validate_certs: false
+        status_code: 200
+      register: portainer_user
+
+    - name: Get existing API tokens for user
+      uri:
+        url: "https://192.168.202.1:9443/api/users/{{ portainer_user.json.Id }}/tokens"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+        validate_certs: false
+        status_code: 200
+      register: existing_tokens
+      no_log: true
+
+    - name: Create new API token if none exist
+      uri:
+        url: "https://192.168.202.1:9443/api/users/{{ portainer_user.json.Id }}/tokens"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ portainer_auth.json.jwt }}"
+        body_format: json
+        body:
+          description: "Generated by Ansible"
+          password: "{{ portainer_password }}"
+        validate_certs: false
+        status_code: 201
+      register: portainer_api_key
+      when: existing_tokens.json | length == 0
+      #no_log: true
+
+    - name: Show API token if newly created
+      debug:
+        msg: "Generated Portainer API token: {{ portainer_api_key.json.rawAPIKey }}"
+      when: existing_tokens.json | length == 0
+      #no_log: true
+
+    - name: Show existing token ID(s)
+      debug:
+        msg: "Existing Portainer API token(s) found: {{ existing_tokens.json | map(attribute='id') | list }}"
+      when: existing_tokens.json | length > 0
+
+
+  vars:
+    # Define these variables in your inventory or pass them as extra vars
+    portainer_username: "{{ vault_portainer_username | default('admin') }}"
+    portainer_password: "{{ vault_portainer_password }}"
